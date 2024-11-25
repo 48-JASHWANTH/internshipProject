@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 const GuideSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -9,4 +9,4 @@ const GuideSchema = new mongoose.Schema({
 });
 
 const GuideModel = mongoose.model("studentsCollection", GuideSchema);
-module.exports = GuideModel;
+export default GuideModel 
