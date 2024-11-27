@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 const StudentSchema = new mongoose.Schema({
   rollno: {
     type: String,
@@ -12,4 +12,4 @@ const StudentSchema = new mongoose.Schema({
 });
 
 const StudentModel = mongoose.model("studentsCollection", StudentSchema);
-module.exports = StudentModel;
+export default StudentModel

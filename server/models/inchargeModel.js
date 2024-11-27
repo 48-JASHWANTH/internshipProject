@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 const InchargeSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -9,4 +9,4 @@ const InchargeSchema = new mongoose.Schema({
 });
 
 const InchargeModel = mongoose.model("studentsCollection", InchargeSchema);
-module.exports = InchargeModel;
+export default InchargeModel
