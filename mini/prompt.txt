@@ -1,0 +1,47 @@
+we have an Internship project, which is a web based application where we use MERN stack, basically it consists of 4 types of users(student, guides, inCharge, admin). And the basic overview of the project is, In colleges we have to do many projects and the projects should be reviewed frequently, But this review process is hectic at times students may not available or guides may not be available and also the progress need to be stored manually which is very hectic. So our project makes it online all the basic reviews will be in online between guide and students and all the changes that guides expect will be filled in table so every team mate can see them but first I will give you detailed overview of each person. 
+
+1) InCharge:
+   => He/She will first login to the website, In his account he can see his profile and also can edit it and can logout 
+   => To the left side it has a menu which consist of year(1,2,3,4) and in particular year it consists of sem(1,2) and in each sem it consists of branches(CSE, CSBS) and in each branch it consists of section(A,B,C,D,etc) 
+   => And in that particular section if the year is 1 then it will have only CBP section, if year is 2 it will have CBP & FP, if year is 3 it will have CBP & MINI, if year is 4 it will have CBP & MAJOR.
+   => For CBP, Incharge will have a sheet of all team detail and the description of projects and once he fills it every student in that sheet will be able to see it in their particular active works and for every review both student and incharge will be able to update the details of review and they will see it in review table.
+   => For FP,MINI,MAJOR. Incharge will have a sheet of all team detail and guide details and the description of projects and once he fills it every student in that sheet will be able to see it in their particular active works but guide first needs to accept on their notification section and then only they will be able to see it and for every review both student and guide will be able to update the details of review and they will see it in review table but incharge will only be able to see all the interactions between guide and student only for the final review Incharge will evaluate everything
+   =>Once project reviews& final evaluation completes this will go into completed section in his account.
+
+2) Guide:
+   => He/She will first login to the website, In his account he can see his profile and also can edit it and can logout 
+   => To the left side it has a menu which consist of year(2,3,4) and in particular year it consists of sem(1,2) and in each sem it consists of branches(CSE, CSBS) and in each branch it consists of section(A,B,C,D,etc) 
+   => if year is 2 it will have FP, if year is 3 it will have MINI, if year is 4 it will have MAJOR.
+   => When Incharge fills all the details all the guides will get the notification in their accounts and once they accept it based on details it will be active in particular section as in the menu bar
+   => Since the guides have access to the review table the table mainly consist of team ID and project name and in the table the columns are review no, date , progress, corrections to be made, presentees to that particular review, attach the files, links, etc
+   
+
+3) Student:
+   => He/She will first login to the website, In his account he can see his profile and also can edit it and can logout
+   => Since incharge gets a list of all students and their details about project once he fills it in his account student will be able to see the ir works in left side menu bar as active works.'
+   => Once they click the option they will be able to see everything about their project reviews either by guide/incharge everything.
+   => And student can edit some basic details of his/her to edit.
+   => Students has this extra feature of viewing projects where all the previous details of the previous every project can be viewed just basic overview of the projects and the students can verify their plagiarism and will be able to create newer projects with new technologies.
+
+Now for example I am going to give you 2 scenarios
+1)I am 2nd year student and my project comes under category of CBP, So the students of the class fills the excel sheet of their respective teams and their project titles and now Incharge has the team, project, etc all details. The incharge will fill the exact details from his account as new creation and fills all the details once he fills the details the all the respective students can see them in their active works section and from their in the student account he can see every detail like their project description their team members, everything about their group members and based on every review the go through with the Incharge, Students and Incharge can simultaneously fill review table as per their edit permissions.
+
+2)I am 3rd year student and my project comes under category of mini Project, similarly students will fill their group details, project details everything. Now Incharge will get every details of the project and he fills the table as per his need and also assigns guide to each team where guide has their unique ID. So when Incharge fills the details of the project students will be able to see them in their active works directly but the guide approval will still be under pending. Now the guide in his notification section, mail, message he will get this request and once the guide checks and approves the students can directly interact with guides. So now the review table will editable between guide and students for every review the table keeps on updated by both guides and students as per their edit permissions. But Incharge can't edit the review tables he can just view it but incharge can edit the students and project details table.
+
+
+
+
+
+
+Now coming to admin:-
+=>Admin can only create accounts for every type of user and he will handle all their accounts, delete them update them and so add every thing required by admin.
+
+Enhance the project as much as you want and give it back to every miniute detail of the project what you understood and what I need to do by enhancing every thing
+
+
+
+
+ 
+
+   
+   

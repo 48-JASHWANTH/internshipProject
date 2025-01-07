@@ -1,26 +1,32 @@
-const express = require('express');
+import express from "express";
+import cors from "cors";
+import dotenv from "dotenv";
+import mongoose from "mongoose";
+import cookieParser from "cookie-parser";
+dotenv.config()
 const app = express();
-const cors = require("cors");
+
 const corsOptions = {
-    origin :["http://localhost:5173"]
-}
-app.use(cors(corsOptions))
-require('dotenv').config();
+  origin: ["http://localhost:5173","http://localhost:5174"],
+};
+app.use(cors(corsOptions));
+
+app.use(cookieParser())
+app.use(express.json())
 
 
-const mongodb = require('mongodb').MongoClient;
+const PORT = 1544;
 
-let stinnovationDB;
-mongodb.connect(process.env.DB_URL)
-  .then(client => {
-    stinnovationDB = client.db('moviedb');
-    students = stinnovationDB.collection('students');
-    app.set('students', students);
-    console.log("DB connection successful!!!");
+const DB_URL = process.env.DB_URL; 
+mongoose
+  .connect(DB_URL)
+  .then(() => {
+    console.log('Database connection successful!!!');
   })
-  .catch(err => console.log("Error in DB", err));
+  .catch((err) => {
+    console.error('Error while connecting to MongoDB:', err);
+  });
 
-const PORT = 3000;
 app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+  console.log(`Server is running on port ${PORT}`);
 });
