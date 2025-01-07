@@ -18,9 +18,30 @@ we have an Internship project, which is a web based application where we use MER
 
 3) Student:
    => He/She will first login to the website, In his account he can see his profile and also can edit it and can logout
-   => 
+   => Since incharge gets a list of all students and their details about project once he fills it in his account student will be able to see the ir works in left side menu bar as active works.'
+   => Once they click the option they will be able to see everything about their project reviews either by guide/incharge everything.
+   => And student can edit some basic details of his/her to edit.
+   => Students has this extra feature of viewing projects where all the previous details of the previous every project can be viewed just basic overview of the projects and the students can verify their plagiarism and will be able to create newer projects with new technologies.
 
-   
+Now for example I am going to give you 2 scenarios
+1)I am 2nd year student and my project comes under category of CBP, So the students of the class fills the excel sheet of their respective teams and their project titles and now Incharge has the team, project, etc all details. The incharge will fill the exact details from his account as new creation and fills all the details once he fills the details the all the respective students can see them in their active works section and from their in the student account he can see every detail like their project description their team members, everything about their group members and based on every review the go through with the Incharge, Students and Incharge can simultaneously fill review table as per their edit permissions.
+
+2)I am 3rd year student and my project comes under category of mini Project, similarly students will fill their group details, project details everything. Now Incharge will get every details of the project and he fills the table as per his need and also assigns guide to each team where guide has their unique ID. So when Incharge fills the details of the project students will be able to see them in their active works directly but the guide approval will still be under pending. Now the guide in his notification section, mail, message he will get this request and once the guide checks and approves the students can directly interact with guides. So now the review table will editable between guide and students for every review the table keeps on updated by both guides and students as per their edit permissions. But Incharge can't edit the review tables he can just view it but incharge can edit the students and project details table.
+
+
+
+
+
+
+Now coming to admin:-
+=>Admin can only create accounts for every type of user and he will handle all their accounts, delete them update them and so add every thing required by admin.
+
+Enhance the project as much as you want and give it back to every miniute detail of the project what you understood and what I need to do by enhancing every thing
+
+
+
+
+ 
 
    
    

@@ -1,0 +1,196 @@
+Here’s the updated response incorporating the requested feature for archiving completed projects into a **Previous Works** section organized by academic year.  
+
+---
+
+## **Project Name**: Online Project Review and Management System  
+**Technology Stack**: MERN (MongoDB, Express.js, React, Node.js)  
+
+---
+
+### **Primary Objective**  
+To digitize and streamline the project review and management process in colleges, making it efficient and transparent for all stakeholders: students, guides, incharges, and admins. The platform minimizes manual workload, ensures easy access to project data, and fosters better collaboration through a centralized system.
+
+---
+
+## **Detailed Functional Overview**  
+
+### **1. User Roles & Features**
+
+#### **Incharge**
+**Responsibilities**:  
+Manages team assignments, tracks project progress, monitors interactions, and oversees final evaluations.  
+
+**Features**:
+- **Login & Profile Management**: Secure login and editable profile with options to view personal details, manage account settings, and logout.
+- **Hierarchical Navigation Menu**: A left-side menu structured as:
+  - **Year → Semester → Branch → Section**  
+    Example:  
+    ```
+    Year: 2  
+    ├── Semester: 1  
+        ├── Branch: CSE  
+            ├── Section: A  
+                ├── FP Projects
+    ```
+- **Project Categorization**:
+  - **1st Year**: CBP projects.
+  - **2nd Year**: CBP & FP projects.
+  - **3rd Year**: CBP & MINI projects.
+  - **4th Year**: CBP & MAJOR projects.
+- **Team & Project Management**:
+  - Upload or import project details (team ID, member details, project title, description) via manual input or CSV upload.
+  - Assign guides to projects for FP, MINI, and MAJOR categories.
+- **Review Management**:
+  - **CBP**: Both students and incharge update the review table collaboratively.
+  - **FP/MINI/MAJOR**: After guide approval, students and guides collaborate on the review table.  
+    The review table includes:
+    - Review No.
+    - Date
+    - Progress
+    - Corrections
+    - Present Team Members
+    - Attached Files (e.g., reports, presentations) and Links.
+- **Progress Monitoring**: View a timeline of project updates, review history, and feedback provided by guides and students.
+- **Evaluation**: Final evaluation for all projects (CBP, FP, MINI, MAJOR) before archiving them into a **Previous Works** section.
+- **Project Archiving**:
+  - **Archive Completed Projects**:
+    - After all reviews and evaluations are completed, the incharge can archive projects for a particular batch using an **“Archive Projects”** button.
+    - Upon clicking the button, the project moves to the **Previous Works** section categorized by the academic year (e.g., 2022-2023).  
+    Example:
+    ```
+    Previous Works  
+    ├── Year: 2022-2023  
+        ├── CBP Projects  
+        ├── FP Projects  
+        ├── MINI Projects  
+        ├── MAJOR Projects
+    ```
+- **Notifications**: Notify guides when a project is assigned or when evaluations are due.
+
+**Enhancements**:
+- **Analytics Dashboard**:
+  - Visual charts showing project progress per category.
+  - Statistics on pending approvals, reviews completed, and student participation.
+- **Customizable Categories**:
+  - Allow admin to dynamically add/remove categories like "Research Projects" or "Industry Collaborations."
+
+---
+
+#### **Guide**
+**Responsibilities**:  
+Guides review projects, interact with students for feedback, and approve/reject assigned projects.
+
+**Features**:
+- **Login & Profile Management**: Secure login, editable profile, and logout options.
+- **Navigation Menu**: Structured similarly to incharge, with access restricted to assigned years, branches, and sections.
+- **Notification System**:  
+  - Notification for project assignments.
+  - Notifications for upcoming review deadlines.
+- **Review Table**:  
+  - Editable review table with:
+    - Fields for progress, corrections, present members, and attachments.
+    - Comments for feedback.
+    - Status updates: "Pending," "In Progress," or "Completed."
+- **Approval Workflow**:
+  - Approve or reject project assignments from incharge.
+  - Send feedback for modifications if needed.
+- **Interaction**:
+  - Message students via an integrated chat system or comment section in the review table.
+- **Access to Archived Projects**:
+  - Guides can view **Previous Works** categorized by year and project type for reference.
+
+**Enhancements**:
+- **Review Templates**:
+  - Predefined templates for review comments or correction types.
+- **Student Performance Tracker**:
+  - Track individual contributions through logs (e.g., file uploads, review participation).
+
+---
+
+#### **Student**
+**Responsibilities**:  
+Participate in reviews, update progress, and collaborate with guides and incharges.
+
+**Features**:
+- **Login & Profile Management**: Secure login, editable profile, and logout options.
+- **Active Projects**:
+  - View active projects categorized by type (CBP, FP, MINI, MAJOR).
+  - Access project details (description, team members, review history).
+- **Review Table**:
+  - Update progress, corrections, and submit attachments for reviews.
+- **Project Repository**:
+  - Access a searchable archive of completed projects in the **Previous Works** section categorized by year.
+  - View plagiarism reports (using integrated plagiarism-check tools).
+- **Project Creation**:
+  - Submit proposals for new projects with advanced features like technology stack suggestions and resource links.
+- **Access to Archived Projects**:
+  - Students can view **Previous Works** from earlier years to learn from past projects.
+
+**Enhancements**:
+- **Learning Recommendations**:
+  - Suggest learning resources (articles, tutorials) based on project technology.
+- **Gamification**:
+  - Introduce badges or points for completing tasks (e.g., submitting reviews on time).
+
+---
+
+#### **Admin**
+**Responsibilities**:  
+System setup and user management.
+
+**Features**:
+- **User Management**:
+  - Create, update, or delete accounts for all user types.
+  - Role-based access control.
+- **System Settings**:
+  - Configure categories, branches, and sections.
+- **Data Export**:
+  - Export project and user data for offline reporting.
+
+**Enhancements**:
+- **Audit Logs**:
+  - Track user activity for security and compliance.
+- **System Health Dashboard**:
+  - Monitor application performance (e.g., active users, server health).
+
+---
+
+### **General Enhancements**
+1. **Real-Time Collaboration**:
+   - Use **WebSockets** for live updates in review tables.
+2. **Advanced Search**:
+   - Implement Elasticsearch for fast, full-text search across projects and users.
+3. **AI-Powered Insights**:
+   - Use ML models to predict project success based on past data.
+4. **Mobile Support**:
+   - Make the application mobile-friendly for accessibility.
+5. **Security**:
+   - Implement **Role-Based Access Control (RBAC)** and **end-to-end encryption**.
+
+---
+
+### **Tech Stack Enhancements**
+- **Frontend**:
+  - **React Context API** or **Redux** for state management.
+  - **TailwindCSS** for responsive and modern UI.
+- **Backend**:
+  - **Mongoose** for robust MongoDB schema validation.
+  - **Nodemailer** for email notifications.
+- **File Management**:
+  - Use **AWS S3** for file uploads.
+- **CI/CD**:
+  - Automate deployments using tools like GitHub Actions or Jenkins.
+
+---
+
+### **Implementation Plan**
+1. **Phase 1**: Core Feature Development
+   - User authentication, navigation, and dashboard basics.
+2. **Phase 2**: Review System
+   - Review tables and interactions.
+3. **Phase 3**: Notifications & Analytics
+   - Real-time notifications and data visualization.
+4. **Phase 4**: Advanced Features
+   - File management, plagiarism checks, and archiving features.
+
+This revised plan includes your requested feature for moving completed projects into an organized **Previous Works** section and retains scalability and extensibility for future needs. Let me know if you need more details!
