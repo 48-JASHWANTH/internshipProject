@@ -1,18 +1,18 @@
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import VideoComponent from "./VideoComponent";
-import { FaUserTie, FaChalkboardTeacher, FaUserShield, FaUserGraduate } from "react-icons/fa"; // Importing icons
+import { FaUserTie, FaChalkboardTeacher, FaUserShield, FaUserGraduate } from "react-icons/fa"; 
 
 function Login() {
   const navigate = useNavigate();
-  const [userType, setUserType] = useState("Student"); // Default selected is "Student"
+  const [userType, setUserType] = useState("Student"); 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
   const handleLogin = (e) => {
     e.preventDefault();
     if (userType) {
-      navigate(`/${userType.toLowerCase()}`);
+      navigate(`/${userType}Layout`);
     } else {
       alert("Please select a user type!");
     }
@@ -21,7 +21,7 @@ function Login() {
   const userTypes = [
     { name: "Student", icon: <FaUserGraduate /> },
     { name: "Guide", icon: <FaChalkboardTeacher /> },
-    { name: "Incharge", icon: <FaUserTie /> },
+    { name: "incharge", icon: <FaUserTie /> },
     { name: "Admin", icon: <FaUserShield /> },
   ];
 
