@@ -85,7 +85,7 @@ const Navbar = () => {
             <div className="flex items-center px-4 py-2 border-b border-gray-300">
               <FaUserCircle className="text-gray-700 text-4xl mr-3" />
               <div>
-                <p className="font-bold text-sm">XXXXXXXXXX - Name of the Incharge</p>
+                <p className="font-bold text-sm">XXXXXXXXXX - Name of the Student</p>
                 <p className="text-xs text-gray-500">user123@example.in</p>
               </div>
             </div>

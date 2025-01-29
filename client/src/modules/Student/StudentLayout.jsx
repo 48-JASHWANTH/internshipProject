@@ -3,7 +3,7 @@ import Navbar from './Navbar';
 import Menu from './Menu';
 import { Outlet } from 'react-router-dom';
 
-function InchargeLayout() {
+function StudentLayout() {
   return (
     <div className="flex flex-col h-screen">
       <Navbar />
@@ -19,4 +19,4 @@ function InchargeLayout() {
   );
 }
 
-export default InchargeLayout;
+export default StudentLayout;
