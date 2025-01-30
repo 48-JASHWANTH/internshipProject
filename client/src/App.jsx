@@ -5,9 +5,11 @@ import Guide from "./modules/Guide/Guide";
 import Student from "./modules/Student/StudentLayout";
 import Incharge from "./modules/Incharge/InchargeLayout";
 import ClassProjects from "./modules/Incharge/ClassProjects";
-import ActiveWorks from "./modules/Student/ActiveWorks";
+// import ActiveWorks from "./modules/Student/ActiveWorks";
 import Dashboard from "./modules/Student/Dashboard";
 import ArchivedProjects from "./modules/Student/ArchivedProjects";
+import ChangePassword from "./modules/Student/ChangePassword";
+import Profile from "./modules/Student/Profile";
 
 
 function App() {
@@ -21,9 +23,10 @@ function App() {
           <Route path="classProjects" element={<ClassProjects />} />
         </Route>
         <Route path="/student" element={<Student />} >  
-          <Route path="ActiveWorks" element={<ActiveWorks />} />
           <Route path="ArchivedProjects" element={<ArchivedProjects />} />
           <Route path="Dashboard" element={<Dashboard />} />
+          <Route path="Profile" element={<Profile />} />
+        <Route path="ChangePassword" element={<ChangePassword />} />
         </Route>
       </Routes>
     </Router>

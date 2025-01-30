@@ -25,6 +25,18 @@ const Navbar = () => {
     navigate("/"); 
   };
 
+  const handleLogo = () => {
+    navigate("/Student"); 
+  };
+
+  const handleProfile = () => {
+    navigate("/Student/Profile");
+  };  
+
+  const handleChangePassword = () => {
+    navigate("/Student/ChangePassword");
+  };
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -40,10 +52,12 @@ const Navbar = () => {
   }, []);
 
   return (
-    <div>
+    <div ref={dropdownRef}>
       {/* Navbar */}
       <div className="flex justify-between items-center px-4 py-3 bg-gray-300 border-b border-gray-300">
-        <img src={vnrlogo} alt="VNRVJIET Logo" className="ml-4 h-10" />
+        <button onClick={handleLogo}>
+          <img src={vnrlogo} alt="VNRVJIET Logo" className="ml-4 h-10" />
+        </button>
 
         <div className="flex items-center">
           {/* Notification Icon */}
@@ -65,8 +79,8 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* Dropdowns Wrapper */}
-      <div ref={dropdownRef}>
+      {/* Dropdowns */}
+      <div>
         {/* Notifications Dropdown */}
         {showNotifications && (
           <div className="absolute top-14 right-16 w-64 bg-white border border-gray-300 rounded-lg shadow-lg">
@@ -90,8 +104,12 @@ const Navbar = () => {
               </div>
             </div>
             <div className="flex flex-col">
-              <button className="px-4 py-2 text-left hover:bg-gray-100">Profile</button>
-              <button className="px-4 py-2 text-left hover:bg-gray-100">Change Password</button>
+              <button onClick={handleProfile} className="px-4 py-2 text-left hover:bg-gray-100">
+                Profile
+              </button>
+              <button onClick={handleChangePassword} className="px-4 py-2 text-left hover:bg-gray-100">
+                Change Password
+              </button>
               <button onClick={handleLogout} className="px-4 py-2 text-left hover:bg-gray-100">
                 Logout
               </button>
