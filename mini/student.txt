@@ -1,0 +1,152 @@
+In the student account when he opens his account a menu bar will be shown to the left in that menu bar there will be some sections such as
+1) Dash board
+2) Active Works
+3) Completed Works(Suggest better name)
+4) All campus projects(Suggest better name)
+
+What I want from you is from the above sections I want detailed components what I can display for each section and other thing which I want is when I select active works it need to show list of items with naming as that particular subject if it is CBP for other types it need to show fieldProject/ miniProject/ majorProject
+
+Now when a student clicks on particular item it need to display detailed description of their project and also the team members and below that a review table where each row of the table displays basic information of that particular review and once student clicks on view more it again need to display a separate page with more details of that review 
+
+Understand this prompt and format it perfectly so that I can make some ideas out of it and give everything what I want take as much time you want and give me every detail and complete response
+
+
+
+
+
+
+
+
+
+
+
+
+Here’s a detailed, structured response based on your requirements, broken down into components and functionality for each section in the Student Account. I've included ideas for what you can display, as well as detailed workflows for navigating through projects and reviews.
+
+Menu Bar Structure and Section Details
+1. Dashboard
+Purpose: A quick overview of the student’s account and project-related information.
+
+What to Display:
+Welcome Message: Greet the student with their name.
+Summary Cards/Stats:
+Number of Active Works (e.g., 2 projects ongoing).
+Number of Completed Works (e.g., 3 projects completed).
+Notifications count (e.g., "3 new updates from your guide").
+Upcoming Reviews (e.g., "Next review: 25th Jan 2025").
+Quick Access Section: Links to key actions like:
+“View Active Projects”
+“Check Notifications”
+“Review Progress Timeline”
+Enhancements:
+Interactive Progress Chart: A small donut or bar chart showing the percentage of progress across active projects.
+Notifications Section: Display a scrolling list of recent notifications.
+2. Active Works
+Purpose: A list of all ongoing projects, categorized by type (CBP, Field Project, Mini Project, Major Project).
+
+What to Display:
+A list of projects, with each project represented as a tab or card.
+Each tab/card should include:
+Project Name/Title
+Project Type (e.g., CBP, Mini Project, etc.)
+Guide Name (e.g., "Dr. Anil Kumar")
+Current Progress (e.g., "70% completed" with a visual progress bar).
+Upcoming Review Date (e.g., "Next Review: 25th Jan 2025").
+Team Size (e.g., "Team: 4 members").
+Last Updated (e.g., "Last submission: 20th Jan 2025").
+Tags (e.g., "Frontend," "AI," "Mobile App").
+Workflow (When Clicking on a Tab/Card):
+Navigate to a Detailed Project Page.
+Display the following in the Detailed Project Page:
+Project Description: A detailed overview of the project (objectives, tools used, etc.).
+Team Members: Names, roles, and contact information of the team members.
+Project Timeline: A horizontal timeline showing key milestones (proposal submission, mid-term review, final review).
+Review Table:
+Columns in the Table:
+Review Date
+Review Status (Completed/Pending)
+Guide Feedback (Short summary, e.g., "Improve documentation").
+Action: A "View More" button for each row.
+Clicking on View More opens a new Detailed Review Page.
+3. Completed Works (Suggested Name: Past Projects or Archived Projects)
+Purpose: A list of all projects that have been completed and finalized.
+
+What to Display:
+A list of completed projects, with the same card layout as Active Works, but including additional details:
+Submission Date
+Final Grade/Approval Status (if applicable, e.g., "Approved with A+").
+Guide’s Final Feedback Summary (e.g., "Great work on the final implementation").
+Download Links:
+Final report/documentation.
+Code repository (if applicable).
+Tags: Highlight the project’s domain (e.g., "Machine Learning," "IoT").
+Workflow (When Clicking on a Tab/Card):
+Navigate to the Detailed Project Archive Page, which includes:
+All final project details (e.g., description, tools used, guide feedback).
+Downloadable content (e.g., PDFs, final presentations).
+Review history table for archival purposes.
+4. All Campus Projects (Suggested Name: Explore Campus Projects or Global Projects)
+Purpose: A repository of all projects across the campus, allowing students to explore and learn from others' work.
+
+What to Display:
+Search and Filter Options:
+Search by Project Title, Domain, or Guide Name.
+Filter by Project Type (CBP, Mini Project, etc.).
+Filter by Tags (e.g., AI, Web Development, Healthcare).
+List of Projects:
+Display each project as a card with:
+Project Title
+Guide Name
+Team Members (count only)
+Summary/Abstract
+Tags/Domain
+Submission Date
+Action Buttons:
+"View Details" (leads to detailed project description).
+"Request Access" (if access is restricted).
+Workflow (When Clicking on a Card):
+Navigate to a Detailed Project Page where students can:
+Read the full project description.
+View the abstract, technologies used, and outcomes.
+Request/download additional resources (if available).
+Detailed Review Page (When Clicking View More in the Review Table)
+What to Display:
+Review Details:
+
+Review Date and Time.
+Type of Review (e.g., Mid-term, Final).
+Topics Discussed (e.g., "UML Diagrams, API Integration").
+Guide Feedback:
+Strengths
+Weaknesses
+Next Steps (if any).
+Presentees:
+
+List all team members who attended the review.
+Highlight absentees (if any).
+Progress Overview:
+
+Progress at the time of the review (e.g., "60% completed").
+Milestones discussed (e.g., "Frontend prototype finalized").
+Notifications for the Review:
+
+Submission reminders or follow-up tasks (e.g., "Submit revised design by 30th Jan 2025").
+File Attachments:
+
+If the review required the submission of files, include download links (e.g., PPTs, reports).
+Enhancements for Usability
+Search Functionality:
+Allow searching for specific projects, reviews, or notifications.
+Interactive Design:
+Use expandable cards in review tables for quick previews without navigating to another page.
+Responsive Layout:
+Ensure all pages (menu bar, cards, tables) work seamlessly on mobile and desktop.
+Conclusion
+This structure provides a comprehensive workflow and display plan for the student account, including clear navigation, detailed project views, and intuitive review tracking. Let me know if you’d like further refinements or additional components!
+
+
+
+
+
+
+

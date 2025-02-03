@@ -8,5 +8,5 @@ const InchargeSchema = new mongoose.Schema({
   },
 });
 
-const InchargeModel = mongoose.model("studentsCollection", InchargeSchema);
-export default InchargeModel
+const Incharge = mongoose.model("studentsCollection", InchargeSchema);
+export default Incharge
