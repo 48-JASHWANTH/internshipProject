@@ -8,5 +8,5 @@ const GuideSchema = new mongoose.Schema({
   },
 });
 
-const GuideModel = mongoose.model("studentsCollection", GuideSchema);
-export default GuideModel 
+const Guide = mongoose.model("Guide", GuideSchema);
+export default Guide 
