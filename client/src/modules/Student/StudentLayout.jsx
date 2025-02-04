@@ -8,7 +8,7 @@ function StudentLayout() {
     <div className="flex flex-col h-screen">
       <Navbar />
       <div className="flex flex-1 overflow-hidden">
-        <div className="w-56 bg-[#82001A] text-white">
+        <div className="w-52 bg-[#82001A] text-white">
           <Menu />
         </div>
         <div className="flex-1 p-4 bg-gray-100 overflow-auto">
