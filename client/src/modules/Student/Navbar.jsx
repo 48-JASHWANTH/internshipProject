@@ -21,21 +21,20 @@ const Navbar = () => {
   };
 
   const handleLogout = () => {
+    setShowProfile(false); // Close dropdown
     localStorage.removeItem("userToken");  
     navigate("/"); 
   };
 
   const handleLogo = () => {
+    setShowProfile(false); // Close dropdown
     navigate("/Student"); 
   };
 
   const handleProfile = () => {
+    setShowProfile(false); // Close dropdown
     navigate("/Student/Profile");
   };  
-
-  const handleChangePassword = () => {
-    navigate("/Student/ChangePassword");
-  };
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -52,9 +51,9 @@ const Navbar = () => {
   }, []);
 
   return (
-    <div ref={dropdownRef}>
+    <div ref={dropdownRef} className="fixed top-0 left-0 w-full z-50 bg-gray-300 border-b border-gray-300">
       {/* Navbar */}
-      <div className="flex justify-between items-center px-4 py-3 bg-gray-300 border-b border-gray-300">
+      <div className="flex justify-between items-center px-4 py-3">
         <button onClick={handleLogo}>
           <img src={vnrlogo} alt="VNRVJIET Logo" className="ml-4 h-10" />
         </button>
@@ -69,7 +68,7 @@ const Navbar = () => {
             <span className="absolute -top-1 -right-1 bg-red-600 text-white text-xs px-1 rounded-full">3</span>
           </div>
 
-          {/* Profile Icon (Larger Size) */}
+          {/* Profile Icon */}
           <div
             onClick={toggleProfile}
             className="cursor-pointer flex items-center justify-center w-10 h-10 bg-gray-200 rounded-full mr-4"

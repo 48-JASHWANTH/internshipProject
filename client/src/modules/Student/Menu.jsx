@@ -56,7 +56,7 @@ function Menu() {
 
           {/* Sub-menu items (if expanded) */}
           {item.hasSubmenu && expanded === index && (
-            <div className="pl-6 space-y-2 transition-all duration-300 ease-in-out">
+            <div className="pl-2 space-y-6 transition-all duration-300 ease-in-out">
               {item.subItems.map((subItem, subIndex) => (
                 <Link
                   key={subIndex}
