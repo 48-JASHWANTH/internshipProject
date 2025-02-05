@@ -4,8 +4,7 @@ import dotenv from "dotenv";
 import mongoose from "mongoose";
 import cookieParser from "cookie-parser";
 import adminRoutes from "./routes/adminRoutes.js";
-import guideRoutes from "./routes/guideRoutes.js"
-import inchargeRoutes from "./routes/inchargeRoutes.js";
+import facultyRoutes from "./routes/facultyRoute.js";
 import studentRoutes from "./routes/studentRoutes.js";
 dotenv.config()
 const app = express();
@@ -20,8 +19,7 @@ app.use(cookieParser())
 app.use(express.json())
 
 app.use('/admin',adminRoutes)
-app.use('/guide',guideRoutes) 
-app.use('/incharge',inchargeRoutes)
+app.use('/faculty',facultyRoutes)
 app.use('/student',studentRoutes)
 
 
