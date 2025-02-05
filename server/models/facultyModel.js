@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
-const StudentSchema = new mongoose.Schema({
-  studentID: {
+const FacultySchema = new mongoose.Schema({
+  facultyID: {
     type: String,
     required: true,
     unique: true
@@ -9,23 +9,21 @@ const StudentSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  mail: {
+  email: {
     type: String,
     required: true,
     unique: true
   },
-  teamID: [{
+  phoneNumber: {
+    type: String,
+    required: true
+  },
+  leadedProjects: [{
     type: String
   }],
   notifications: {
     type: [String],
     default: []
-  },
-  performanceRating: {
-    type: Number,
-    min: 0,
-    max: 5,
-    default: 0
   },
   activeProjects: {
     type: Number,
@@ -45,5 +43,5 @@ const StudentSchema = new mongoose.Schema({
   }
 }, { timestamps: true });
 
-const Student = mongoose.model("studentsCollection", StudentSchema);
-export default Student
+const Faculty = mongoose.model("facultyCollection", FacultySchema);
+export default Faculty
