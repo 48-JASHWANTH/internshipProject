@@ -20,8 +20,7 @@ function Login() {
 
   const userTypes = [
     { name: "Student", icon: <FaUserGraduate /> },
-    { name: "Guide", icon: <FaChalkboardTeacher /> },
-    { name: "incharge", icon: <FaUserTie /> },
+    { name: "Faculty", icon: <FaUserTie /> },
     { name: "Admin", icon: <FaUserShield /> },
   ];
 
