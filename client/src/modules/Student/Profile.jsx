@@ -12,26 +12,24 @@ import {
 import { useNavigate } from "react-router-dom"
 
 const Profile = () => {
-  const navigate = useNavigate()
+  const navigate = useNavigate() 
   const [activeTab, setActiveTab] = useState("academic")
 
-  const handleEditProfile = () => {
-    console.log("Edit Profile Clicked")
-  }
+
 
   const handleChangePassword = () => {
     navigate("/StudentChangePassword")
   }
 
-  const EditIcon = () => (
-    <span className="text-blue-600 inline-flex items-center gap-1 text-sm">
-      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M1.5 12.5H12.5" stroke="#2563EB" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
-        <path d="M7.0835 2.37435C7.31506 2.14279 7.63157 2.01318 7.96127 2.01318C8.12581 2.01318 8.28836 2.04577 8.43913 2.10938C8.58989 2.17299 8.72587 2.26642 8.83904 2.37959C8.95221 2.49276 9.04564 2.62874 9.10925 2.7795C9.17286 2.93027 9.20545 3.09282 9.20545 3.25736C9.20545 3.42189 9.17286 3.58445 9.10925 3.73521C9.04564 3.88598 8.95221 4.02196 8.83904 4.13513L4.5 8.47417L2.5 9.00001L3.02583 7.00001L7.0835 2.37435Z" stroke="#2563EB" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
-      </svg>
-      Edit
-    </span>
-  );
+
+  const handleEditProfile = () => {
+    setIsEditing(true);
+  };
+
+  const handleSaveChanges = () => {
+    setIsEditing(false);
+  };
+
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -47,7 +45,7 @@ const Profile = () => {
             <div className="flex flex-col items-center">
               <div className="w-24 h-24 rounded-full overflow-hidden bg-gray-200 mb-2">
                 <img 
-                  src="/api/placeholder/96/96"
+                  src="../../assets/profilepic.png"
                   alt="Profile"
                   className="w-full h-full object-cover"
                 />
@@ -60,7 +58,7 @@ const Profile = () => {
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-base font-semibold">Personal Information</h3>
                 <button onClick={handleEditProfile}>
-                <span className="flex items-center">
+                <span className="flex items-center text-[#82001A]">
                   <Edit className="w-4 h-4 mr-1" />
                   Edit
                 </span>
@@ -69,70 +67,70 @@ const Profile = () => {
 
               <div className="space-y-3">
                 <div>
-                  <div className="text-sm text-gray-600">Name</div>
+                  <div className="text-sm text-gray-600 py-2">Name</div>
                   <div className="text-sm">Sriram Chowdary</div>
                 </div>
                 
+
                 <div>
-                  <div className="text-sm text-gray-600">Registration Number</div>
+                  <div className="text-sm text-gray-600 py-2">Registration Number</div>
                   <div className="text-sm">22071A3254</div>
                 </div>
 
+
                 <div>
-                  <div className="text-sm text-gray-600">Email</div>
+                  <div className="text-sm text-gray-600 py-2">Email</div>
                   <div className="text-sm">tadapanenisriram333@gmail.com</div>
                 </div>
 
-                <div>
-                  <div className="text-sm text-gray-600">Phone</div>
-                  <div className="text-sm">+91 - 7674843849</div>
-                </div>
 
                 <div>
-                  <div className="text-sm text-gray-600">Gender</div>
+                  <div className="text-sm text-gray-600 py-2">Phone</div>
+                  <div className="text-sm">+91 7674843849</div>
+                </div>
+
+
+                <div>
+                  <div className="text-sm text-gray-600 py-2">Gender</div>
                   <div className="text-sm">Male</div>
                 </div>
 
-                <div>
-                  <div className="text-sm text-gray-600">Date of Birth</div>
-                  <div className="text-sm">01-09-04</div>
-                </div>
 
                 <div>
-                  <div className="text-sm text-gray-600">Tag</div>
-                  <div className="inline-block bg-gray-100 rounded-full px-3 py-1 text-sm">
-                    neopat
-                  </div>
+                  <div className="text-sm text-gray-600 py-2">Date of Birth</div>
+                  <div className="text-sm">01-09-04</div>
                 </div>
               </div>
+
             </div>
           </div>
         </div>
+
 
         {/* Main Content */}
         <div className="w-3/4 ml-6">
           <div className="bg-white p-6 rounded-lg shadow-lg">
             <div className="flex space-x-4 border-b pb-2">
               <button
-                className={`pb-2 ${activeTab === "academic" ? "text-blue-600 border-b-2 border-blue-600" : "text-gray-500"}`}
+                className={`pb-2 ${activeTab === "academic" ? "text-[#82001A] border-b-2 border-[#82001A]" : "text-gray-500"}`}
                 onClick={() => setActiveTab("academic")}
               >
                 Academic Information
               </button>
               <button
-                className={`pb-2 ${activeTab === "additional" ? "text-blue-600 border-b-2 border-blue-600" : "text-gray-500"}`}
+                className={`pb-2 ${activeTab === "additional" ? "text-[#82001A] border-b-2 border-[#82001A]" : "text-gray-500"}`}
                 onClick={() => setActiveTab("additional")}
               >
                 Additional Information
               </button>
               <button
-                className={`pb-2 ${activeTab === "resume" ? "text-blue-600 border-b-2 border-blue-600" : "text-gray-500"}`}
+                className={`pb-2 ${activeTab === "resume" ? "text-[#82001A] border-b-2 border-[#82001A]" : "text-gray-500"}`}
                 onClick={() => setActiveTab("resume")}
               >
                 Resume
               </button>
               <button
-                className={`pb-2 ${activeTab === "settings" ? "text-blue-600 border-b-2 border-blue-600" : "text-gray-500"}`}
+                className={`pb-2 ${activeTab === "settings" ? "text-[#82001A] border-b-2 border-[#82001A]" : "text-gray-500"}`}
                 onClick={() => setActiveTab("settings")}
               >
                 Account & Settings
@@ -145,20 +143,38 @@ const Profile = () => {
                 <div className="flex justify-between items-center">
                   <h2 className="text-xl font-semibold">Academic Information</h2>
                   <button onClick={handleEditProfile}>
-                  <span className="flex items-center">
+                  <span className="flex items-center text-[#82001A]">
                   <Edit className="w-4 h-4 mr-1" />
                   Edit
                 </span>
                   </button>
+
                 </div>
                 <table className="w-full mt-4 border border-gray-300">
                   <thead>
-                    <tr className="bg-blue-100">
+                    <tr className="bg-yellow-100">
                       <th className="px-4 py-2 text-left">Information</th>
                       <th className="px-4 py-2 text-left">Details</th>
                     </tr>
+
                   </thead>
                   <tbody>
+                  <tr>
+                      <td className="px-4 py-2">Campus</td>
+                      <td className="px-4 py-2">VNR VJIET</td>
+                    </tr>
+                    <tr>
+                      <td className="px-4 py-2">Batch</td>
+                      <td className="px-4 py-2">2022-2026</td>
+                    </tr>
+                    <tr>
+                      <td className="px-4 py-2">Department</td>
+                      <td className="px-4 py-2">CSBS</td>
+                    </tr>
+                    <tr>
+                      <td className="px-4 py-2">Degree</td>
+                      <td className="px-4 py-2">B.Tech</td>
+                    </tr>
                     <tr>
                       <td className="px-4 py-2">10th</td>
                       <td className="px-4 py-2">89.4%</td>
@@ -198,10 +214,11 @@ const Profile = () => {
                 </div>
                 <table className="w-full mt-4 border border-gray-300">
                   <thead>
-                    <tr className="bg-blue-100">
+                    <tr className="bg-yellow-100">
                       <th className="px-4 py-2 text-left">Information</th>
                       <th className="px-4 py-2 text-left">Details</th>
                     </tr>
+
                   </thead>
                   <tbody>
                     <tr>
@@ -260,7 +277,7 @@ const Profile = () => {
                 <div className="mt-4 space-y-4">
                   <div className="flex items-center">
                     <FaLock className="text-gray-500 text-xl mr-2" />
-                    <button onClick={handleChangePassword} className="text-blue-600">
+                    <button onClick={handleChangePassword} className="text-[#82001A]">
                       Change Password
                     </button>
                   </div>
@@ -270,7 +287,7 @@ const Profile = () => {
                       href="https://github.com/sriramchowdary"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-blue-600"
+                      className="text-black"
                     >
                       GitHub
                     </a>
@@ -285,14 +302,18 @@ const Profile = () => {
                     >
                       LinkedIn
                     </a>
+
+
                   </div>
                 </div>
               </div>
             )}
+
           </div>
         </div>
       </div>
     </div>
+    
   )
 }
 
