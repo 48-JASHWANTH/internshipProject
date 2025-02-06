@@ -9,42 +9,52 @@ const reviewSchema = new mongoose.Schema({
 });
 
 const TeamSchema = new mongoose.Schema({
-  TeamId: {
+  teamId: {
     type: String,
     required: true,
     unique: true
   },
-  ListOfStudents: {
+  listOfStudents: {
     type: [String],
     required: true
   },
-  Status: {
+  status: {
     type: String,
     default: 'Pending'
   },
-  LastUpdated: {
+  lastUpdated: {
     type: Date,
     default: Date.now
   },
-  ProjectTitle: {
+  projectTitle: {
     type: String,
     required: true
   },
-  Reviews: {
+  reviews: {
     type: [reviewSchema],
     default: []
   },
-  ProjectType: {
+  projectType: {
     type: String,
     required: true
   },
-  Subject: {
+  subject: {
     type: String,
     required: true
   },
-  GithubURL: {
+  githubURL: {
     type: String,
     required: true
+  },
+  guideApproval:{
+    type: Boolean,
+    default: false
+  },
+  inchargefacultyId:{
+    type: String
+  },
+  guideFacultyId:{
+    type: String
   }
 }, { timestamps: true });
 
