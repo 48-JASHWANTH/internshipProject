@@ -28,7 +28,7 @@ const Navbar = () => {
 
   const handleLogo = () => {
     setShowProfile(false); // Close dropdown
-    navigate("/Student"); 
+    navigate("/Student/Dashboard"); 
   };
 
   const handleProfile = () => {
