@@ -2,20 +2,20 @@ POST http://localhost:1544/faculty/createTeams
 Content-Type: application/json
 
 {
+    "facultyID": "FAC12345",
     "year": "2024",
     "sem": "2",
     "branch": "Computer Science and Engineering",
     "section": "B",
     "projectType": "MajorProject",
     "classID": "1696612345678",
-    "facultyID": "FAC12345",
     "noOfTeams": 5,
     "teams": {
-        "1696612345678_1": "Team A",
-        "1696612345678_2": "Team B",
-        "1696612345678_3": "Team C",
-        "1696612345678_4": "Team D",
-        "1696612345678_5": "Team E"
+        "1696612345678_1": ["STU001", "STU002", "STU003"],
+        "1696612345678_2": ["STU004", "STU005", "STU006"],
+        "1696612345678_3": ["STU007", "STU008", "STU009"],
+        "1696612345678_4": ["STU010", "STU011", "STU012"],
+        "1696612345678_5": ["STU013", "STU014", "STU015"]
     },
     "projectTitles": {
         "1696612345678_1": "AI-Powered Virtual Assistant",
@@ -33,3 +33,6 @@ Content-Type: application/json
         "1696612345678_5": "G12349"
     }
 }
+
+
+
