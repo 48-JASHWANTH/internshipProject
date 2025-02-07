@@ -10,6 +10,9 @@ Content-Type: application/json
     "projectType": "MajorProject",
     "classID": "1696612345678",
     "noOfTeams": 5,
+    "noOfStudents": 25,
+    "subject": "Software Engineering",
+    "guideApproval": true,
     "teams": {
         "1696612345678_1": ["STU001", "STU002", "STU003"],
         "1696612345678_2": ["STU004", "STU005", "STU006"],
@@ -24,15 +27,12 @@ Content-Type: application/json
         "1696612345678_4": "E-Learning Platform using MERN",
         "1696612345678_5": "Data Analytics Dashboard"
     },
-    "noOfStudents": 25,
     "guides": {
         "1696612345678_1": "G12345",
         "1696612345678_2": "G12346",
         "1696612345678_3": "G12347",
         "1696612345678_4": "G12348",
         "1696612345678_5": "G12349"
-    }
+    },
+    "inchargefacultyId": "IC98765"
 }
-
-
-
