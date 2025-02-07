@@ -194,6 +194,18 @@ const ProfileCard = ({ profileData, setProfileData }) => {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Email <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="email"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400"
+                  value={editedData.email}
+                  onChange={(e) => setEditedData({ ...editedData, email: e.target.value })}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Phone No <span className="text-red-500">*</span>
                 </label>
                 <div className="flex gap-2">

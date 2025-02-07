@@ -1,73 +1,80 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { 
+  MdHome,
+  MdAdminPanelSettings,
+  MdSchool,
+  MdScience,
+  MdWork,
+  MdLocationCity,
+  MdGroups,
+  MdKeyboardArrowRight 
+} from "react-icons/md";
 
 function Menu() {
   const [expanded, setExpanded] = useState(null);
-  const navigate = useNavigate(); // Hook for navigation
+  const navigate = useNavigate();
 
   const menuItems = [
-    { text: "Dashboard", path: "/Student/Dashboard", hasSubmenu: false },
-    {
-      text: "Active Works",
-      path: "/Student/ActiveWorks",
-      hasSubmenu: true,
-      subItems: [
-        { text: "Assigned Works", path: "/Student/ActiveWorks/Assigned" },
-        { text: "Pending Reviews", path: "/Student/ActiveWorks/PendingReviews" },
-      ],
+    { 
+      text: "Home", 
+      path: "/Student/Home", 
+      icon: <MdHome size={24} />
     },
-    { text: "Archived Projects", path: "/Student/ArchivedProjects", hasSubmenu: false },
     {
-      text: "Campus Projects",
-      path: "/Student/CampusProjects",
-      hasSubmenu: true,
-      subItems: [
-        { text: "Ongoing Projects", path: "/Student/CampusProjects/Ongoing" },
-        { text: "Completed Projects", path: "/Student/CampusProjects/Completed" },
-      ],
+      text: "Administration",
+      path: "/Student/Administration",
+      icon: <MdAdminPanelSettings size={24} />
     },
+    { 
+      text: "Academics", 
+      path: "/Student/Academics", 
+      icon: <MdSchool size={24} />
+    },
+    {
+      text: "Research",
+      path: "/Student/Research",
+      icon: <MdScience size={24} />
+    },
+    {
+      text: "Training & Placement",
+      path: "/Student/Training",
+      icon: <MdWork size={24} />
+    },
+    {
+      text: "Campus",
+      path: "/Student/Campus",
+      icon: <MdLocationCity size={24} />
+    },
+    {
+      text: "Campus Life",
+      path: "/Student/CampusLife",
+      icon: <MdGroups size={24} />
+    }
   ];
 
-  const handleClick = (item, index) => {
-    if (item.hasSubmenu) {
-      setExpanded(expanded === index ? null : index); // Toggle expansion
-    } else {
-      navigate(item.path); // Navigate only for non-expandable items
-    }
+  const handleClick = (item) => {
+    navigate(item.path);
   };
 
   return (
-    <div className="flex flex-col bg-[#82001A] text-white p-6 space-y-4 ">
+    <div className="flex flex-col bg-[#82001A] text-white">
       {menuItems.map((item, index) => (
-        <div key={index} className="flex flex-col">
-          <div
-            className="flex justify-between items-center py-3 border-b bg-[#82001A] border-neutral-400 hover:text-yellow-400 font-bold cursor-pointer"
-            onClick={() => handleClick(item, index)}
-          >
-            <span className="font-bold">{item.text}</span>
-            <span
-              className={`text-yellow-400 text-2xl transform transition-transform duration-300 ${
-                item.hasSubmenu ? (expanded === index ? "rotate-90" : "rotate-0") : ""
-              }`}
-            >
-              ›
-            </span>
-          </div>
-
-          {/* Sub-menu items (if expanded) */}
-          {item.hasSubmenu && expanded === index && (
-            <div className="pl-2 space-y-6 transition-all duration-300 ease-in-out">
-              {item.subItems.map((subItem, subIndex) => (
-                <Link
-                  key={subIndex}
-                  to={subItem.path}
-                  className="block py-2 text-sm hover:text-yellow-400"
-                >
-                  <span className="font-semibold">{subItem.text}  </span>
-                </Link>
-              ))}
+        <div 
+          key={index} 
+          className="flex flex-col border-b border-[#9b1a31]"
+          onClick={() => handleClick(item)}
+        >
+          <div className="flex items-center justify-between py-4 hover:bg-[#9b1a31] cursor-pointer transition-all duration-200 ease-in-out">
+            <div className="flex items-center gap-4 pl-6">
+              <span className="text-white">{item.icon}</span>
+              <span className="font-medium text-lg">{item.text}</span>
             </div>
-          )}
+            <MdKeyboardArrowRight 
+              size={24} 
+              className="text-yellow-400 mr-4"
+            />
+          </div>
         </div>
       ))}
     </div>
