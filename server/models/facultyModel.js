@@ -40,6 +40,10 @@ const FacultySchema = new mongoose.Schema({
   githubURL: {
     type: String,
     default: ''
+  },
+  guidedProjects:{
+    type: [String],
+    default: []
   }
 }, { timestamps: true });
 

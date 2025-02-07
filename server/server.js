@@ -25,7 +25,15 @@ app.use('/student',studentRoutes)
 
 const PORT = process.env.PORT || 8747
 
-const DB_URL = process.env.DB_URL; 
+const DB_URL = process.env.DB_URL;
+
+app.use((err, req, res, next) => {
+  // Handle errors
+  console.error(err);
+  res.status(500).send('Something went wrong!');
+}); 
+
+
 mongoose
   .connect(DB_URL)
   .then(() => {
