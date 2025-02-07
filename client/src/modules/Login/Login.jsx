@@ -12,7 +12,7 @@ function Login() {
   const handleLogin = (e) => {
     e.preventDefault();
     if (userType) {
-      navigate(`/${userType}`);
+      navigate(`/${userType}/Dashboard`);
     } else {
       alert("Please select a user type!");
     }

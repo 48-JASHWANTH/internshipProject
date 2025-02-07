@@ -8,7 +8,7 @@ import ClassProjects from "./modules/Faculty/ClassProjects";
 import Dashboard from "./modules/Student/Dashboard";
 import ArchivedProjects from "./modules/Student/ArchivedProjects";
 import ChangePassword from "./modules/Student/ChangePassword";
-import Profile from "./modules/Student/Profile";
+import Profile from "./modules/Student/Profile/Profile";
 
 
 function App() {
