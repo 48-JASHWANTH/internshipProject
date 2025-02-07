@@ -29,7 +29,7 @@ const AdditionalInfo = () => {
           className="flex items-center px-4 py-2 text-[#82001A] hover:bg-red-50 rounded-lg transition-colors duration-200"
         >
           <Edit className="w-4 h-4 mr-2" />
-          Edit Details
+          Edit 
         </button>
       </div>
 
