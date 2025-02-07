@@ -34,7 +34,7 @@ const ProfileCard = ({ profileData, setProfileData }) => {
       console.log('Profile Data:', editedData);
       setProfileData(editedData);
       setIsEditing(false);
-      setSelectedFile(null);
+      setSelectedFile(null);96
 
     } else {
       setIsEditing(false);
