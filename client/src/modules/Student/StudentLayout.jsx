@@ -13,9 +13,9 @@ function StudentLayout() {
       {/* Fixed Navbar */}
       <Navbar />
 
-      <div className="flex flex-1 overflow-hidden pt-14"> 
+      <div className="flex flex-1 overflow-hidden"> 
         {/* Sidebar Menu - Shrinks on Profile Page */}
-        <div className={`bg-[#82001A] text-white transition-all duration-300 ${isProfilePage ? "w-16" : "w-52"}`}>
+        <div className={`bg-[#82001A] text-white transition-all duration-300 ${isProfilePage ? "w-16" : "w-60"}`}>
           <Sidemenu isProfilePage={isProfilePage} />
         </div>
 

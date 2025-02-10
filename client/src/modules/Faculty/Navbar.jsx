@@ -20,8 +20,23 @@ const Navbar = () => {
     setShowProfile(false);
   };
 
+  const handleLogo = () => {
+    setShowProfile(false);
+    setShowNotifications(false);
+    navigate("/Faculty/Dashboard"); 
+  };
+
+  const handleProfile = () => {
+    setShowProfile(false);
+    setShowNotifications(false);
+    navigate("/Faculty/Profile");
+  };
+
   const handleLogout = () => {
-    localStorage.removeItem("userToken");  
+    setShowProfile(false);
+    setShowNotifications(false);
+    localStorage.removeItem("userToken");
+    localStorage.removeItem("userRole");
     navigate("/"); 
   };
 
@@ -40,10 +55,12 @@ const Navbar = () => {
   }, []);
 
   return (
-    <div>
+    <div ref={dropdownRef} className="fixed top-0 left-0 w-full z-50 bg-gray-300 border-b border-gray-300">
       {/* Navbar */}
-      <div className="flex justify-between items-center px-4 py-3 bg-gray-300 border-b border-gray-300">
-        <img src={vnrlogo} alt="VNRVJIET Logo" className="ml-4 h-10" />
+      <div className="flex justify-between items-center px-4 py-3">
+        <button onClick={handleLogo}>
+          <img src={vnrlogo} alt="VNRVJIET Logo" className="ml-4 h-10" />
+        </button>
 
         <div className="flex items-center">
           {/* Notification Icon */}
@@ -65,8 +82,8 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* Dropdowns Wrapper */}
-      <div ref={dropdownRef}>
+      {/* Dropdowns */}
+      <div>
         {/* Notifications Dropdown */}
         {showNotifications && (
           <div className="absolute top-14 right-16 w-64 bg-white border border-gray-300 rounded-lg shadow-lg">
@@ -90,8 +107,9 @@ const Navbar = () => {
               </div>
             </div>
             <div className="flex flex-col">
-              <button className="px-4 py-2 text-left hover:bg-gray-100">Profile</button>
-              <button className="px-4 py-2 text-left hover:bg-gray-100">Change Password</button>
+              <button onClick={handleProfile} className="px-4 py-2 text-left hover:bg-gray-100">
+                Profile
+              </button>
               <button onClick={handleLogout} className="px-4 py-2 text-left hover:bg-gray-100">
                 Logout
               </button>

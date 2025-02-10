@@ -20,19 +20,27 @@ function App() {
     <Router>
       <Routes>
         <Route path="/" element={<Login />} />
-        <Route path="/admin" element={<Admin />} />
-        <Route path="/faculty" element={<Faculty />}>
-          <Route path="classProjects" element={<ClassProjects />} />
-          <Route path="facultyDashboard" element={<FacultyDashboard />} />
-          <Route path="facultyActiveWorks" element={<FacultyActiveWorks />} />
-          <Route path="facultyArchivedProjects" element={<FacultyArchivedProjects />} />
-          <Route path="createWork" element={<CreateWork />} />
+        
+        {/* Admin Routes */}
+        <Route path="/admin" element={<Admin />}>
+          <Route path="dashboard" element={<Admin />} />
         </Route>
-        <Route path="/student" element={<Student />} >  
-          <Route path="ArchivedProjects" element={<ArchivedProjects />} />
-          <Route path="Dashboard" element={<Dashboard />} />
-          <Route path="Profile" element={<Profile />} />
-        <Route path="ChangePassword" element={<ChangePassword />} />
+
+        {/* Faculty Routes */}
+        <Route path="/faculty" element={<Faculty />}>
+          <Route path="dashboard" element={<FacultyDashboard />} />
+          <Route path="projects" element={<ClassProjects />} />
+          <Route path="active-works" element={<FacultyActiveWorks />} />
+          <Route path="archived" element={<FacultyArchivedProjects />} />
+          <Route path="create-work" element={<CreateWork />} />
+        </Route>
+
+        {/* Student Routes */}
+        <Route path="/student" element={<Student />}>
+          <Route path="dashboard" element={<Dashboard />} />
+          <Route path="archivedprojects" element={<ArchivedProjects />} />
+          <Route path="profile" element={<Profile />} />
+          <Route path="changepassword" element={<ChangePassword />} />
         </Route>
       </Routes>
     </Router>
