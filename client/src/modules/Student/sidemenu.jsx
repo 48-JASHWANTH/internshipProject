@@ -1,16 +1,16 @@
 import React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { FaTachometerAlt, FaFolderOpen, FaClipboardList, FaChevronRight } from "react-icons/fa";
+import {FaChevronRight, FaHome, FaTasks, FaArchive, FaProjectDiagram } from "react-icons/fa";
 
 const Sidemenu = ({ isProfilePage }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
   const menuItems = [
-    { text: "Dashboard", icon: <FaTachometerAlt size={20} />, path: "/Student/Dashboard" },
-    { text: "Active Works", icon: <FaFolderOpen size={20} />, path: "/Student/ActiveWorks" },
-    { text: "Archived", icon: <FaClipboardList size={20} />, path: "/Student/ArchivedProjects" },
-    { text: "Projects", icon: <FaFolderOpen size={20} />, path: "/Student/CampusProjects" },
+    { text: "Dashboard", icon: <FaHome size={20} />, path: "/Student/Dashboard" },
+    { text: "Active Works", icon: <FaTasks size={20} />, path: "/Student/ActiveWorks" },
+    { text: "Archived", icon: <FaArchive size={20} />, path: "/Student/ArchivedProjects" },
+    { text: "Projects", icon: <FaProjectDiagram size={20} />, path: "/Student/CampusProjects" },
   ];
 
   const handleClick = (item) => {
@@ -20,7 +20,7 @@ const Sidemenu = ({ isProfilePage }) => {
   return (
     <div className={`flex flex-col text-white ${
       isProfilePage ? "w-16" : "w-60"
-    } h-screen mt-16 fixed left-0`}>
+    } h-screen fixed left-0`}>
       <div className="flex flex-col pt-4">
         {menuItems.map((item) => (
           <div 

@@ -1,15 +1,15 @@
 import React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { FaTachometerAlt, FaFolderOpen, FaClipboardList, FaChevronRight, FaPlus } from "react-icons/fa";
+import {FaChevronRight, FaHome, FaArchive, FaProjectDiagram, FaPlus } from "react-icons/fa";
 
 const Menu = ({ isProfilePage }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
   const menuItems = [
-    { text: "Dashboard", icon: <FaTachometerAlt size={20} />, path: "/Faculty/Dashboard" },
-    { text: "Projects", icon: <FaFolderOpen size={20} />, path: "/Faculty/Projects" },
-    { text: "Archived", icon: <FaClipboardList size={20} />, path: "/Faculty/Archived" },
+    { text: "Dashboard", icon: <FaHome size={20} />, path: "/Faculty/Dashboard" },
+    { text: "Projects", icon: <FaProjectDiagram size={20} />, path: "/Faculty/Projects" },
+    { text: "Archived", icon: <FaArchive size={20} />, path: "/Faculty/Archived" },
   ];
 
   const handleClick = (item) => { 
@@ -19,7 +19,7 @@ const Menu = ({ isProfilePage }) => {
   return (
     <div className={`flex flex-col bg-[#82001A] text-white ${
       isProfilePage ? "w-16" : "w-60"
-    } h-[calc(100vh-4rem)] mt-16 fixed left-0`}>
+    } h-[calc(100vh-4rem)] fixed left-0`}>
       <div className="flex flex-col pt-4">
         {menuItems.map((item) => (
           <div 

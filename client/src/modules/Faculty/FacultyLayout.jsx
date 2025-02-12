@@ -7,8 +7,8 @@ function FacultyLayout() {
   return (
     <div className="flex flex-col h-screen">
       <Navbar />
-      <div className="flex flex-1 overflow-hidden">
-        <div className="w-56 bg-red-800 text-white">
+      <div className="flex flex-1 overflow-hidden pt-16">
+        <div className="w-60 text-white">
           <Menu />
         </div>
         <div className="flex-1 p-4 bg-gray-100 overflow-auto">
