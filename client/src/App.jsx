@@ -4,7 +4,6 @@ import Admin from "./modules/Admin/Admin";
 import Student from "./modules/Student/StudentLayout";
 import Faculty from "./modules/Faculty/FacultyLayout";
 import ClassProjects from "./modules/Faculty/ClassProjects";
-// import ActiveWorks from "./modules/Student/ActiveWorks";
 import Dashboard from "./modules/Student/Dashboard";
 import ArchivedProjects from "./modules/Student/ArchivedProjects";
 import ChangePassword from "./modules/Student/ChangePassword";
@@ -13,7 +12,10 @@ import FacultyDashboard from './modules/Faculty/Dashboard'
 import FacultyActiveWorks from './modules/Faculty/ActiveWorks'
 import FacultyArchivedProjects from './modules/Faculty/ArchivedProjects'
 import CreateWork from "./modules/Faculty/CreateWork";
-
+import ProjectForum from './modules/Student/ProjectForum';
+import ActiveWorks from './modules/Student/ActiveWorks';
+import CampusProjects from './modules/Student/CampusProjects';
+import Workboard from './modules/Student/Workboard';
 
 function App() {
   return (
@@ -41,6 +43,10 @@ function App() {
           <Route path="archivedprojects" element={<ArchivedProjects />} />
           <Route path="profile" element={<Profile />} />
           <Route path="changepassword" element={<ChangePassword />} />
+          <Route path="projectforum" element={<ProjectForum />} />
+          <Route path="activeworks" element={<ActiveWorks />} />
+          <Route path="campusprojects" element={<CampusProjects />} />
+          <Route path="workboard" element={<Workboard />} />
         </Route>
       </Routes>
     </Router>

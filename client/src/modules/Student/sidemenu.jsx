@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import {FaChevronRight, FaHome, FaTasks, FaArchive, FaProjectDiagram } from "react-icons/fa";
+import {FaChevronRight, FaHome, FaTasks, FaArchive, FaProjectDiagram, FaForumbee, FaBriefcase, FaGraduationCap } from "react-icons/fa";
 
 const Sidemenu = ({ isProfilePage }) => {
   const navigate = useNavigate();
@@ -8,10 +8,12 @@ const Sidemenu = ({ isProfilePage }) => {
 
   const menuItems = [
     { text: "Dashboard", icon: <FaHome size={20} />, path: "/Student/Dashboard" },
-    { text: "Active Works", icon: <FaTasks size={20} />, path: "/Student/ActiveWorks" },
+    { text: "Project Forum", icon: <FaForumbee size={20} />, path: "/Student/ProjectForum" },
+    { text: "Active Works", icon: <FaBriefcase size={20} />, path: "/Student/ActiveWorks" },
+    { text: "Campus Projects", icon: <FaGraduationCap size={20} />, path: "/Student/CampusProjects" },
+    { text: "Workboard", icon: <FaTasks size={20} />, path: "/Student/Workboard" },
     { text: "Archived", icon: <FaArchive size={20} />, path: "/Student/ArchivedProjects" },
-    { text: "Projects", icon: <FaProjectDiagram size={20} />, path: "/Student/CampusProjects" },
-  ];
+  ];  
 
   const handleClick = (item) => {
     navigate(item.path);
@@ -30,10 +32,10 @@ const Sidemenu = ({ isProfilePage }) => {
             }`}
             onClick={() => handleClick(item)}
           >
-            <div className="flex items-center justify-between py-4 hover:bg-[#9b1a31] cursor-pointer transition-all duration-200 ease-in-out">
+            <div className="flex items-center justify-between py-[16px] hover:bg-[#9b1a31] cursor-pointer transition-all duration-200 ease-in-out">
               <div className="flex items-center gap-4 pl-6">
                 <span className={`text-white ${
-                  location.pathname === item.path ? 'text-yellow-400' : ''
+                  location.pathname === item.path ? 'text-yellow-400' : ''  
                 }`}>{item.icon}</span>
                 {!isProfilePage && (
                   <span className={`font-medium text-sm tracking-wide ${
