@@ -12,7 +12,7 @@ import Profile from "./modules/Student/Profile/Profile";
 import FacultyDashboard from './modules/Faculty/Dashboard'
 import FacultyActiveWorks from './modules/Faculty/ActiveWorks'
 import FacultyArchivedProjects from './modules/Faculty/ArchivedProjects'
-import CreateWork from "./modules/Faculty/CreateWork";
+import CreateProjectForm from './modules/Faculty/CreateProjectForm';
 
 
 function App() {
@@ -32,7 +32,7 @@ function App() {
           <Route path="projects" element={<ClassProjects />} />
           <Route path="active-works" element={<FacultyActiveWorks />} />
           <Route path="archived" element={<FacultyArchivedProjects />} />
-          <Route path="create-work" element={<CreateWork />} />
+          <Route path="Projects/Create" element={<CreateProjectForm />} />
         </Route>
 
         {/* Student Routes */}
