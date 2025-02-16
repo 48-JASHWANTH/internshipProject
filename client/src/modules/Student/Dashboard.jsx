@@ -201,7 +201,7 @@ function Dashboard() {
                   <span className={`px-2 py-1 rounded text-xs ${
                     work.status === 'In Progress' 
                       ? 'bg-yellow-100 text-yellow-800' 
-                      : 'bg-blue-100 text-blue-800'
+                      : 'bg-[#82001A] text-white'
                   }`}>
                     {work.status}
                   </span>

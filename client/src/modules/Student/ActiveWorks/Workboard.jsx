@@ -1,11 +1,15 @@
 import React, { useState } from 'react';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
-import useTaskStore from '../../store/taskStore';
+import useActiveWorksStore from '../../../store/activeWorksStore';
 import { FaArrowRight, FaCheck } from 'react-icons/fa';
 
-const Workboard = () => {
-  const { tasks, updateTask, moveTaskForward } = useTaskStore();
+const Workboard = ({ projectId }) => {
+  const { activeWorks, updateProjectTask, moveProjectTaskForward } = useActiveWorksStore();
   const [enabled, setEnabled] = useState(false);
+
+  // Get project-specific tasks
+  const project = activeWorks.find(work => work.id === projectId);
+  const tasks = project?.tasks || [];
 
   // Enable drag and drop after component mount to avoid hydration issues
   React.useEffect(() => {
@@ -38,18 +42,15 @@ const Workboard = () => {
     
     if (source.droppableId === destination.droppableId) return;
 
-    // Find the task that was dragged
     const task = tasks.find(t => t.id.toString() === draggableId);
     
     if (task) {
-      // Update the task's status to the new column
       const updatedTask = {
         ...task,
         status: destination.droppableId
       };
       
-      // Update the task in the store
-      updateTask(updatedTask);
+      updateProjectTask(projectId, updatedTask);
     }
   };
 
@@ -64,7 +65,7 @@ const Workboard = () => {
   };
 
   const handleMoveForward = (taskId) => {
-    moveTaskForward(taskId);
+    moveProjectTaskForward(projectId, taskId);
   };
 
   if (!enabled) {
@@ -109,13 +110,13 @@ const Workboard = () => {
                               {...provided.dragHandleProps}
                               className={`
                                 bg-white rounded-lg p-4 mb-3 shadow-sm
-                                ${snapshot.isDragging ? 'shadow-lg ring-2 ring-blue-400' : ''}
+                                ${snapshot.isDragging ? 'shadow-lg ring-2 ring-[#82001A]' : ''}
                                 hover:shadow-md transition-all duration-200
                               `}
                             >
                               <div className="flex items-center justify-between mb-2">
                                 <div className="flex items-center gap-2">
-                                  <span className="text-blue-500">
+                                  <span className="text-[#82001A]">
                                     <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                                       <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/>
                                       <path fillRule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clipRule="evenodd"/>
@@ -126,7 +127,7 @@ const Workboard = () => {
                                 {task.status !== 'Done' && (
                                   <button
                                     onClick={() => handleMoveForward(task.id)}
-                                    className="p-2 text-blue-600 hover:bg-blue-50 rounded-full transition-colors"
+                                    className="p-2 text-[#82001A] hover:bg-yellow-50 rounded-full transition-colors"
                                     title={task.status === 'To-Do' ? 'Move to In Progress' : 'Mark as Complete'}
                                   >
                                     {task.status === 'To-Do' ? <FaArrowRight size={14} /> : <FaCheck size={14} />}

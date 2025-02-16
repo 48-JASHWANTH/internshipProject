@@ -8,11 +8,10 @@ const Sidemenu = ({ isProfilePage }) => {
 
   const menuItems = [
     { text: "Dashboard", icon: <FaHome size={20} />, path: "/Student/Dashboard" },
-    { text: "Project Forum", icon: <FaForumbee size={20} />, path: "/Student/ProjectForum" },
     { text: "Active Works", icon: <FaBriefcase size={20} />, path: "/Student/ActiveWorks" },
-    { text: "Campus Projects", icon: <FaGraduationCap size={20} />, path: "/Student/CampusProjects" },
-    { text: "Workboard", icon: <FaTasks size={20} />, path: "/Student/Workboard" },
     { text: "Archived", icon: <FaArchive size={20} />, path: "/Student/ArchivedProjects" },
+    { text: "Campus Projects", icon: <FaGraduationCap size={20} />, path: "/Student/CampusProjects" },
+    { text: "Project Forum", icon: <FaForumbee size={20} />, path: "/Student/ProjectForum" },
   ];  
 
   const handleClick = (item) => {

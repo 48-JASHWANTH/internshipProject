@@ -1,9 +1,10 @@
 import React from 'react';
 import { FaUser, FaClock, FaTag } from 'react-icons/fa';
+import { ArrowRight } from 'lucide-react';
 
 const ProjectCard = ({ project, type, onAction }) => {
   return (
-    <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow duration-200">
+    <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow duration-200 relative">
       <h3 className="text-xl font-semibold text-gray-800 mb-2">{project.title}</h3>
       <p className="text-gray-600 mb-4">{project.description}</p>
       
@@ -17,7 +18,7 @@ const ProjectCard = ({ project, type, onAction }) => {
       
       <div className="flex items-center justify-between mt-4">
         <div className="flex items-center gap-2">
-          <FaUser className="text-gray-400" />
+          <FaUser className="text-gray-400" />  
           <span className="text-sm text-gray-600">{project.faculty || project.team?.join(', ')}</span>
         </div>
         
@@ -31,6 +32,9 @@ const ProjectCard = ({ project, type, onAction }) => {
           </button>
         )}
       </div>
+      
+      {/* Arrow Icon positioned in the top right corner */}
+      <ArrowRight className="absolute top-4 right-4 w-6 h-6 text-[#82001A] transition-transform duration-200" />
     </div>
   );
 };
