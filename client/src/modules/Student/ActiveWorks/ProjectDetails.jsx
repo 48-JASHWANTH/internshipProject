@@ -4,22 +4,17 @@ import {
   ArrowLeft, 
   Mail, 
   Calendar, 
-  Users, 
-  Clock, 
-  Target, 
   ChevronRight,
   Github,
-  Upload,
+
   File,
-  Link,
-  Trash2,
-  Plus,
-  ClipboardList,
+
 } from 'lucide-react';
 import useActiveWorksStore from '../../../store/activeWorksStore';
 import { Dialog } from '@headlessui/react';
 import Workboard from './Workboard';
 import { toast } from 'react-hot-toast';
+import ReviewBoard from './ReviewBoard';
 
 const ProjectDetails = () => {
   const { projectId } = useParams();
@@ -133,17 +128,27 @@ const ProjectDetails = () => {
               : 'bg-white text-gray-600 border border-gray-300 hover:bg-gray-100'
           }`}
         >
-          Project Details
+          Details
         </button>
         <button
           onClick={() => setActiveView('workboard')}
-          className={`px-4 py-2 rounded-r-md text-sm font-medium transition-all ${
+          className={`px-4 py-2 text-sm font-medium transition-all ${
             activeView === 'workboard'
               ? 'bg-yellow-500 text-white shadow-md'
               : 'bg-white text-gray-600 border border-gray-300 hover:bg-gray-100'
           }`}
         >
           Workboard
+        </button>
+        <button
+          onClick={() => setActiveView('reviews')}
+          className={`px-4 py-2 rounded-r-md text-sm font-medium transition-all ${
+            activeView === 'reviews'
+              ? 'bg-yellow-500 text-white shadow-md'
+              : 'bg-white text-gray-600 border border-gray-300 hover:bg-gray-100'
+          }`}
+        >
+          Reviews
         </button>
       </div>
       
@@ -332,13 +337,20 @@ const ProjectDetails = () => {
             </div>
           </div>
         </div>
-      ) : (
+      ) : activeView === 'workboard' ? (
         <div className="bg-white rounded-xl shadow-sm p-6">
           <Workboard 
             projectId={projectId}
           />
         </div>
-      )}
+      ) : activeView === 'reviews' ? (
+        <div className="bg-white rounded-xl shadow-sm p-6">
+          <ReviewBoard 
+            projectId={projectId}
+            isGuide={project.facultyEmail === user?.email}
+          />
+        </div>
+      ) : null}
 
       {/* GitHub URL Modal */}
       <Dialog

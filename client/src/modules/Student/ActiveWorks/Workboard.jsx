@@ -6,6 +6,7 @@ import { FaArrowRight, FaCheck } from 'react-icons/fa';
 const Workboard = ({ projectId }) => {
   const { activeWorks, updateProjectTask, moveProjectTaskForward } = useActiveWorksStore();
   const [enabled, setEnabled] = useState(false);
+  const [taskToComplete, setTaskToComplete] = useState(null);
 
   // Get project-specific tasks
   const project = activeWorks.find(work => work.id === projectId);
@@ -65,7 +66,19 @@ const Workboard = ({ projectId }) => {
   };
 
   const handleMoveForward = (taskId) => {
-    moveProjectTaskForward(projectId, taskId);
+    const task = tasks.find(t => t.id === taskId);
+    if (task.status === 'In Progress') {
+      setTaskToComplete(taskId);
+    } else {
+      moveProjectTaskForward(projectId, taskId);
+    }
+  };
+
+  const handleConfirmComplete = () => {
+    if (taskToComplete) {
+      moveProjectTaskForward(projectId, taskToComplete);
+      setTaskToComplete(null);
+    }
   };
 
   if (!enabled) {
@@ -171,6 +184,34 @@ const Workboard = ({ projectId }) => {
           </div>
         </DragDropContext>
       </div>
+      
+      {/* Confirmation Modal */}
+      {taskToComplete && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-sm w-full mx-4">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              Confirm Task Completion
+            </h3>
+            <p className="text-gray-600 mb-6">
+              Are you sure you want to mark this task as complete?
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setTaskToComplete(null)}
+                className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirmComplete}
+                className="px-4 py-2 bg-[#82001A] text-white rounded-lg hover:bg-[#6b0016] transition-colors"
+              >
+                Confirm
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
