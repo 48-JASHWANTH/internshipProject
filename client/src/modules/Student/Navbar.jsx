@@ -2,8 +2,10 @@ import React, { useState, useRef, useEffect } from "react";
 import { FaUserCircle, FaBell } from "react-icons/fa"; 
 import { useNavigate } from "react-router-dom";  
 import vnrlogo from '../images/vnrvjiet.png';
+import useProfileStore from '../../store/useProfileStore';
 
 const Navbar = () => {
+  const { profileData } = useProfileStore();
   const [showProfile, setShowProfile] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const navigate = useNavigate(); 
@@ -71,9 +73,17 @@ const Navbar = () => {
           {/* Profile Icon */}
           <div
             onClick={toggleProfile}
-            className="cursor-pointer flex items-center justify-center w-10 h-10 bg-gray-200 rounded-full mr-4"
+            className="cursor-pointer flex items-center justify-center w-10 h-10 bg-gray-200 rounded-full mr-4 overflow-hidden"
           >
-            <FaUserCircle className="text-gray-700 text-4xl" />
+            {profileData.profilePic ? (
+              <img 
+                src={profileData.profilePic} 
+                alt="Profile" 
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <FaUserCircle className="text-gray-700 text-4xl" />
+            )}
           </div>
         </div>
       </div>
@@ -94,12 +104,22 @@ const Navbar = () => {
 
         {/* Profile Dropdown */}
         {showProfile && (
-          <div className="absolute top-14 right-4 w-64 bg-white border border-gray-300 rounded-lg shadow-lg">
+          <div className="absolute top-14 right-4 w-80 bg-white border border-gray-300 rounded-lg shadow-lg">
             <div className="flex items-center px-4 py-2 border-b border-gray-300">
-              <FaUserCircle className="text-gray-700 text-4xl mr-3" />
+              <div className="w-16 h-16 rounded-full overflow-hidden mr-3">
+                {profileData.profilePic ? (
+                  <img 
+                    src={profileData.profilePic} 
+                    alt="Profile" 
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <FaUserCircle className="text-gray-700 text-4xl" />
+                )}
+              </div>
               <div>
-                <p className="font-bold text-sm">XXXXXXXXXX - Name of the Student</p>
-                <p className="text-xs text-gray-500">user123@example.in</p>
+                <p className="font-bold text-sm">{`${profileData.regNumber} - ${profileData.name}`}</p>
+                <p className="text-xs text-gray-500">{profileData.email}</p>
               </div>
             </div>
             <div className="flex flex-col">

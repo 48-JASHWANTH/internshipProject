@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { Edit, X } from 'lucide-react';
+import useProfileStore from '../../../store/useProfileStore';
 
-const ProfileCard = ({ profileData, setProfileData }) => {
-  const [isEditing, setIsEditing] = useState(false);
+const ProfileCard = () => {
+  const { profileData, isEditing, setIsEditing, updateProfile, setProfilePicture } = useProfileStore();
   const [editedData, setEditedData] = useState({ ...profileData });
   const [selectedFile, setSelectedFile] = useState(null);
 
@@ -29,17 +30,16 @@ const ProfileCard = ({ profileData, setProfileData }) => {
       }
     });
 
-    // Only update and log if there are actual changes
+    // Only update if there are actual changes
     if (Object.keys(changes).length > 0) {
-      console.log('Profile Data:', editedData);
-      setProfileData(editedData);
-      setIsEditing(false);
-      setSelectedFile(null);96
-
-    } else {
-      setIsEditing(false);
-      setSelectedFile(null);
+      updateProfile(editedData);
+      if (selectedFile) {
+        setProfilePicture(selectedFile);
+      }
     }
+    
+    setIsEditing(false);
+    setSelectedFile(null);
   };
 
   return (

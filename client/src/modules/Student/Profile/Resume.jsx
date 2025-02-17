@@ -59,13 +59,12 @@ const Resume = () => {
   };
 
   return (
-    <div className="p-6">
+    <div className="p-6 bg-white rounded-lg shadow-md">
       <h2 className="text-2xl font-semibold mb-6">Resume Management</h2>
       
       <div 
-        className={`
-          bg-gray-50 rounded-lg p-8 text-center
-          ${!resume ? 'border-2 border-dashed transition-colors duration-200' : ''}
+        className={`bg-gray-50 rounded-lg p-8 text-center transition-all duration-200
+          ${!resume ? 'border-2 border-dashed' : ''}
           ${isDragging ? 'border-[#82001A] bg-red-50' : 'border-gray-300'}
         `}
         onDragEnter={handleDrag}
@@ -87,21 +86,23 @@ const Resume = () => {
               </p>
               <p className="text-sm text-gray-500">Only PDF files are accepted</p>
             </div>
-            <label className="block">
-              <span className="sr-only">Choose file</span>
-              <input
-                type="file"
-                accept=".pdf"
-                onChange={handleFileUpload}
-                className="block w-full text-sm text-gray-500
-                  file:mr-4 file:py-2 file:px-4
-                  file:rounded-full file:border-0
-                  file:text-sm file:font-semibold
-                  file:bg-[#82001A] file:text-white
-                  hover:file:bg-red-800
-                  cursor-pointer"
-              />
-            </label>
+            <div className="flex justify-center">
+              <label className="block">
+                <span className="sr-only">Choose file</span>
+                <input
+                  type="file"
+                  accept=".pdf"
+                  onChange={handleFileUpload}
+                  className="block w-full text-sm text-gray-500
+                    file:mr-4 file:py-2 file:px-4
+                    file:rounded-full file:border-0
+                    file:text-sm file:font-semibold
+                    file:bg-[#82001A] file:text-white
+                    hover:file:bg-red-800
+                    cursor-pointer"
+                />
+              </label>
+            </div>
           </div>
         ) : (
           <div className="space-y-4">
