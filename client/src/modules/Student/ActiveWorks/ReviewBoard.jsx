@@ -2,8 +2,6 @@ import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Pencil, CheckCircle, XCircle, Info } from 'lucide-react';
 import useActiveWorksStore from '../../../store/activeWorksStore';
-import { useAuth } from '../../../context/AuthContext';
-
 const ReviewPage = () => {
   const { projectId } = useParams();
   const { user } = useAuth();
