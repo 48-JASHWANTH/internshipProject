@@ -347,7 +347,6 @@ const ProjectDetails = () => {
         <div className="bg-white rounded-xl shadow-sm p-6">
           <ReviewBoard 
             projectId={projectId}
-            isGuide={project.facultyEmail === user?.email}
           />
         </div>
       ) : null}

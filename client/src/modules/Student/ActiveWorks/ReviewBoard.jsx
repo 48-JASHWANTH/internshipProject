@@ -2,14 +2,13 @@ import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Pencil, CheckCircle, XCircle, Info } from 'lucide-react';
 import useActiveWorksStore from '../../../store/activeWorksStore';
+
 const ReviewPage = () => {
   const { projectId } = useParams();
-  const { user } = useAuth();
   const { activeWorks, updateProjectReview } = useActiveWorksStore();
   const project = activeWorks.find(work => work.id === projectId);
   const reviews = project?.reviews || [];
-  const isGuide = project.facultyEmail === user?.email;
-
+  
   const [editingReviewId, setEditingReviewId] = useState(null);
   const [editForm, setEditForm] = useState({ score: '', remarks: '' });
 
@@ -57,11 +56,6 @@ const ReviewPage = () => {
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Status
               </th>
-              {isGuide && (
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
-                </th>
-              )}
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
@@ -120,26 +114,6 @@ const ReviewPage = () => {
                     {review.status}
                   </span>
                 </td>
-                {isGuide && (
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {editingReviewId === review.id ? (
-                      <button
-                        onClick={() => handleSaveClick(review.id)}
-                        className="text-[#9b1a31] hover:text-[#7d1527] font-medium transition-colors"
-                      >
-                        Save
-                      </button>
-                    ) : (
-                      <button
-                        onClick={() => handleEditClick(review)}
-                        className="text-[#9b1a31] hover:text-[#7d1527] font-medium transition-colors inline-flex items-center gap-1"
-                      >
-                        <Pencil className="w-4 h-4" />
-                        Edit
-                      </button>
-                    )}
-                  </td>
-                )}
               </tr>
             ))}
           </tbody>
