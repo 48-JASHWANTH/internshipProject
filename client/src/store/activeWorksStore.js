@@ -60,7 +60,6 @@ const useActiveWorksStore = create((set) => ({
         { id: '1', name: 'Alex Kumar', role: 'ML Engineer' },
         { id: '2', name: 'Priya Sharma', role: 'Backend Developer' },
         { id: '3', name: 'James Wilson', role: 'Medical Data Analyst' },
-        { id: '4', name: 'Sarah Chen', role: 'UI/UX Designer' }
       ],
       tasks: [
         {
@@ -226,7 +225,6 @@ const useActiveWorksStore = create((set) => ({
         { id: '14', name: 'Ryan O\'Connor', role: 'GIS Specialist' },
         { id: '15', name: 'Aisha Patel', role: 'Urban Planning Analyst' },
         { id: '16', name: 'Marcus Johnson', role: 'Data Engineer' },
-        { id: '17', name: 'Nina Rodriguez', role: 'Sustainability Expert' }
       ],
       tasks: [
         {

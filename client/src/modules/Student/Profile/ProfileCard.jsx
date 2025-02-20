@@ -43,93 +43,76 @@ const ProfileCard = () => {
   };
 
   return (
-    <div className="w-1/4 bg-white rounded-lg shadow-lg">
-      <div className="p-6">
+    <div className="w-full bg-white rounded-lg shadow-lg">
+      <div className="p-4 md:p-6">
         <div className="flex flex-col items-center mb-6">
-          <div className="w-24 h-24 rounded-full overflow-hidden bg-gray-200 mb-3">
+          <div className="w-20 h-20 md:w-24 md:h-24 rounded-full overflow-hidden bg-gray-200 mb-3">
             <img 
               src={profileData.profilePic || "../../assets/profilepic.png"} 
               alt="Profile" 
               className="w-full h-full object-cover"
             />
           </div>
-          <h3 className="text-lg font-semibold text-gray-800">{profileData.name}</h3>
-          <span className="text-orange-400 text-sm">Published</span>
+          <h3 className="text-base md:text-lg font-semibold text-gray-800">{profileData.name}</h3>
+          <span className="text-sm text-orange-400">Published</span>
         </div>
 
         <div className="flex justify-between items-center mb-4">
-          <h4 className="text-lg font-semibold text-gray-800">Personal Information</h4>
+          <h4 className="text-base md:text-lg font-semibold text-gray-800">Personal Information</h4>
           <button 
             onClick={() => setIsEditing(true)}
             className="text-[#82001A] hover:text-[#6b0016] transition-colors duration-200"
+            aria-label="Edit personal information"
           >
-            <Edit className="w-5 h-5" />
+            <Edit className="w-4 h-4 md:w-5 md:h-5" />
           </button>
         </div>
 
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm text-gray-600">Name</label>
-            <div className="text-sm font-medium text-gray-800">{profileData.name}</div>
-          </div>
-          <div>
-            <label className="block text-sm text-gray-600">Registration Number</label>
-            <div className="text-sm font-medium text-gray-800">{profileData.regNumber}</div>
-          </div>
-          <div>
-            <label className="block text-sm text-gray-600">Email</label>
-            <div className="text-sm font-medium text-gray-800">{profileData.email}</div>
-          </div>
-          <div>
-            <label className="block text-sm text-gray-600">Phone</label>
-            <div className="text-sm font-medium text-gray-800">{profileData.phone}</div>
-          </div>
-          <div>
-            <label className="block text-sm text-gray-600">Gender</label>
-            <div className="text-sm font-medium text-gray-800">{profileData.gender}</div>
-          </div>
-          <div>
-            <label className="block text-sm text-gray-600">Date of Birth</label>
-            <div className="text-sm font-medium text-gray-800">
-              {profileData.dob ? new Date(profileData.dob).toLocaleDateString('en-GB', {
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric'
-              }).replace(/\//g, '-') : ''}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4">
+          {[
+            { label: "Name", value: profileData.name },
+            { label: "Registration Number", value: profileData.regNumber },
+            { label: "Email", value: profileData.email },
+            { label: "Phone", value: profileData.phone },
+            { label: "Gender", value: profileData.gender },
+            { label: "Date of Birth", value: profileData.dob ? new Date(profileData.dob).toLocaleDateString('en-GB') : '' }
+          ].map(({ label, value }) => (
+            <div key={label} className="space-y-1">
+              <label className="block text-xs md:text-sm text-gray-600">{label}</label>
+              <div className="text-xs md:text-sm font-medium text-gray-800 break-words">{value}</div>
             </div>
-          </div>
+          ))}
         </div>
       </div>
 
       {/* Edit Modal */}
       {isEditing && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl shadow-2xl w-[600px] max-h-[90vh] overflow-y-auto">
-            <div className="p-6 border-b border-gray-200">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-[600px] max-h-[90vh] overflow-y-auto">
+            <div className="p-4 md:p-6 border-b border-gray-200">
               <div className="flex justify-between items-center">
                 <div>
-                  <h2 className="text-2xl font-semibold text-gray-800">Personal Information</h2>
-                  <p className="text-sm text-gray-500 mt-1">Update your photo and personal details here</p>
+                  <h2 className="text-xl md:text-2xl font-semibold text-gray-800">Personal Information</h2>
+                  <p className="text-xs md:text-sm text-gray-500 mt-1">Update your photo and personal details here</p>
                 </div>
                 <button 
                   onClick={() => setIsEditing(false)}
                   className="text-gray-400 hover:text-gray-600 transition-colors duration-200"
+                  aria-label="Close modal"
                 >
-                  <X className="w-6 h-6" />
+                  <X className="w-5 h-5 md:w-6 md:h-6" />
                 </button>
               </div>
             </div>
 
-            <form onSubmit={handleSaveChanges} className="p-6 space-y-6">
+            <form onSubmit={handleSaveChanges} className="p-4 md:p-6 space-y-4 md:space-y-6">
               <div className="flex items-center gap-4 mb-6">
                 <img 
                   src={selectedFile || editedData.profilePic || "../../assets/profilepic.png"} 
                   alt="Profile" 
-                  className="w-16 h-16 rounded-2xl object-cover"
+                  className="w-14 h-14 md:w-16 md:h-16 rounded-2xl object-cover"
                 />
-                <label
-                  className="px-4 py-2 text-sm font-medium text-white bg-yellow-400 rounded-lg hover:bg-yellow-600 transition-colors duration-200 cursor-pointer"
-                >
+                <label className="px-3 py-2 text-xs md:text-sm font-medium text-white bg-yellow-400 rounded-lg hover:bg-yellow-600 transition-colors duration-200 cursor-pointer">
                   <input
                     type="file"
                     accept="image/*"
@@ -140,9 +123,9 @@ const ProfileCard = () => {
                 </label>
               </div>
 
-              <div className="grid grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-xs md:text-sm font-medium text-gray-700 mb-2">
                     First Name <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -156,7 +139,7 @@ const ProfileCard = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-xs md:text-sm font-medium text-gray-700 mb-2">
                     Last Name <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -172,7 +155,7 @@ const ProfileCard = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-xs md:text-sm font-medium text-gray-700 mb-2">
                   Gender <span className="text-red-500">*</span>
                 </label>
                 <div className="flex gap-6">
@@ -184,16 +167,16 @@ const ProfileCard = () => {
                         value={option}
                         checked={editedData.gender === option}
                         onChange={(e) => setEditedData({ ...editedData, gender: e.target.value })}
-                        className="w-4 h-4 text-[#82001A] focus:ring-[#82001A] focus:ring-offset-0 border-gray-300"
+                        className="w-4 h-4 text-[#82001A] focus:ring-[#82001A] border-gray-300"
                       />
-                      <span className="ml-2 text-gray-700 ">{option}</span>
+                      <span className="ml-2 text-gray-700">{option}</span>
                     </label>
                   ))}
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-xs md:text-sm font-medium text-gray-700 mb-2">
                   Email <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -205,7 +188,7 @@ const ProfileCard = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-xs md:text-sm font-medium text-gray-700 mb-2">
                   Phone No <span className="text-red-500">*</span>
                 </label>
                 <div className="flex gap-2">
@@ -221,9 +204,9 @@ const ProfileCard = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-xs md:text-sm font-medium text-gray-700 mb-2">
                     Date of Birth <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -234,7 +217,7 @@ const ProfileCard = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-xs md:text-sm font-medium text-gray-700 mb-2">
                     Registration Number <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -249,14 +232,14 @@ const ProfileCard = () => {
               <div className="flex justify-end gap-3 pt-6 border-t border-gray-200">
                 <button
                   type="button"
-                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#82001A]"
+                  className="px-3 py-2 text-xs md:text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
                   onClick={() => setIsEditing(false)}
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 text-sm font-medium text-white bg-[#82001A] rounded-xl hover:bg-[#6b0016] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#82001A]"
+                  className="px-3 py-2 text-xs md:text-sm font-medium text-white bg-[#82001A] rounded-lg hover:bg-[#6b0016]"
                 >
                   Save Changes
                 </button>

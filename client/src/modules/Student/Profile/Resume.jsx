@@ -59,11 +59,11 @@ const Resume = () => {
   };
 
   return (
-    <div className="p-6 bg-white rounded-lg shadow-md">
-      <h2 className="text-2xl font-semibold mb-6">Resume Management</h2>
+    <div className="mt-4 p-4 md:p-6 bg-white rounded-lg shadow-md">
+      <h2 className="text-xl md:text-2xl font-semibold mb-4">Resume Management</h2>
       
       <div 
-        className={`bg-gray-50 rounded-lg p-8 text-center transition-all duration-200
+        className={`bg-gray-50 rounded-lg p-6 md:p-8 text-center transition-all duration-200
           ${!resume ? 'border-2 border-dashed' : ''}
           ${isDragging ? 'border-[#82001A] bg-red-50' : 'border-gray-300'}
         `}
@@ -75,16 +75,16 @@ const Resume = () => {
         {!resume ? (
           <div className="space-y-4">
             <FaFileUpload 
-              className={`mx-auto text-4xl ${isDragging ? 'text-[#82001A]' : 'text-gray-400'}`}
+              className={`mx-auto text-3xl md:text-4xl ${isDragging ? 'text-[#82001A]' : 'text-gray-400'}`}
             />
             <div className="space-y-2">
-              <p className="text-gray-600">
+              <p className="text-sm md:text-base text-gray-600">
                 {isDragging 
                   ? 'Drop your PDF file here' 
                   : 'Drag & drop your resume or click to upload'
                 }
               </p>
-              <p className="text-sm text-gray-500">Only PDF files are accepted</p>
+              <p className="text-xs md:text-sm text-gray-500">Only PDF files are accepted</p>
             </div>
             <div className="flex justify-center">
               <label className="block">
@@ -110,15 +110,15 @@ const Resume = () => {
               className="flex items-center justify-center space-x-2 text-gray-700 cursor-pointer hover:text-[#82001A] transition-colors duration-200"
               onClick={handlePreview}
             >
-              <FaFilePdf className="text-2xl text-[#82001A]" />
-              <span className="font-medium">{resume.name}</span>
+              <FaFilePdf className="text-xl md:text-2xl text-[#82001A]" />
+              <span className="font-medium text-sm md:text-base">{resume.name}</span>
             </div>
             
             <div className="flex justify-center space-x-4">
               <button
                 onClick={() => document.querySelector('input[type="file"]').click()}
-                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-full hover:bg-gray-300 
-                  flex items-center space-x-2 transition-colors duration-200"
+                className="px-3 md:px-4 py-2 bg-gray-200 text-gray-700 rounded-full hover:bg-gray-300 
+                  flex items-center space-x-2 transition-colors duration-200 text-sm md:text-base"
               >
                 <FaFileUpload />
                 <span>Upload New</span>
@@ -126,8 +126,8 @@ const Resume = () => {
               
               <button
                 onClick={handleDownload}
-                className="px-4 py-2 bg-[#82001A] text-white rounded-full hover:bg-red-800 
-                  flex items-center space-x-2 transition-colors duration-200"
+                className="px-3 md:px-4 py-2 bg-[#82001A] text-white rounded-full hover:bg-red-800 
+                  flex items-center space-x-2 transition-colors duration-200 text-sm md:text-base"
               >
                 <FaFileDownload />
                 <span>Download</span>
@@ -146,18 +146,18 @@ const Resume = () => {
 
       {/* PDF Preview Modal */}
       {showPreview && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-2 md:p-4">
           <div className="bg-white rounded-lg w-full h-full max-w-4xl max-h-[90vh] flex flex-col">
-            <div className="flex justify-between items-center p-4 border-b">
-              <h3 className="text-lg font-semibold">{resume.name}</h3>
+            <div className="flex justify-between items-center p-3 md:p-4 border-b">
+              <h3 className="text-base md:text-lg font-semibold truncate">{resume.name}</h3>
               <button 
                 onClick={() => setShowPreview(false)}
-                className="text-gray-500 hover:text-gray-700"
+                className="text-gray-500 hover:text-gray-700 p-1"
               >
                 <FaTimes className="text-xl" />
               </button>
             </div>
-            <div className="flex-1 p-4">
+            <div className="flex-1 p-2 md:p-4">
               <iframe
                 src={URL.createObjectURL(resume)}
                 className="w-full h-full rounded border"

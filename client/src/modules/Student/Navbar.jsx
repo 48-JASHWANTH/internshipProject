@@ -1,10 +1,10 @@
 import React, { useState, useRef, useEffect } from "react";
-import { FaUserCircle, FaBell } from "react-icons/fa"; 
+import { FaUserCircle, FaBell, FaBars, FaTimes } from "react-icons/fa"; 
 import { useNavigate } from "react-router-dom";  
 import vnrlogo from '../images/vnrvjiet.png';
 import useProfileStore from '../../store/useProfileStore';
 
-const Navbar = () => {
+const Navbar = ({ isMobileMenuOpen, setIsMobileMenuOpen }) => {
   const { profileData } = useProfileStore();
   const [showProfile, setShowProfile] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
@@ -56,15 +56,15 @@ const Navbar = () => {
     <div ref={dropdownRef} className="fixed top-0 left-0 w-full z-50 bg-gray-300 border-b border-gray-300">
       {/* Navbar */}
       <div className="flex justify-between items-center px-4 py-3">
-        <button onClick={handleLogo}>
-          <img src={vnrlogo} alt="VNRVJIET Logo" className="ml-4 h-10" />
+        <button onClick={handleLogo} className="flex items-center">
+          <img src={vnrlogo} alt="VNRVJIET Logo" className="h-10" />
         </button>
 
-        <div className="flex items-center">
+        <div className="flex items-center gap-4">
           {/* Notification Icon */}
           <div
             onClick={toggleNotifications}
-            className="cursor-pointer flex items-center justify-center w-8 h-8 bg-gray-200 rounded-full mr-4 relative"
+            className="cursor-pointer flex items-center justify-center w-8 h-8 bg-gray-200 rounded-full relative"
           >
             <FaBell className="text-gray-700 text-xl" />
             <span className="absolute -top-1 -right-1 bg-red-600 text-white text-xs px-1 rounded-full">3</span>
@@ -73,7 +73,7 @@ const Navbar = () => {
           {/* Profile Icon */}
           <div
             onClick={toggleProfile}
-            className="cursor-pointer flex items-center justify-center w-10 h-10 bg-gray-200 rounded-full mr-4 overflow-hidden"
+            className="cursor-pointer flex items-center justify-center w-10 h-10 bg-gray-200 rounded-full overflow-hidden"
           >
             {profileData.profilePic ? (
               <img 
@@ -85,6 +85,15 @@ const Navbar = () => {
               <FaUserCircle className="text-gray-700 text-4xl" />
             )}
           </div>
+
+          {/* Hamburger Menu */}
+          <button
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            className="md:hidden flex items-center justify-center w-10 h-10 text-[#82001A]"
+            aria-label="Toggle menu"
+          >
+            {isMobileMenuOpen ? <FaTimes size={24} /> : <FaBars size={24} />}
+          </button>
         </div>
       </div>
 

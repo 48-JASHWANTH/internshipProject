@@ -19,7 +19,7 @@ const ReviewPage = () => {
 
   const handleSaveClick = (reviewId) => {
     if (editForm.score < 0 || editForm.score > 10) {
-      alert('Score must be between 0 and 10');
+      alert('Score must be between 0 and 10');  
       return;
     }
     updateProjectReview(projectId, reviewId, {
