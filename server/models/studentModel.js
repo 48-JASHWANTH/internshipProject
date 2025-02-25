@@ -14,24 +14,11 @@ const StudentSchema = new mongoose.Schema({
     required: true,
     unique: true
   },
-  teamID: [{
-    type: String
-  }],
   notifications: {
     type: [String],
     default: []
   },
-  performanceRating: {
-    type: Number,
-    min: 0,
-    max: 5,
-    default: 0
-  },
-  activeProjects: {
-    type: Number,
-    default: 0
-  },
-  archivedProjects: {
+  projects: {
     type: Number,
     default: 0
   },

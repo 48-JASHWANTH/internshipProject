@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { FaEdit, FaSave } from "react-icons/fa";
-import SearchableDropdown from "./components/SearchableDropdown";
+import SearchableDropdown from "../common/SearchableDropdown";
 
 const facultyList = [
   { id: "FAC001", name: "Dr. Sarah Johnson" },
@@ -8,6 +8,22 @@ const facultyList = [
   { id: "FAC003", name: "Dr. Emily White" },
   { id: "FAC004", name: "Prof. David Brown" },
   { id: "FAC005", name: "Dr. Lisa Anderson" },
+];
+
+const branches = [
+  "Computer Science & Engineering(CSE)",
+  "Computer Science & Business Systems(CSBS)",
+  "Mechanical Engineering(MECH)",
+  "Civil Engineering(CIVIL)",
+  "Electrical & Electronics Engineering(ECE)",
+  "Electronics & Communication Engineering(EEE)",
+];
+
+const projectTypes = [
+  "Course Based Project(CBP)",
+  "Field Project",
+  "Mini Project",
+  "Major Project",
 ];
 
 const ProjectFormConfirmation = ({
@@ -18,11 +34,24 @@ const ProjectFormConfirmation = ({
   setPhase,
   handleSubmit,
 }) => {
-  const [isEditing, setIsEditing] = useState(false);
+  const [isEditingBasic, setIsEditingBasic] = useState(false);
+  const [isEditingExcel, setIsEditingExcel] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
+  const [validationErrors, setValidationErrors] = useState({});
+  const [focusedInput, setFocusedInput] = useState(null);
 
-  const handleEditAll = () => {
-    setIsEditing(true);
+  const isEditing = isEditingBasic || isEditingExcel;
+
+  const handleEditBasicDetails = () => {
+    setIsEditingBasic(true);
+    setFormData({
+      ...formData,
+      isEditing: true,
+    });
+  };
+
+  const handleEditExcelDetails = () => {
+    setIsEditingExcel(true);
     setFormData({
       ...formData,
       isEditing: true,
@@ -47,6 +76,9 @@ const ProjectFormConfirmation = ({
   };
 
   const handleStudentEdit = (teamNo, studentIndex, field, value) => {
+    // Keep track of the currently focused element
+    const activeElement = document.activeElement;
+    
     setExcelData((prevData) =>
       prevData.map((team) => {
         if (team.teamNo === teamNo) {
@@ -54,6 +86,10 @@ const ProjectFormConfirmation = ({
           newStudents[studentIndex] = {
             ...newStudents[studentIndex],
             [field]: value,
+            errors: {
+              ...newStudents[studentIndex].errors,
+              [field]: value.trim() === '' ? 'Required' : null
+            }
           };
           return { ...team, students: newStudents };
         }
@@ -61,6 +97,18 @@ const ProjectFormConfirmation = ({
       })
     );
     setHasChanges(true);
+    
+    // Restore focus to the active element after state update
+    if (activeElement) {
+      setTimeout(() => {
+        activeElement.focus();
+        // Optionally move cursor to end of input
+        if (activeElement.tagName === 'INPUT') {
+          const len = activeElement.value.length;
+          activeElement.setSelectionRange(len, len);
+        }
+      }, 0);
+    }
   };
 
   const handleAddStudent = (teamNo) => {
@@ -98,9 +146,73 @@ const ProjectFormConfirmation = ({
     setHasChanges(true);
   };
 
+  const handleBasicDetailsChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      [name]: value,
+    });
+    setHasChanges(true);
+  };
+
   const handleSaveChanges = () => {
-    setIsEditing(false);
+    setIsEditingBasic(false);
+    setIsEditingExcel(false);
     setHasChanges(false);
+    setFormData({
+      ...formData,
+      isEditing: false,
+    });
+  };
+
+  const validateForm = () => {
+    let isValid = true;
+    let firstError = null;
+
+    const updatedData = excelData.map((team) => ({
+      ...team,
+      students: team.students.map((student, studentIndex) => {
+        const studentErrors = {};
+        if (!student.name?.trim()) {
+          studentErrors.name = 'Required';
+          isValid = false;
+          if (!firstError) {
+            firstError = { teamNo: team.teamNo, studentIndex, field: 'name' };
+          }
+        }
+        if (!student.rollNo?.trim()) {
+          studentErrors.rollNo = 'Required';
+          isValid = false;
+          if (!firstError) {
+            firstError = { teamNo: team.teamNo, studentIndex, field: 'rollNo' };
+          }
+        }
+        return {
+          ...student,
+          errors: studentErrors
+        };
+      })
+    }));
+
+    setExcelData(updatedData);
+
+    // If there's an error, scroll to and focus the first error field
+    if (firstError) {
+      const element = document.querySelector(`[data-team="${firstError.teamNo}"][data-student="${firstError.studentIndex}"][data-field="${firstError.field}"]`);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        element.focus();
+      }
+    }
+
+    return isValid;
+  };
+
+  const handleSubmitWrapper = () => {
+    if (!validateForm()) {
+      return;
+    }
+    handleSubmit();
   };
 
   return (
@@ -108,7 +220,7 @@ const ProjectFormConfirmation = ({
       <div className="flex justify-between items-center">
         <h3 className="text-2xl font-bold text-[#82001A]">Confirm Details</h3>
         <div className="flex gap-2">
-          {isEditing ? (
+          {(isEditingBasic || isEditingExcel) ? (
             <button
               onClick={handleSaveChanges}
               className={`flex items-center gap-2 px-4 py-2 text-sm font-medium ${
@@ -122,13 +234,22 @@ const ProjectFormConfirmation = ({
               Save Changes
             </button>
           ) : (
-            <button
-              onClick={handleEditAll}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-[#82001A] hover:bg-red-50 rounded-lg"
-            >
-              <FaEdit className="w-4 h-4" />
-              Edit Details
-            </button>
+            <>
+              <button
+                onClick={handleEditBasicDetails}
+                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-[#82001A] hover:bg-red-50 rounded-lg"
+              >
+                <FaEdit className="w-4 h-4" />
+                Edit Basic Details
+              </button>
+              <button
+                onClick={handleEditExcelDetails}
+                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-[#82001A] hover:bg-red-50 rounded-lg"
+              >
+                <FaEdit className="w-4 h-4" />
+                Edit Excel Details
+              </button>
+            </>
           )}
         </div>
       </div>
@@ -138,7 +259,7 @@ const ProjectFormConfirmation = ({
           Project Details
         </h4>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
-          {isEditing ? (
+          {isEditingBasic ? (
             <>
               <div>
                 <label className="text-sm font-medium text-gray-600">
@@ -147,9 +268,7 @@ const ProjectFormConfirmation = ({
                 <select
                   name="year"
                   value={formData.year}
-                  onChange={(e) =>
-                    setFormData({ ...formData, year: e.target.value })
-                  }
+                  onChange={handleBasicDetailsChange}
                   className="w-full mt-1 px-3 py-2 border rounded-lg focus:outline-none focus:border-[#82001A]"
                 >
                   {[1, 2, 3, 4].map((year) => (
@@ -166,9 +285,7 @@ const ProjectFormConfirmation = ({
                 <select
                   name="semester"
                   value={formData.semester}
-                  onChange={(e) =>
-                    setFormData({ ...formData, semester: e.target.value })
-                  }
+                  onChange={handleBasicDetailsChange}
                   className="w-full mt-1 px-3 py-2 border rounded-lg focus:outline-none focus:border-[#82001A]"
                 >
                   {[1, 2].map((sem) => (
@@ -185,12 +302,14 @@ const ProjectFormConfirmation = ({
                 <select
                   name="branch"
                   value={formData.branch}
-                  onChange={(e) =>
-                    setFormData({ ...formData, branch: e.target.value })
-                  }
+                  onChange={handleBasicDetailsChange}
                   className="w-full mt-1 px-3 py-2 border rounded-lg focus:outline-none focus:border-[#82001A]"
                 >
-                  {/* Add your branch options here */}
+                  {branches.map((branch) => (
+                    <option key={branch} value={branch}>
+                      {branch}
+                    </option>
+                  ))}
                 </select>
               </div>
               <div>
@@ -200,9 +319,7 @@ const ProjectFormConfirmation = ({
                 <select
                   name="section"
                   value={formData.section}
-                  onChange={(e) =>
-                    setFormData({ ...formData, section: e.target.value })
-                  }
+                  onChange={handleBasicDetailsChange}
                   className="w-full mt-1 px-3 py-2 border rounded-lg focus:outline-none focus:border-[#82001A]"
                 >
                   {["A", "B", "C", "D"].map((section) => (
@@ -219,12 +336,14 @@ const ProjectFormConfirmation = ({
                 <select
                   name="projectType"
                   value={formData.projectType}
-                  onChange={(e) =>
-                    setFormData({ ...formData, projectType: e.target.value })
-                  }
+                  onChange={handleBasicDetailsChange}
                   className="w-full mt-1 px-3 py-2 border rounded-lg focus:outline-none focus:border-[#82001A]"
                 >
-                  {/* Add your project type options here */}
+                  {projectTypes.map((type) => (
+                    <option key={type} value={type}>
+                      {type}
+                    </option>
+                  ))}
                 </select>
               </div>
             </>
@@ -301,41 +420,63 @@ const ProjectFormConfirmation = ({
                           key={student.rollNo || index}
                           className="flex items-center gap-2 text-sm"
                         >
-                          {isEditing ? (
+                          {isEditingExcel ? (
                             <>
-                              <input
-                                type="text"
-                                value={student.rollNo}
-                                onChange={(e) =>
-                                  handleStudentEdit(
-                                    team.teamNo,
-                                    index,
-                                    "rollNo",
-                                    e.target.value
-                                  )
-                                }
-                                className="w-32 px-2 py-1 border rounded"
-                                placeholder="Roll No"
-                              />
-                              <input
-                                type="text"
-                                value={student.name}
-                                onChange={(e) =>
-                                  handleStudentEdit(
-                                    team.teamNo,
-                                    index,
-                                    "name",
-                                    e.target.value
-                                  )
-                                }
-                                className="flex-1 px-2 py-1 border rounded"
-                                placeholder="Student Name"
-                              />
+                              <div className="flex flex-col">
+                                <input
+                                  type="text"
+                                  value={student.rollNo}
+                                  onChange={(e) =>
+                                    handleStudentEdit(
+                                      team.teamNo,
+                                      index,
+                                      "rollNo",
+                                      e.target.value
+                                    )
+                                  }
+                                  onFocus={() => setFocusedInput(`${team.teamNo}-${index}-rollNo`)}
+                                  data-team={team.teamNo}
+                                  data-student={index}
+                                  data-field="rollNo"
+                                  autoFocus={focusedInput === `${team.teamNo}-${index}-rollNo`}
+                                  className={`w-32 px-2 py-1 border rounded ${
+                                    student.errors?.rollNo ? 'border-red-500' : ''
+                                  }`}
+                                  placeholder="Roll No"
+                                />
+                                {student.errors?.rollNo && (
+                                  <span className="text-xs text-red-500">{student.errors.rollNo}</span>
+                                )}
+                              </div>
+                              <div className="flex flex-col">
+                                <input
+                                  type="text"
+                                  value={student.name}
+                                  onChange={(e) =>
+                                    handleStudentEdit(
+                                      team.teamNo,
+                                      index,
+                                      "name",
+                                      e.target.value
+                                    )
+                                  }
+                                  onFocus={() => setFocusedInput(`${team.teamNo}-${index}-name`)}
+                                  data-team={team.teamNo}
+                                  data-student={index}
+                                  data-field="name"
+                                  autoFocus={focusedInput === `${team.teamNo}-${index}-name`}
+                                  className={`flex-1 px-2 py-1 border rounded ${
+                                    student.errors?.name ? 'border-red-500' : ''
+                                  }`}
+                                  placeholder="Student Name"
+                                />
+                                {student.errors?.name && (
+                                  <span className="text-xs text-red-500">{student.errors.name}</span>
+                                )}
+                              </div>
                               <button
                                 type="button"
-                                onClick={() =>
-                                  handleRemoveStudent(team.teamNo, index)
-                                }
+                                onClick={() => handleRemoveStudent(team.teamNo, index)}
                                 className="text-red-500 hover:text-red-700 p-1"
                               >
                                 ×
@@ -353,7 +494,7 @@ const ProjectFormConfirmation = ({
                           )}
                         </div>
                       ))}
-                      {isEditing && (
+                      {isEditingExcel && (
                         <button
                           type="button"
                           onClick={() => handleAddStudent(team.teamNo)}
@@ -365,7 +506,7 @@ const ProjectFormConfirmation = ({
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    {isEditing ? (
+                    {isEditingExcel ? (
                       <input
                         type="text"
                         value={team.projectTitle}
@@ -385,7 +526,7 @@ const ProjectFormConfirmation = ({
                     )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    {isEditing ? (
+                    {isEditingExcel ? (
                       <SearchableDropdown
                         value={team.guide}
                         onChange={(selected) =>
@@ -416,7 +557,7 @@ const ProjectFormConfirmation = ({
         </button>
         <button
           type="button"
-          onClick={handleSubmit}
+          onClick={handleSubmitWrapper}
           className="px-6 py-2.5 bg-[#82001A] text-white font-medium rounded-lg hover:bg-[#9b1a31] transition-colors duration-200"
         >
           Submit
