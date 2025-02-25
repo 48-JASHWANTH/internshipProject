@@ -6,22 +6,35 @@ import cookieParser from "cookie-parser";
 import adminRoutes from "./routes/adminRoutes.js";
 import facultyRoutes from "./routes/facultyRoute.js";
 import studentRoutes from "./routes/studentRoutes.js";
+
+console.log('Student routes:', studentRoutes);
+
 dotenv.config()
 const app = express();
 
 const corsOptions = {
-  origin: process.env.ORIGIN,
-
+  origin: 'http://localhost:5173',
+  credentials: true
 };
 app.use(cors(corsOptions));
 
-app.use(cookieParser())
-app.use(express.json())
+app.use(express.json());
+app.use(cookieParser());
 
-app.use('/admin',adminRoutes)
-app.use('/faculty',facultyRoutes)
-app.use('/student',studentRoutes)
+// Add debug middleware
+app.use((req, res, next) => {
+    console.log(`${req.method} ${req.url}`);
+    next();
+});
 
+app.use('/student', studentRoutes);
+app.use('/faculty', facultyRoutes);
+app.use('/admin', adminRoutes);
+
+// Add a test route to verify Express is working
+app.get('/test', (req, res) => {
+    res.json({ message: 'Server is working' });
+});
 
 const PORT = process.env.PORT || 8747
 

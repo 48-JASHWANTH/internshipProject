@@ -1,3 +1,13 @@
+### faculty login
+POST http://localhost:1544/faculty/login
+Content-Type: application/json
+
+{
+    "facultyID": "FAC12345",
+    "password": "Welcome@123"
+}
+
+### Create Teams
 POST http://localhost:1544/faculty/createTeams
 Content-Type: application/json
 

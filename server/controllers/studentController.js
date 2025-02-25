@@ -1,1 +1,1 @@
-import Student from "../models/studentModel";
+import Student from "../models/studentModel.js";

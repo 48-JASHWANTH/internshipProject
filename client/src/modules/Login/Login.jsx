@@ -2,19 +2,29 @@ import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import VideoComponent from "./VideoComponent";
 import { FaUserTie, FaChalkboardTeacher, FaUserShield, FaUserGraduate } from "react-icons/fa"; 
+import useAuthStore from '@/store/authStore';
 
 function Login() {
   const navigate = useNavigate();
   const [userType, setUserType] = useState("Student"); 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const { login, error, clearError } = useAuthStore();
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    if (userType) {
-      navigate(`/${userType}/Dashboard`);
+    
+    // Format credentials based on user type
+    const credentials = userType === 'Student' 
+      ? { studentID: username, password } 
+      : { facultyID: username, password };
+    
+    const result = await login(credentials, userType);
+    
+    if (!result.success) {
+      console.error(result.error);
     } else {
-      alert("Please select a user type!");
+      navigate(`/${userType}/Dashboard`);
     }
   };
 

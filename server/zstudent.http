@@ -1,0 +1,8 @@
+### student login
+POST http://localhost:1544/Student/login
+Content-Type: application/json
+
+{
+    "studentID": "22071A3262",
+    "password": "Welcome@123"
+}

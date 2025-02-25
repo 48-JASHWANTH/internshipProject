@@ -1,5 +1,4 @@
 // FacultyController.js
-import mongoose from "mongoose";
 import asynchandler from "express-async-handler";
 import Faculty from "../models/FacultyModel.js";
 import SectionTeams from "../models/SectionTeamsModel.js";
