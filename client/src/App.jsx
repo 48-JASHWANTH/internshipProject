@@ -16,40 +16,63 @@ import ProjectForum from './modules/Student/ProjectForum';
 import ActiveWorks from './modules/Student/ActiveWorks/ActiveWorks';
 import CampusProjects from './modules/Student/CampusProjects';
 import ProjectDetails from './modules/Student/ActiveWorks/ProjectDetails';
+import { Toaster } from 'react-hot-toast';
 
 function App() {
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<Login />} />
-        
-        {/* Admin Routes */}
-        <Route path="/admin" element={<Admin />}>
-          <Route path="dashboard" element={<Admin />} />
-        </Route>
+    <>
+      <Toaster 
+        position="top-center"
+        toastOptions={{
+          duration: 3000,
+          style: {
+            background: '#333',
+            color: '#fff',
+          },
+          success: {
+            style: {
+              background: '#22c55e',
+            },
+          },
+          error: {
+            style: {
+              background: '#ef4444',
+            },
+          },
+        }}
+      />
+      <Router>
+        <Routes>
+          <Route path="/" element={<Login />} />
+          
+          {/* Admin Routes */}
+          <Route path="/admin" element={<Admin />}>
+            <Route path="dashboard" element={<Admin />} />
+          </Route>
 
-        {/* Faculty Routes */}
-        <Route path="/faculty" element={<Faculty />}>
-          <Route path="dashboard" element={<FacultyDashboard />} />
-          <Route path="projects" element={<ClassProjects />} />
-          <Route path="activeworks" element={<FacultyActiveWorks />} />
-          <Route path="archived" element={<FacultyArchivedProjects />} />
-          <Route path="Projects/Create" element={<CreateProjectForm />} />
-        </Route>
+          {/* Faculty Routes */}
+          <Route path="/faculty" element={<Faculty />}>
+            <Route path="dashboard" element={<FacultyDashboard />} />
+            <Route path="projects" element={<ClassProjects />} />
+            <Route path="activeworks" element={<FacultyActiveWorks />} />
+            <Route path="archived" element={<FacultyArchivedProjects />} />
+            <Route path="Projects/Create" element={<CreateProjectForm />} />
+          </Route>
 
-        {/* Student Routes */}
-        <Route path="/student" element={<Student />}>
-          <Route path="dashboard" element={<Dashboard />} />
-          <Route path="archivedprojects" element={<ArchivedProjects />} />
-          <Route path="profile" element={<Profile />} />
-          <Route path="changepassword" element={<ChangePassword />} />
-          <Route path="projectforum" element={<ProjectForum />} />
-          <Route path="activeworks" element={<ActiveWorks />} />
-          <Route path="activeworks/:projectId" element={<ProjectDetails />} />
-          <Route path="campusprojects" element={<CampusProjects />} />
-        </Route>
-      </Routes>
-    </Router>
+          {/* Student Routes */}
+          <Route path="/student" element={<Student />}>
+            <Route path="dashboard" element={<Dashboard />} />
+            <Route path="archivedprojects" element={<ArchivedProjects />} />
+            <Route path="profile" element={<Profile />} />
+            <Route path="changepassword" element={<ChangePassword />} />
+            <Route path="projectforum" element={<ProjectForum />} />
+            <Route path="activeworks" element={<ActiveWorks />} />
+            <Route path="activeworks/:projectId" element={<ProjectDetails />} />
+            <Route path="campusprojects" element={<CampusProjects />} />
+          </Route>
+        </Routes>
+      </Router>
+    </>
   );
 }
 export default App;

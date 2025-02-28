@@ -4,6 +4,7 @@ import VideoComponent from "./VideoComponent";
 import { FaUserTie, FaChalkboardTeacher, FaUserShield, FaUserGraduate } from "react-icons/fa"; 
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import useAuthStore from '@/store/authStore';
+import { toast } from 'react-hot-toast';
 
 function Login() {
   const navigate = useNavigate();
@@ -23,10 +24,24 @@ function Login() {
     
     const result = await login(credentials, userType);
     
-    if (!result.success) {
-      console.error(result.error);
+    if (result.success) {
+      toast.success(`Welcome ${username}!`);
+      // Redirect based on user type
+      switch(userType) {
+        case 'Student':
+          navigate('/Student/Dashboard');
+          break;
+        case 'Faculty':
+          navigate('/Faculty/Dashboard');
+          break;
+        case 'Admin':
+          navigate('/Admin/Dashboard');
+          break;
+        default:
+          navigate('/');
+      }
     } else {
-      navigate(`/${userType}/Dashboard`);
+      toast.error(result.error || 'Login failed');
     }
   };
 
