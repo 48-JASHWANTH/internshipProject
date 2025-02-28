@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import useProjectStore from '../../store/projectStore';
+import useProjectForumStore from '../../store/projectForumStore';
 import ProjectCard from '../../components/ProjectCard';
 import { FaSearch, FaFilter } from 'react-icons/fa';
 
 const ProjectForum = () => {
-  const { forumProjects, expressInterest } = useProjectStore();
+  const { forumProjects, expressInterest } = useProjectForumStore();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
 

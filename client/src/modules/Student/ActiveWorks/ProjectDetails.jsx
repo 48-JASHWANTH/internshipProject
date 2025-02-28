@@ -10,7 +10,7 @@ import {
   File,
 
 } from 'lucide-react';
-import useActiveWorksStore from '../../../store/activeWorksStore';
+import useProjectStore from '../../../store/projectStore';
 import { Dialog } from '@headlessui/react';
 import Workboard from './Workboard';
 import { toast } from 'react-hot-toast';
@@ -19,15 +19,15 @@ import ReviewBoard from './ReviewBoard';
 const ProjectDetails = () => {
   const { projectId } = useParams();
   const navigate = useNavigate();
-  const { activeWorks, updateProjectResource, addProjectDocument, removeProjectDocument } = useActiveWorksStore();
+  const { projects, updateProject, updateProjectResource } = useProjectStore();
   const [isGithubModalOpen, setIsGithubModalOpen] = useState(false);
   const [githubUrl, setGithubUrl] = useState('');
   const [activeView, setActiveView] = useState('details');
   const [isUploading, setIsUploading] = useState(false);
   
   const project = useMemo(() => 
-    activeWorks.find(work => work.id === projectId),
-    [activeWorks, projectId]
+    projects.find(work => work.id === projectId),
+    [projects, projectId]
   );
 
   const handleFileUpload = (type) => {
@@ -80,7 +80,13 @@ const ProjectDetails = () => {
   const handleDocumentDelete = async (documentId) => {
     try {
       await resourceService.deleteDocument(projectId, documentId);
-      removeProjectDocument(projectId, documentId);
+      updateProject(projectId, {
+        ...project,
+        resources: {
+          ...project.resources,
+          documents: project.resources.documents.filter(doc => doc.id !== documentId)
+        }
+      });
       toast.success('Document deleted successfully');
     } catch (error) {
       console.error('Delete error:', error);
@@ -276,7 +282,7 @@ const ProjectDetails = () => {
                             {doc.name}
                           </a>
                           <button
-                            onClick={() => handleRemoveResource(doc.id)}
+                            onClick={() => handleDocumentDelete(doc.id)}
                             className="text-sm text-red-600 hover:text-red-700"
                           >
                             Remove

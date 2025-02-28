@@ -1,16 +1,21 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import useActiveWorksStore from '../../../store/activeWorksStore';
-import ProjectCard from '../../../modules/components/ProjectCard';
+import useProjectStore from '../../../store/projectStore';
+import ProjectCard from '../../../components/ProjectCard';
 import { Search } from 'lucide-react';
 
 const ActiveWorks = () => {
   const navigate = useNavigate();
-  const { activeWorks } = useActiveWorksStore();
+  const { projects } = useProjectStore();
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   
   const categories = ['all', 'CBP', 'Mini', 'Major'];
+
+  // Filter active projects only
+  const activeWorks = useMemo(() => {
+    return projects.filter(project => project.status === 'active');
+  }, [projects]);
 
   // Memoized filtered works - filtered for faculty's projects
   const filteredWorks = useMemo(() => {

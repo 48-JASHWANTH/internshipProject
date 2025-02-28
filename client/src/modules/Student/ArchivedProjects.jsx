@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { FaSearch, FaFilter, FaGithub, FaDownload, FaEye } from 'react-icons/fa';
-import useArchivedProjectStore from '../../store/archivedProjectStore';
+import useProjectStore from '../../store/projectStore';
 import { Link } from 'react-router-dom';
 
 const ArchivedProjects = () => {
-  const { archivedProjects } = useArchivedProjectStore();
+  const { projects } = useProjectStore();
   const [searchTerm, setSearchTerm] = useState('');
   const [filters, setFilters] = useState({
     year: 'all',
@@ -15,6 +15,11 @@ const ArchivedProjects = () => {
 
   const years = ['all', '2023', '2022', '2021', '2020'];
   const projectTypes = ['all', 'CBP', 'Mini', 'Major'];
+
+  // Filter completed projects only
+  const archivedProjects = useMemo(() => {
+    return projects.filter(project => project.status === 'completed');
+  }, [projects]);
 
   const filteredProjects = archivedProjects.filter(project => {
     const matchesSearch = 

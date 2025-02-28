@@ -1,16 +1,38 @@
 import React, { useState } from 'react';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
-import useActiveWorksStore from '../../../store/activeWorksStore';
+import useProjectStore from '../../../store/projectStore';
 import { FaArrowRight, FaCheck } from 'react-icons/fa';
 
 const Workboard = ({ projectId }) => {
-  const { activeWorks, updateProjectTask, moveProjectTaskForward } = useActiveWorksStore();
+  const { projects, updateProject } = useProjectStore();
   const [enabled, setEnabled] = useState(false);
   const [taskToComplete, setTaskToComplete] = useState(null);
 
-  // Get project-specific tasks
-  const project = activeWorks.find(work => work.id === projectId);
+  // Get project from new store
+  const project = projects.find(work => work.id === projectId);
   const tasks = project?.tasks || [];
+
+  // Replace activeWorks functions with new store functions
+  const updateProjectTask = (projectId, updatedTask) => {
+    const updatedTasks = tasks.map(task =>
+      task.id === updatedTask.id ? updatedTask : task
+    );
+    updateProject(projectId, { tasks: updatedTasks });
+  };
+
+  const moveProjectTaskForward = (projectId, taskId) => {
+    const updatedTasks = tasks.map(task => {
+      if (task.id === taskId) {
+        const newStatus = 
+          task.status === 'To-Do' ? 'In Progress' :
+          task.status === 'In Progress' ? 'Done' :
+          task.status;
+        return { ...task, status: newStatus };
+      }
+      return task;
+    });
+    updateProject(projectId, { tasks: updatedTasks });
+  };
 
   // Enable drag and drop after component mount to avoid hydration issues
   React.useEffect(() => {

@@ -1,25 +1,29 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import useActiveWorksStore from '../../../store/activeWorksStore';
+import useProjectStore from '../../../store/projectStore';
 import ProjectCard from '../../../modules/components/ProjectCard';
 import { Search } from 'lucide-react';
 
 const ActiveWorks = () => {
   const navigate = useNavigate();
-  const { activeWorks } = useActiveWorksStore();
+  const { projects } = useProjectStore();
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   
   const categories = ['all', 'CBP', 'Mini', 'Major'];
 
+  // Filter active projects only
+  const activeWorks = useMemo(() => {
+    return projects.filter(project => project.status === 'active');
+  }, [projects]);
+
   // Memoized filtered works
   const filteredWorks = useMemo(() => {
-    return activeWorks
-      .filter(work => 
-        (selectedCategory === 'all' || work.category === selectedCategory) &&
-        (work.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-         work.facultyGuide.toLowerCase().includes(searchQuery.toLowerCase()))
-      );
+    return activeWorks.filter(work => 
+      (selectedCategory === 'all' || work.category === selectedCategory) &&
+      (work.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+       work.facultyGuide.toLowerCase().includes(searchQuery.toLowerCase()))
+    );
   }, [activeWorks, selectedCategory, searchQuery]);
 
   const handleProjectClick = (projectId) => {

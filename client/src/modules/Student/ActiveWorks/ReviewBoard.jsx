@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Pencil, CheckCircle, XCircle, Info } from 'lucide-react';
-import useActiveWorksStore from '../../../store/activeWorksStore';
+import useProjectStore from '../../../store/projectStore';
 
 const ReviewPage = () => {
   const { projectId } = useParams();
-  const { activeWorks, updateProjectReview } = useActiveWorksStore();
-  const project = activeWorks.find(work => work.id === projectId);
+  const { projects, updateProject } = useProjectStore();
+  const project = projects.find(work => work.id === projectId);
   const reviews = project?.reviews || [];
   
   const [editingReviewId, setEditingReviewId] = useState(null);
@@ -22,13 +22,21 @@ const ReviewPage = () => {
       alert('Score must be between 0 and 10');  
       return;
     }
-    updateProjectReview(projectId, reviewId, {
+    const updatedReview = {
       ...reviews.find(r => r.id === reviewId),
       score: editForm.score,
       feedback: editForm.remarks,
       status: 'Completed'
-    });
+    };
+    updateProjectReview(projectId, reviewId, updatedReview);
     setEditingReviewId(null);
+  };
+
+  const updateProjectReview = (projectId, reviewId, updatedReview) => {
+    const updatedReviews = project.reviews.map(review =>
+      review.id === reviewId ? updatedReview : review
+    );
+    updateProject(projectId, { reviews: updatedReviews });
   };
 
   return (
