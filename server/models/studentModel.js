@@ -1,18 +1,25 @@
 import mongoose from "mongoose";
+import dotenv from 'dotenv';
+
+dotenv.config(); // Add this to load environment variables
+
 const StudentSchema = new mongoose.Schema({
   studentID: {
     type: String,
     required: true,
     unique: true
   },
-  password: {
+  name: {
     type: String,
     required: true
   },
+  password: {
+    type: String,
+    default: process.env.DEFAULT_PASSWORD // This should work now
+  },
   mail: {
     type: String,
-    // required: true,
-    unique: true
+    default: ''
   },
   notifications: {
     type: [String],

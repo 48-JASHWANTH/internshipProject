@@ -47,14 +47,21 @@ export const verifyFaculty = (req, res, next) => {
     next();
 };
 
-export const verifyAdmin = (req, res, next) => {
-    if (req.user.role !== 'admin') {
-        return res.status(403).json({
+export const verifyAdmin = async (req, res, next) => {
+    try {
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({
+                success: false,
+                message: 'Access denied. Admin only.'
+            });
+        }
+        next();
+    } catch (error) {
+        res.status(401).json({
             success: false,
-            message: "Access denied. Admin only."
+            message: 'Admin verification failed'
         });
     }
-    next();
 };
 
 // Optional: Verify specific permissions

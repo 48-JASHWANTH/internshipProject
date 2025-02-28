@@ -1,0 +1,12 @@
+### Add multiple students
+POST http://localhost:1544/admin/add-students
+Content-Type: application/json
+
+{
+  "students": {
+    "22071A3262": "Jashwanth",
+    "22071A3254": "Sairam",
+    "22071A3255": "Bhargav",
+    "22071A3245": "Sai Royal"
+  }
+}
