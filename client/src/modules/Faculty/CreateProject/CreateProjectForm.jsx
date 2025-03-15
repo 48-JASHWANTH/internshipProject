@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import ProjectFormInput from "./ProjectFormInput";
 import ProjectFormConfirmation from "./ProjectFormConfirmation";
-import ConfirmationDialog from "../common/ConfirmationDialog";
+import ConfirmationDialog from "../../common/ConfirmationDialog";
 
 const CreateProjectForm = () => {
   const navigate = useNavigate();

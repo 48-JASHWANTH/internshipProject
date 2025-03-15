@@ -1,23 +1,24 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Login from "./modules/Login/Login";
 import Admin from "./modules/Admin/Admin";
-import Student from "./modules/Student/StudentLayout";
-import Faculty from "./modules/Faculty/FacultyLayout";
-import ClassProjects from "./modules/Faculty/ClassProjects";
+import FacultyLayout from "./modules/Faculty/FacultyLayout";
 import Dashboard from "./modules/Student/Dashboard";
 import ArchivedProjects from "./modules/Student/ArchivedProjects";
 import ChangePassword from "./modules/Student/ChangePassword";
 import Profile from "./modules/Student/Profile/Profile";
 import FacultyDashboard from './modules/Faculty/Dashboard'
-import FacultyActiveWorks from './modules/Faculty/ActiveWorks/ActiveWorks'
 import FacultyArchivedProjects from './modules/Faculty/ArchivedProjects'
-import CreateProjectForm from './modules/Faculty/CreateProjectForm';
+import CreateProjectForm from './modules/Faculty/CreateProject/CreateProjectForm';
 import ProjectForum from './modules/Student/ProjectForum';
 import ActiveWorks from './modules/Student/ActiveWorks/ActiveWorks';
 import CampusProjects from './modules/Student/CampusProjects';
 import ProjectDetails from './modules/Student/ActiveWorks/ProjectDetails';
+import CampusProject from './modules/Faculty/CampusProjects';
 import { Toaster } from 'react-hot-toast';
-
+import Guide from "./modules/Faculty/ActiveWorks/Guide";
+import Incharge from "./modules/Faculty/ActiveWorks/Incharge";
+import Student from "./modules/Student/StudentLayout";
+import FacultyProfile from "./modules/Faculty/Profile/FacultyProfile";
 function App() {
   return (
     <>
@@ -51,14 +52,16 @@ function App() {
           </Route>
 
           {/* Faculty Routes */}
-          <Route path="/faculty" element={<Faculty />}>
-            <Route path="dashboard" element={<FacultyDashboard />} />
-            <Route path="projects" element={<ClassProjects />} />
-            <Route path="activeworks" element={<FacultyActiveWorks />} />
-            <Route path="archived" element={<FacultyArchivedProjects />} />
-            <Route path="Projects/Create" element={<CreateProjectForm />} />
+          <Route path="/Faculty" element={<FacultyLayout />}>
+            <Route path="Dashboard" element={<FacultyDashboard />} />
+            <Route path="ActiveWorks/Guide" element={<Guide />} />
+            <Route path="ActiveWorks/Incharge" element={<Incharge />} />
+            <Route path="ArchivedProjects" element={<FacultyArchivedProjects />} />
+            <Route path="CampusProjects" element={<CampusProject />} />
+            <Route path="ProjectForum" element={<ProjectForum />} />
+            <Route path="Create" element={<CreateProjectForm />} />
+            <Route path="FacultyProfile" element={<FacultyProfile />} />
           </Route>
-
           {/* Student Routes */}
           <Route path="/student" element={<Student />}>
             <Route path="dashboard" element={<Dashboard />} />

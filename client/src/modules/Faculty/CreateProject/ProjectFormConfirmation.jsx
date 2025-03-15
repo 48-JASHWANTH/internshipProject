@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { FaEdit, FaSave } from "react-icons/fa";
-import SearchableDropdown from "../common/SearchableDropdown";
+import SearchableDropdown from "../../common/SearchableDropdown";
 
 const facultyList = [
   { id: "FAC001", name: "Dr. Sarah Johnson" },

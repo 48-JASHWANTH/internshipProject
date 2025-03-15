@@ -9,7 +9,7 @@ const useProfileStore = create(
         regNumber: '',
         email: '',
         phone: '',
-        gender: 'Male',
+        gender: '',
         dob: '',
         profilePic: '',
         role: 'student',
