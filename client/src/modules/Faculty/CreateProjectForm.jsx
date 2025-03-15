@@ -21,7 +21,6 @@ const CreateProjectForm = () => {
   const [showFinalConfirmation, setShowFinalConfirmation] = useState(false);
 
   const handleSubmitAttempt = () => {
-    // Check if any team lacks a guide
     const teamsWithoutGuides = excelData.filter(
       (team) => !team.guide || team.guide === "Not Assigned"
     );
@@ -34,73 +33,59 @@ const CreateProjectForm = () => {
   };
 
   const handleFinalSubmit = () => {
-    // Generate a unique classID based on timestamp
+    const facultyID = "FAC12345";
     const classID = Date.now().toString();
     
-    // Format teams data to match API structure
-    const teamsObject = {};
-    const projectTitlesObject = {};
-    const guidesObject = {};
-    
-    excelData.forEach((team, index) => {
+    // Build teams, projectTitles and guides objects in one pass
+    const { teams, projectTitles, guides } = excelData.reduce((acc, team, index) => {
       const teamId = `${classID}_${index + 1}`;
-      teamsObject[teamId] = team.students.map(student => student.rollNo);
-      projectTitlesObject[teamId] = team.projectTitle;
-      guidesObject[teamId] = team.guide?.startsWith('G') ? team.guide : `G${Math.floor(10000 + Math.random() * 90000)}`; // Generate guide ID if not in correct format
-    });
-
-    const finalRequestData = {
-      facultyID: "FAC12345", // This would typically come from auth context
-      year: formData.year,
-      sem: formData.semester,
-      branch: formData.branch,
-      section: formData.section,
-      projectType: formData.projectType,
-      classID: classID,
-      noOfTeams: excelData.length,
-      noOfStudents: excelData.reduce((acc, team) => acc + team.students.length, 0),
-      subject: formData.projectType === "Course Based Project(CBP)" ? formData.subject : "Not Applicable",
-      guideApproval: true,
-      teams: teamsObject,
-      projectTitles: projectTitlesObject,
-      guides: guidesObject
-    };
-
-    // Log the formatted request data
-    console.log("API Request Data:", finalRequestData);
-    console.log("Expected API Response:", {
-      message: 'ClassID added to leadedProjects, SectionTeams and individual Teams created successfully',
-      updatedFaculty: {
-        facultyID: finalRequestData.facultyID,
-        leadedProjects: [finalRequestData.classID]
-        // Other faculty fields would be here
-      },
+      acc.teams[teamId] = team.students.map(student => student.rollNo);
+      acc.projectTitles[teamId] = team.projectTitle;
+      acc.guides[teamId] = team.facultyId || null;
+      return acc;
+    }, { teams: {}, projectTitles: {}, guides: {} });
+    
+    // Count totals
+    const noOfTeams = excelData.length;
+    const noOfStudents = excelData.reduce((acc, team) => acc + team.students.length, 0);
+    
+    // Subject determination
+    const subject = formData.projectType === "Course Based Project(CBP)" 
+      ? formData.subject 
+      : "Not Applicable";
+    
+    // Build the response structure directly
+    const responseData = {
+      message: 'New work has been created successfully',
       newSectionTeam: {
-        classID: finalRequestData.classID,
-        year: finalRequestData.year,
-        sem: finalRequestData.sem,
-        branch: finalRequestData.branch,
-        section: finalRequestData.section,
-        projectType: finalRequestData.projectType,
-        facultyID: finalRequestData.facultyID,
-        numberOfTeams: finalRequestData.noOfTeams,
-        teamsList: finalRequestData.teams,
-        projectTitles: finalRequestData.projectTitles,
-        numberOfStudents: finalRequestData.noOfStudents,
+        classID,
+        year: formData.year,
+        sem: formData.semester,
+        branch: formData.branch,
+        section: formData.section,
+        projectType: formData.projectType,
+        facultyID,
+        numberOfTeams: noOfTeams,
+        teamsList: teams,
+        projectTitles,
+        numberOfStudents: noOfStudents,
         status: 'Pending'
       },
-      createdTeams: Object.keys(teamsObject).map(teamId => ({
+      createdTeams: Object.keys(teams).map(teamId => ({
         teamId,
-        listOfStudents: teamsObject[teamId],
-        projectTitle: projectTitlesObject[teamId],
-        projectType: finalRequestData.projectType,
-        subject: finalRequestData.subject,
+        listOfStudents: teams[teamId],
+        projectTitle: projectTitles[teamId],
+        projectType: formData.projectType,
+        subject,
         githubURL: "",
-        guideApproval: finalRequestData.guideApproval,
-        guideFacultyId: guidesObject[teamId],
-        inchargefacultyId: finalRequestData.facultyID
+        guideApproval: true,
+        guideFacultyId: guides[teamId],
+        inchargefacultyId: facultyID
       }))
-    });
+    };
+
+    // Single console log with the final response only
+    console.log("Final Response:", responseData);
 
     navigate("/Faculty/Projects");
   };
@@ -128,7 +113,6 @@ const CreateProjectForm = () => {
         )}
       </form>
 
-      {/* Guide Warning Dialog */}
       {showGuideWarning && (
         <ConfirmationDialog
           title="Warning"
@@ -141,7 +125,6 @@ const CreateProjectForm = () => {
         />
       )}
 
-      {/* Final Confirmation Dialog */}
       {showFinalConfirmation && (
         <ConfirmationDialog
           title="Confirm Submission"
