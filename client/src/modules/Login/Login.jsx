@@ -8,7 +8,7 @@ import { toast } from 'react-hot-toast';
 
 function Login() {
   const navigate = useNavigate();
-  const [userType, setUserType] = useState("Student"); 
+  const [userType, setUserType] = useState("student"); 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -18,7 +18,7 @@ function Login() {
     e.preventDefault();
     
     // Format credentials based on user type
-    const credentials = userType === 'Student' 
+    const credentials = userType === 'student' 
       ? { studentID: username, password } 
       : { facultyID: username, password };
     
@@ -28,13 +28,13 @@ function Login() {
       toast.success(`Welcome ${username}!`);
       // Redirect based on user type
       switch(userType) {
-        case 'Student':
+        case 'student':
           navigate('/Student/Dashboard');
           break;
-        case 'Faculty':
+        case 'faculty':
           navigate('/Faculty/Dashboard');
           break;
-        case 'Admin':
+        case 'admin':
           navigate('/Admin/Dashboard');
           break;
         default:
@@ -46,9 +46,9 @@ function Login() {
   };
 
   const userTypes = [
-    { name: "Student", icon: <FaUserGraduate /> },
-    { name: "Faculty", icon: <FaUserTie /> },
-    { name: "Admin", icon: <FaUserShield /> },
+    { name: "student", icon: <FaUserGraduate /> },
+    { name: "faculty", icon: <FaUserTie /> },
+    { name: "admin", icon: <FaUserShield /> },
   ];
 
   return (

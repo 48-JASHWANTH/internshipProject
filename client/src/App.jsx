@@ -17,8 +17,18 @@ import ActiveWorks from './modules/Student/ActiveWorks/ActiveWorks';
 import CampusProjects from './modules/Student/CampusProjects';
 import ProjectDetails from './modules/Student/ActiveWorks/ProjectDetails';
 import { Toaster } from 'react-hot-toast';
-
+import { Navigate, Outlet } from "react-router-dom";
+import useAuthStore from "@/store/authStore";
 function App() {
+  const PrivateRoute = ({ allowedRoles }) => {
+    const { user, isAuthenticated } = useAuthStore();
+  
+    if (!isAuthenticated || !allowedRoles.includes(user?.role)) {
+      return <Navigate to="/" />;
+    }
+  
+    return <Outlet />;
+  };
   return (
     <>
       <Toaster 
@@ -42,15 +52,18 @@ function App() {
         }}
       />
       <Router>
-        <Routes>
-          <Route path="/" element={<Login />} />
-          
-          {/* Admin Routes */}
+      <Routes>
+        <Route path="/" element={<Login />} />
+
+        {/* Admin Routes */}
+        <Route element={<PrivateRoute allowedRoles={["admin"]} />}>
           <Route path="/admin" element={<Admin />}>
             <Route path="dashboard" element={<Admin />} />
           </Route>
+        </Route>
 
-          {/* Faculty Routes */}
+        {/* Faculty Routes */}
+        <Route element={<PrivateRoute allowedRoles={["faculty"]} />}>
           <Route path="/faculty" element={<Faculty />}>
             <Route path="dashboard" element={<FacultyDashboard />} />
             <Route path="projects" element={<ClassProjects />} />
@@ -58,8 +71,10 @@ function App() {
             <Route path="archived" element={<FacultyArchivedProjects />} />
             <Route path="Projects/Create" element={<CreateProjectForm />} />
           </Route>
+        </Route>
 
-          {/* Student Routes */}
+        {/* Student Routes */}
+        <Route element={<PrivateRoute allowedRoles={["student"]} />}>
           <Route path="/student" element={<Student />}>
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="archivedprojects" element={<ArchivedProjects />} />
@@ -70,8 +85,9 @@ function App() {
             <Route path="activeworks/:projectId" element={<ProjectDetails />} />
             <Route path="campusprojects" element={<CampusProjects />} />
           </Route>
-        </Routes>
-      </Router>
+        </Route>
+      </Routes>
+    </Router>
     </>
   );
 }
