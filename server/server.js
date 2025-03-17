@@ -6,6 +6,7 @@ import cookieParser from "cookie-parser";
 import adminRoutes from "./routes/adminRoutes.js";
 import facultyRoutes from "./routes/facultyRoute.js";
 import studentRoutes from "./routes/studentRoutes.js";
+import activityLogRoutes from "./routes/activityLogRoutes.js";
 
 console.log('Student routes:', studentRoutes);
 
@@ -30,6 +31,7 @@ app.use((req, res, next) => {
 app.use('/student', studentRoutes);
 app.use('/faculty', facultyRoutes);
 app.use('/admin', adminRoutes);
+app.use('/admin/activity', activityLogRoutes);
 
 // Add a test route to verify Express is working
 app.get('/test', (req, res) => {

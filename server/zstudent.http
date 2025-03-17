@@ -1,8 +1,8 @@
 ### student login
-POST http://localhost:1544/Student/login
+POST http://localhost:1544/student/login
 Content-Type: application/json
 
 {
-    "studentID": "22071A3262",
+    "studentID": "22071A3264",
     "password": "Welcome@123"
 }
