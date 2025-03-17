@@ -1,5 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Edit, X } from 'lucide-react';
+import axios from 'axios';
+import { toast } from 'react-toastify';
 
 const AdditionalInfo = () => {
   const [isEditing, setIsEditing] = useState(false);
@@ -7,15 +9,102 @@ const AdditionalInfo = () => {
     backlogsHistory: "No",
     currentBacklogs: "0",
     interestedInPlacement: "Yes",
-    skills: "Node.js, React",
-    languages: "English, Hindi, Telugu"
+    skills: "",
+    languages: ""
   });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const handleSaveChanges = (e) => {
+  // Get student ID from localStorage or context
+  const studentID = localStorage.getItem('studentID') || '22071A3255'; // Fallback for testing
+
+  // Fetch additional data on component mount
+  useEffect(() => {
+    const fetchAdditionalData = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get(`http://localhost:1544/student/additional/${studentID}`);
+        
+        // Extract only the fields we need
+        const { backlogsHistory, currentBacklogs, interestedInPlacement, skills, languages } = response.data;
+        setAdditionalData({
+          backlogsHistory: backlogsHistory || "No",
+          currentBacklogs: currentBacklogs || "0",
+          interestedInPlacement: interestedInPlacement || "Yes",
+          skills: skills || "",
+          languages: languages || ""
+        });
+        
+        setError(null);
+      } catch (err) {
+        console.error('Error fetching additional data:', err);
+        setError('Failed to load additional information. Please try again later.');
+        toast.error('Failed to load additional information');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAdditionalData();
+  }, [studentID]);
+
+  const handleSaveChanges = async (e) => {
     e.preventDefault();
-    console.log("Updated Additional Information:", additionalData);
-    setIsEditing(false);
+    
+    try {
+      setLoading(true);
+      const response = await axios.put(
+        `http://localhost:1544/student/additional/${studentID}`, 
+        additionalData
+      );
+      
+      if (response.status === 200) {
+        toast.success('Additional information updated successfully');
+        
+        // Update with the response data
+        const { backlogsHistory, currentBacklogs, interestedInPlacement, skills, languages } = response.data;
+        setAdditionalData({
+          backlogsHistory: backlogsHistory || "No",
+          currentBacklogs: currentBacklogs || "0",
+          interestedInPlacement: interestedInPlacement || "Yes",
+          skills: skills || "",
+          languages: languages || ""
+        });
+      }
+    } catch (err) {
+      console.error('Error updating additional data:', err);
+      toast.error(err.response?.data?.message || 'Failed to update additional information');
+    } finally {
+      setLoading(false);
+      setIsEditing(false);
+    }
   };
+
+  if (loading && !additionalData.skills) {
+    return (
+      <div className="mt-4 p-4 flex justify-center">
+        <div className="animate-pulse text-center">
+          <p className="text-gray-500">Loading additional information...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="mt-4 p-4">
+        <div className="bg-red-50 p-4 rounded-lg text-red-800">
+          <p>{error}</p>
+          <button 
+            onClick={() => window.location.reload()}
+            className="mt-2 text-sm underline"
+          >
+            Try again
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="mt-4 p-2 md:p-4">
@@ -205,8 +294,9 @@ const AdditionalInfo = () => {
                 <button
                   type="submit"
                   className="px-3 py-2 text-xs md:text-sm font-medium text-white bg-[#82001A] rounded-lg hover:bg-[#6b0016]"
+                  disabled={loading}
                 >
-                  Republish
+                  {loading ? 'Saving...' : 'Republish'}
                 </button>
               </div>
             </form>

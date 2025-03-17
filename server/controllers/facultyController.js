@@ -3,80 +3,86 @@ import asynchandler from "express-async-handler";
 import Faculty from "../models/FacultyModel.js";
 import SectionTeams from "../models/SectionTeamsModel.js";
 import Team from "../models/teamsModel.js";
+import Student from "../models/studentModel.js";
 
 // New entity created by faculty
 export const createTeams = asynchandler(async (req, res) => {
-    const { 
-        classID, 
-        facultyID, 
-        year, 
-        sem, 
-        branch, 
-        section, 
-        projectType, 
-        noOfTeams, 
-        teams, 
-        projectTitles, 
-        noOfStudents, 
-        guides, 
-        subject, 
-        guideApproval 
-    } = req.body;
-
     try {
-        const updatedFaculty = await Faculty.findOneAndUpdate(
-            { facultyID: facultyID },
-            { $push: { leadedProjects: classID } },
+        const { newSectionTeam, createdTeams } = req.body;
+        const sectionTeam = new SectionTeams({
+            classID: newSectionTeam.classID,
+            year: newSectionTeam.year,
+            sem: newSectionTeam.sem,
+            branch: newSectionTeam.branch,
+            section: newSectionTeam.section,
+            projectType: newSectionTeam.projectType,
+            facultyID: newSectionTeam.facultyID,
+            numberOfTeams: newSectionTeam.numberOfTeams,
+            teamsList: newSectionTeam.teamsList,
+            projectTitles: newSectionTeam.projectTitles,
+            numberOfStudents: newSectionTeam.numberOfStudents,
+            status: newSectionTeam.status
+        });
+
+        await sectionTeam.save();
+
+        const teamPromises = createdTeams.map(team => {
+            return Team.findOneAndUpdate(
+                { teamId: team.teamId },
+                {
+                    listOfStudents: team.listOfStudents,
+                    projectTitle: team.projectTitle,
+                    projectType: team.projectType,
+                    subject: team.subject,
+                    githubURL: "",
+                    guideApproval: true,
+                    guideFacultyId: team.guideFacultyId,
+                    inchargefacultyId: team.inchargefacultyId
+                },
+                { upsert: true, new: true }
+            );
+        });
+
+        await Promise.all(teamPromises);
+        const projectTitlesArray = Object.values(newSectionTeam.projectTitles); // Extract values
+        
+        // Update leaded projects for faculty in charge
+        await Faculty.findOneAndUpdate(
+            { facultyID: newSectionTeam.facultyID },
+            { $addToSet: { leadedProjects: { $each: projectTitlesArray } } }, 
             { new: true }
         );
+        
 
-        if (!updatedFaculty) {
-            return res.status(404).json({ message: 'Faculty not found' });
-        }
 
-        const newSectionTeam = new SectionTeams({
-            classID,
-            year,
-            sem,
-            branch,
-            section,
-            projectType,
-            facultyID,
-            numberOfTeams: noOfTeams,
-            teamsList: teams,
-            projectTitles: new Map(Object.entries(projectTitles)),
-            numberOfStudents: noOfStudents,
-            status: 'Pending'
-        });
+        // Update guided projects for faculty guiding specific teams
+        const facultyUpdatePromises = createdTeams.map(({ guideFacultyId, projectTitle }) =>
+            Faculty.findOneAndUpdate(
+                { facultyID: guideFacultyId },
+                { $addToSet: { guidedProjects: projectTitle } },
+                { new: true }
+            )
+        );
 
-        await newSectionTeam.save();
+        await Promise.all(facultyUpdatePromises);
+        console.log("Faculty projects updated successfully.");
+        
+        // const studentUpdatePromises = createdTeams.flatMap(team =>
+        //     team.listOfStudents.map(studentId =>
+        //         Student.findOneAndUpdate(
+        //             { studentID: studentId },
+        //             { $addToSet: { projects: team.projectTitle } }, 
+        //             { new: true }
+        //         )
+        //     )
+        // );
+        
+        // await Promise.all(studentUpdatePromises);
+        
 
-        const teamPromises = Object.entries(teams).map(async ([teamId, studentList]) => {
-            const newTeam = new Team({
-                teamId,
-                listOfStudents: studentList,
-                projectTitle: projectTitles[teamId],
-                projectType,
-                subject,
-                githubURL: "", // Placeholder, assuming it will be updated later
-                guideApproval: guideApproval || false,
-                guideFacultyId: guides[teamId] || "",
-                inchargefacultyId: facultyID
-            });
-            return await newTeam.save();
-        });
-
-        const createdTeams = await Promise.all(teamPromises);
-
-        return res.status(200).json({
-            message: 'ClassID added to leadedProjects, SectionTeams and individual Teams created successfully',
-            updatedFaculty,
-            newSectionTeam,
-            createdTeams
-        });
-
+        res.status(201).json({ message: 'Section team, teams, and student project counts updated successfully' });
     } catch (error) {
-        console.error(error);
-        return res.status(500).json({ message: 'Server error' });
+        res.status(500).json({ message: 'Error saving section team, teams, or updating student projects', error: error.message });
+        console.log(error.message);
     }
 });

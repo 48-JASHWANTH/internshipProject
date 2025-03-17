@@ -6,3 +6,51 @@ Content-Type: application/json
     "studentID": "22071A3264",
     "password": "Welcome@123"
 }
+
+### Update Student Profile
+### Update Student Academic Data
+PUT http://localhost:1544/student/academic/22071A3255
+Content-Type: application/json
+
+{
+  "campus": "VNR VJIET",
+  "batch": "2022-2026",
+  "department": "CSBS",
+  "degree": "B.Tech",
+  "tenth": "90.1",
+  "twelfth": "97.3",
+  "diploma": "NA",
+  "underGraduate": "9.45",
+  "postGraduate": "NA"
+}
+###
+
+GET http://localhost:1544/student/academic/22071A3255
+
+###
+PUT http://localhost:1544/student/additional/22071A3255
+Content-Type: application/json
+
+{
+  "backlogsHistory": "No",
+  "currentBacklogs": "0",
+  "interestedInPlacement": "Yes",
+  "skills": "Node.js, React",
+  "languages": "English, Hindi, Telugu"
+}
+
+###
+GET http://localhost:1544/student/additional/22071A3255
+
+###
+PUT http://localhost:1544/student/personal/22071A3255
+Content-Type: application/json
+
+{
+  "name": "Bhargav Tammana",
+  "studentID": "22071A3255",
+  "email": "bhargav@example.com",
+  "phone": "9876543210",
+  "gender": "Male",
+  "dateOfBirth": "2003-05-12"
+}

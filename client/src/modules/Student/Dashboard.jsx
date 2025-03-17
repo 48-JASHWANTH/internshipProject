@@ -106,6 +106,27 @@ function Dashboard() {
       lastReview: 'March 4',
       lastReviewer: '2/25/2024',
       status: 'Under Review'
+    },
+    {
+      title: 'AI Research Project',
+      sponsor: 'Sarah Chen',
+      lastReview: 'March 4',
+      lastReviewer: '2/25/2024',
+      status: 'In Progress'
+    },
+    {
+      title: 'AI Research Project',
+      sponsor: 'Sarah Chen',
+      lastReview: 'March 4',
+      lastReviewer: '2/25/2024',
+      status: 'In Progress'
+    },
+    {
+      title: 'AI Research Project',
+      sponsor: 'Sarah Chen',
+      lastReview: 'March 4',
+      lastReviewer: '2/25/2024',
+      status: 'In Progress'
     }
   ];
 
