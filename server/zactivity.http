@@ -1,0 +1,66 @@
+### Admin Login to get token
+POST http://localhost:1544/admin/login
+Content-Type: application/json
+
+{
+  "adminID": "admin",
+  "password": "Welcome@123"
+}
+
+### Log a User Activity
+POST http://localhost:1544/admin/activity/log-activity
+Content-Type: application/json
+
+{
+  "userId": "22071A3264",
+  "userType": "student",
+  "action": "Project Submission",
+  "details": "Submitted final project report"
+}
+
+### Log a Login Activity
+POST http://localhost:1544/admin/activity/log-activity
+Content-Type: application/json
+
+{
+  "userId": "FAC12346",
+  "userType": "faculty",
+  "action": "Login",
+  "details": "User logged in successfully"
+}
+
+### Log a Failed Login Activity
+POST http://localhost:1544/admin/activity/log-activity
+Content-Type: application/json
+
+{
+  "userId": "22071A3264",
+  "userType": "student",
+  "action": "Failed Login",
+  "details": "Invalid password attempt"
+}
+
+### Retrieve User Activity Logs (Admin only)
+GET http://localhost:1544/admin/activity/user-activity?userType=student
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZDdkNGE1ZDQ0Y2FkNWUxZTQyODI0YSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc0MjE5ODAwMywiZXhwIjoxNzQyMjg0NDAzfQ.pd83MRgXEzj2cgOCa3KHXCao6hvTxb4tMVtBqJmsbBE
+
+### Retrieve User Activity Logs with Date Range (Admin only)
+GET http://localhost:1544/admin/activity/user-activity?startDate=2025-03-01&endDate=2025-03-17
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZDdkNGE1ZDQ0Y2FkNWUxZTQyODI0YSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc0MjE5ODAwMywiZXhwIjoxNzQyMjg0NDAzfQ.pd83MRgXEzj2cgOCa3KHXCao6hvTxb4tMVtBqJmsbBE
+
+### Get Currently Online Users (Admin only)
+GET http://localhost:1544/admin/activity/currently-online
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZDdkNGE1ZDQ0Y2FkNWUxZTQyODI0YSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc0MjE5ODAwMywiZXhwIjoxNzQyMjg0NDAzfQ.pd83MRgXEzj2cgOCa3KHXCao6hvTxb4tMVtBqJmsbBE
+
+### Get Suspicious Activities (Admin only)
+GET http://localhost:1544/admin/activity/suspicious-activities
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZDdkNGE1ZDQ0Y2FkNWUxZTQyODI0YSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc0MjE5ODAwMywiZXhwIjoxNzQyMjg0NDAzfQ.pd83MRgXEzj2cgOCa3KHXCao6hvTxb4tMVtBqJmsbBE
+
+### Get User Statistics (Admin only)
+GET http://localhost:1544/admin/activity/user-statistics
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZDdkNGE1ZDQ0Y2FkNWUxZTQyODI0YSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc0MjE5ODAwMywiZXhwIjoxNzQyMjg0NDAzfQ.pd83MRgXEzj2cgOCa3KHXCao6hvTxb4tMVtBqJmsbBE 

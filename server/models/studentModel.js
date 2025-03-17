@@ -131,5 +131,14 @@ StudentSchema.pre('findOne', function() {
   this.where({ isActive: true });
 });
 
+// Add a method to the schema to filter out inactive users by default
+StudentSchema.pre('find', function() {
+  this.where({ isActive: true });
+});
+
+StudentSchema.pre('findOne', function() {
+  this.where({ isActive: true });
+});
+
 const Student = mongoose.model("studentsCollection", StudentSchema);
 export default Student;

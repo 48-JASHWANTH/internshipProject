@@ -1,7 +1,9 @@
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
-import Faculty from '../models/FacultyModel.js';
+import Faculty from '../models/facultyModel.js';
 import Student from '../models/studentModel.js';
+import Admin from '../models/adminModel.js';
+import ActivityLog from '../models/activityLogModel.js';
 import asyncHandler from 'express-async-handler';
 
 // Generate JWT Token
@@ -25,6 +27,16 @@ export const facultyLogin = asyncHandler(async (req, res) => {
         const faculty = await Faculty.findOne({ facultyID });
         
         if (!faculty) {
+            // Log failed login attempt
+            await new ActivityLog({
+                userId: facultyID,
+                userType: "faculty",
+                action: "Failed Login",
+                details: "Faculty not found",
+                ipAddress: req.headers['x-forwarded-for'] || req.socket.remoteAddress,
+                deviceInfo: req.headers['user-agent'] || ''
+            }).save();
+            
             return res.status(401).json({
                 success: false,
                 message: "Invalid credentials ID"
@@ -34,6 +46,16 @@ export const facultyLogin = asyncHandler(async (req, res) => {
         const isMatch = await bcrypt.compare(password, faculty.password);
         
         if (!isMatch) {
+            // Log failed login attempt
+            await new ActivityLog({
+                userId: facultyID,
+                userType: "faculty",
+                action: "Failed Login",
+                details: "Invalid password",
+                ipAddress: req.headers['x-forwarded-for'] || req.socket.remoteAddress,
+                deviceInfo: req.headers['user-agent'] || ''
+            }).save();
+            
             return res.status(401).json({
                 success: false,
                 message: "Invalid credentials pass"
@@ -45,6 +67,16 @@ export const facultyLogin = asyncHandler(async (req, res) => {
             role: 'faculty',
             email: faculty.email
         });
+
+        // Log successful login
+        await new ActivityLog({
+            userId: facultyID,
+            userType: "faculty",
+            action: "Login",
+            details: "Faculty logged in successfully",
+            ipAddress: req.headers['x-forwarded-for'] || req.socket.remoteAddress,
+            deviceInfo: req.headers['user-agent'] || ''
+        }).save();
 
         res.json({
             success: true,
@@ -73,6 +105,16 @@ export const studentLogin = asyncHandler(async (req, res) => {
         console.log(student);
         
         if (!student) {
+            // Log failed login attempt
+            await new ActivityLog({
+                userId: studentID,
+                userType: "student",
+                action: "Failed Login",
+                details: "Student not found",
+                ipAddress: req.headers['x-forwarded-for'] || req.socket.remoteAddress,
+                deviceInfo: req.headers['user-agent'] || ''
+            }).save();
+            
             return res.status(401).json({
                 success: false,
                 message: "Invalid credentials ID"
@@ -82,6 +124,16 @@ export const studentLogin = asyncHandler(async (req, res) => {
         const isMatch = await bcrypt.compare(password, student.password);
         
         if (!isMatch) {
+            // Log failed login attempt
+            await new ActivityLog({
+                userId: studentID,
+                userType: "student",
+                action: "Failed Login",
+                details: "Invalid password",
+                ipAddress: req.headers['x-forwarded-for'] || req.socket.remoteAddress,
+                deviceInfo: req.headers['user-agent'] || ''
+            }).save();
+            
             return res.status(401).json({
                 success: false,
                 message: "Invalid credentials pass"
@@ -93,6 +145,16 @@ export const studentLogin = asyncHandler(async (req, res) => {
             role: 'student',
             email: student.mail
         });
+
+        // Log successful login
+        await new ActivityLog({
+            userId: studentID,
+            userType: "student",
+            action: "Login",
+            details: "Student logged in successfully",
+            ipAddress: req.headers['x-forwarded-for'] || req.socket.remoteAddress,
+            deviceInfo: req.headers['user-agent'] || ''
+        }).save();
 
         res.json({
             success: true,
@@ -110,4 +172,87 @@ export const studentLogin = asyncHandler(async (req, res) => {
             message: "Server error during login"
         });
     }
-}); 
+});
+
+// Admin login
+export const adminLogin = async (req, res) => {
+    try {
+        const { adminID, password } = req.body;
+
+        // Find admin by ID
+        const admin = await Admin.findOne({ adminID });
+
+        if (!admin) {
+            // Log failed login attempt
+            await new ActivityLog({
+                userId: adminID,
+                userType: "admin",
+                action: "Failed Login",
+                details: "Admin not found",
+                ipAddress: req.headers['x-forwarded-for'] || req.socket.remoteAddress,
+                deviceInfo: req.headers['user-agent'] || ''
+            }).save();
+            
+            return res.status(401).json({
+                success: false,
+                message: "Invalid credentials"
+            });
+        }
+
+        // Check password
+        const isMatch = await bcrypt.compare(password, admin.password);
+
+        if (!isMatch) {
+            // Log failed login attempt
+            await new ActivityLog({
+                userId: adminID,
+                userType: "admin",
+                action: "Failed Login",
+                details: "Invalid password",
+                ipAddress: req.headers['x-forwarded-for'] || req.socket.remoteAddress,
+                deviceInfo: req.headers['user-agent'] || ''
+            }).save();
+            
+            return res.status(401).json({
+                success: false,
+                message: "Invalid credentials"
+            });
+        }
+
+        // Create JWT token
+        const token = jwt.sign(
+            { id: admin._id, role: "admin" },
+            process.env.JWT_SECRET,
+            { expiresIn: "1d" }
+        );
+
+        // Log successful login
+        await new ActivityLog({
+            userId: adminID,
+            userType: "admin",
+            action: "Login",
+            details: "Admin logged in successfully",
+            ipAddress: req.headers['x-forwarded-for'] || req.socket.remoteAddress,
+            deviceInfo: req.headers['user-agent'] || ''
+        }).save();
+
+        // Send response
+        res.status(200).json({
+            success: true,
+            message: "Login successful",
+            token,
+            user: {
+                adminID: admin.adminID,
+                name: admin.name,
+                email: admin.email,
+                role: "admin"
+            }
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Error during login",
+            error: error.message
+        });
+    }
+}; 
