@@ -1,8 +1,8 @@
 import React, { useState, useRef, useEffect } from "react";
-import { FaUserCircle, FaBell, FaBars, FaTimes } from "react-icons/fa"; 
-import { useNavigate } from "react-router-dom";  
-import vnrlogo from '../images/vnrvjiet.png';
-import useProfileStore from '../../store/useProfileStore';
+import { FaUserCircle, FaBell, FaBars, FaTimes } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
+import vnrlogo from "../images/vnrvjiet.png";
+import useProfileStore from "../../store/useProfileStore";
 
 const Navbar = ({ isMobileMenuOpen, setIsMobileMenuOpen }) => {
   const { profileData } = useProfileStore();
