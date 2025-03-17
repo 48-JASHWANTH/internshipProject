@@ -1,25 +1,95 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Edit, X } from 'lucide-react';
+import axios from 'axios';
+import { toast } from 'react-toastify';
 
 const AcademicInfo = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [academicData, setAcademicData] = useState({
-    campus: "VNR VJIET",
-    batch: "2022-2026",
-    department: "CSBS",
-    degree: "B.Tech",
-    tenth: "89.4",
-    twelfth: "96.9",
-    diploma: "NA",
-    underGraduate: "9.28",
-    postGraduate: "NA"
+    campus: '',
+    batch: '',
+    department: '',
+    degree: '',
+    tenth: '',
+    twelfth: '',
+    diploma: 'NA',
+    underGraduate: '',
+    postGraduate: 'NA'
   });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const handleSaveChanges = (e) => {
+  // Get student ID from localStorage or context should make changes here of extracting data 
+  const studentID = localStorage.getItem('studentID') || '22071A3255'; // Fallback for testing
+
+  // Fetch academic data on component mount
+  useEffect(() => {
+    const fetchAcademicData = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get(`http://localhost:1544/student/academic/${studentID}`);
+        setAcademicData(response.data);
+        setError(null);
+      } catch (err) {
+        console.error('Error fetching academic data:', err);
+        setError('Failed to load academic information. Please try again later.');
+        toast.error('Failed to load academic information');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAcademicData();
+  }, [studentID]);
+
+  const handleSaveChanges = async (e) => {
     e.preventDefault();
-    console.log("Updated Academic Information:", academicData);
-    setIsEditing(false);
+    
+    try {
+      setLoading(true);
+      const response = await axios.put(
+        `http://localhost:1544/student/academic/${studentID}`, 
+        academicData
+      );
+      
+      if (response.status === 200) {
+        toast.success('Academic information updated successfully');
+        setAcademicData(response.data);
+      }
+    } catch (err) {
+      console.error('Error updating academic data:', err);
+      toast.error(err.response?.data?.message || 'Failed to update academic information');
+    } finally {
+      setLoading(false);
+      setIsEditing(false);
+    }
   };
+
+  if (loading && !academicData.campus) {
+    return (
+      <div className="mt-4 p-4 flex justify-center">
+        <div className="animate-pulse text-center">
+          <p className="text-gray-500">Loading academic information...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="mt-4 p-4">
+        <div className="bg-red-50 p-4 rounded-lg text-red-800">
+          <p>{error}</p>
+          <button 
+            onClick={() => window.location.reload()}
+            className="mt-2 text-sm underline"
+          >
+            Try again
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="mt-4 p-2 md:p-4">
@@ -52,10 +122,10 @@ const AcademicInfo = () => {
               ["Batch", academicData.batch],
               ["Department", academicData.department],
               ["Degree", academicData.degree],
-              ["10th", academicData.tenth + "%"],
-              ["12th", academicData.twelfth + "%"],
+              ["10th", academicData.tenth ? academicData.tenth + "%" : ""],
+              ["12th", academicData.twelfth ? academicData.twelfth + "%" : ""],
               ["Diploma", academicData.diploma],
-              ["Under Graduate", academicData.underGraduate + " CGPA"],
+              ["Under Graduate", academicData.underGraduate ? academicData.underGraduate + " CGPA" : ""],
               ["Post Graduate", academicData.postGraduate],
             ].map(([info, detail], index) => (
               <tr key={info} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
@@ -74,10 +144,10 @@ const AcademicInfo = () => {
           ["Batch", academicData.batch],
           ["Department", academicData.department],
           ["Degree", academicData.degree],
-          ["10th", academicData.tenth + "%"],
-          ["12th", academicData.twelfth + "%"],
+          ["10th", academicData.tenth ? academicData.tenth + "%" : ""],
+          ["12th", academicData.twelfth ? academicData.twelfth + "%" : ""],
           ["Diploma", academicData.diploma],
-          ["Under Graduate", academicData.underGraduate + " CGPA"],
+          ["Under Graduate", academicData.underGraduate ? academicData.underGraduate + " CGPA" : ""],
           ["Post Graduate", academicData.postGraduate],
         ].map(([info, detail]) => (
           <div key={info} className="bg-white p-4 rounded-lg shadow-sm">
@@ -178,6 +248,8 @@ const AcademicInfo = () => {
                     onChange={(e) => setAcademicData({ ...academicData, postGraduate: e.target.value })}
                   >
                     <option value="NA">NA</option>
+                    <option value="In Progress">In Progress</option>
+                    <option value="Completed">Completed</option>
                   </select>
                 </div>
               </div>
@@ -191,6 +263,7 @@ const AcademicInfo = () => {
                   onChange={(e) => setAcademicData({ ...academicData, diploma: e.target.value })}
                 >
                   <option value="NA">NA</option>
+                  <option value="Completed">Completed</option>
                 </select>
               </div>
 
@@ -206,8 +279,9 @@ const AcademicInfo = () => {
                 <button
                   type="submit"
                   className="px-3 py-2 text-xs md:text-sm font-medium text-white bg-[#82001A] rounded-lg hover:bg-[#6b0016]"
+                  disabled={loading}
                 >
-                  Republish
+                  {loading ? 'Saving...' : 'Republish'}
                 </button>
               </div>
             </form>

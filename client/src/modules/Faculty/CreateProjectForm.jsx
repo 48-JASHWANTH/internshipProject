@@ -3,7 +3,9 @@ import { useNavigate } from "react-router-dom";
 import ProjectFormInput from "./ProjectFormInput";
 import ProjectFormConfirmation from "./ProjectFormConfirmation";
 import ConfirmationDialog from "../common/ConfirmationDialog";
-
+import { apiClient } from "@/lib/api-client";
+import { CREATE_TEAMS_ROUTE } from "@/utils/constants";
+import { toast } from "react-toastify";
 const CreateProjectForm = () => {
   const navigate = useNavigate();
   const [phase, setPhase] = useState(1);
@@ -32,7 +34,7 @@ const CreateProjectForm = () => {
     }
   };
 
-  const handleFinalSubmit = () => {
+  const handleFinalSubmit = async () => {
     const facultyID = "FAC12345";
     const classID = Date.now().toString();
     
@@ -86,8 +88,17 @@ const CreateProjectForm = () => {
 
     // Single console log with the final response only
     console.log("Final Response:", responseData);
-
-    navigate("/Faculty/Projects");
+    try {
+      const res = await apiClient.post(CREATE_TEAMS_ROUTE, responseData, { withCredentials: true });
+    
+      if (res.status === 201) {
+        navigate("/Faculty/Projects");
+      } else {
+        toast.error("Failed to create teams. Please try again.");
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to create teams. Please try again.");
+    };
   };
 
   return (

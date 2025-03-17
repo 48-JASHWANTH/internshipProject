@@ -9,6 +9,6 @@ const facultyRoutes = Router();
 facultyRoutes.post('/login', facultyLogin);
 
 // Protected routes
-facultyRoutes.post('/createTeams', verifyToken, verifyFaculty, createTeams);
+facultyRoutes.post('/createTeams', createTeams);
 
 export default facultyRoutes;
