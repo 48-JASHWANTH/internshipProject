@@ -77,7 +77,7 @@ function App() {
           </Route>
         </Route>
         {/* Student Routes */}
-        <Route element={<PrivateRoute allowedRoles={["student"]} />}>
+        {/* <Route element={<PrivateRoute allowedRoles={["student"]} />}> */}
           <Route path="/student" element={<Student />}>
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="archivedprojects" element={<ArchivedProjects />} />
@@ -87,7 +87,7 @@ function App() {
             <Route path="activeworks" element={<ActiveWorks />} />
             <Route path="activeworks/:projectId" element={<ProjectDetails />} />
             <Route path="campusprojects" element={<CampusProjects />} />
-          </Route>
+          {/* </Route> */}
         </Route>
       </Routes>
     </Router>
