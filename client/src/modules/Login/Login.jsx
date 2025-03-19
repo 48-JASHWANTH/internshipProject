@@ -12,36 +12,49 @@ function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const { login, error, clearError } = useAuthStore();
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    setIsLoading(true);
     
-    // Format credentials based on user type
-    const credentials = userType === 'student' 
-      ? { studentID: username, password } 
-      : { facultyID: username, password };
-    
-    const result = await login(credentials, userType);
-    
-    if (result.success) {
-      toast.success(`Welcome ${username}!`);
-      // Redirect based on user type
-      switch(userType) {
-        case 'student':
-          navigate('/Student/Dashboard');
-          break;
-        case 'faculty':
-          navigate('/Faculty/Dashboard');
-          break;
-        case 'admin':
-          navigate('/Admin/Dashboard');
-          break;
-        default:
-          navigate('/');
+    try {
+      // Format credentials based on user type
+      const credentials = userType === 'student' 
+        ? { studentID: username, password } 
+        : userType === 'faculty'
+          ? { facultyID: username, password }
+          : { adminID: username, password };
+      
+      console.log("Attempting login with:", { userType, credentials });
+      
+      const result = await login(credentials, userType);
+      
+      if (result.success) {
+        toast.success(`Welcome ${username}!`);
+        // Redirect based on user type
+        switch(userType) {
+          case 'student':
+            navigate('/Student/Dashboard');
+            break;
+          case 'faculty':
+            navigate('/Faculty/Dashboard');
+            break;
+          case 'admin':
+            navigate('/Admin/Dashboard');
+            break;
+          default:
+            navigate('/');
+        }
+      } else {
+        toast.error(result.error || 'Login failed');
       }
-    } else {
-      toast.error(result.error || 'Login failed');
+    } catch (error) {
+      console.error("Login error:", error);
+      toast.error(error.message || 'An unexpected error occurred');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -117,9 +130,10 @@ function Login() {
             </div>
             <button
               type="submit"
-              className="w-full bg-red-900 text-white p-3 rounded-md hover:bg-red-950 transition-colors"
+              className="w-full bg-red-900 text-white p-3 rounded-md hover:bg-red-950 transition-colors disabled:opacity-70"
+              disabled={isLoading}
             >
-              Login
+              {isLoading ? "Logging in..." : "Login"}
             </button>
           </form>
         </div>

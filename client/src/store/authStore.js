@@ -13,11 +13,17 @@ const useAuthStore = create(
                 try {
                     // Convert userType to lowercase for API endpoint
                     const endpoint = `/${userType.toLowerCase()}/login`;
+                    console.log("Login attempt:", { endpoint, credentials });
+                    
                     const response = await apiClient.post(endpoint, credentials);
+                    console.log("Login response:", response.data);
                     
                     if (response.data.success) {
                         set({
-                            user: response.data.user,
+                            user: response.data.user || { 
+                                role: userType.toLowerCase(),
+                                ...credentials
+                            },
                             isAuthenticated: true,
                             error: null
                         });
@@ -26,16 +32,19 @@ const useAuthStore = create(
                             `Bearer ${response.data.token}`;
 
                         return { success: true };
+                    } else {
+                        throw new Error(response.data.message || 'Login failed');
                     }
                 } catch (error) {
+                    console.error("Login error:", error);
                     set({
-                        error: error.response?.data?.message || 'Login failed',
+                        error: error.response?.data?.message || error.message || 'Login failed',
                         isAuthenticated: false,
                         user: null
                     });
                     return { 
                         success: false, 
-                        error: error.response?.data?.message || 'Login failed' 
+                        error: error.response?.data?.message || error.message || 'Login failed' 
                     };
                 }
             },
