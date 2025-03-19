@@ -1,11 +1,12 @@
 import mongoose from "mongoose";
 
 const reviewSchema = new mongoose.Schema({
-  ReviewNo: { type: Number },
-  DateOfReview: { type: Date, default: Date.now },
-  Progress: { type: String },
-  ChangesToBeMade: { type: String },
-  Presentees: { type: [String] }
+  reviewNo: { type: Number },
+  dateOfReview: { type: Date, default: Date.now },
+  progress: { type: String },
+  changesToBeMade: { type: String },
+  presentees: { type: [String] },
+  reviewStatus:{type: Boolean,default: false}
 });
 
 const TeamSchema = new mongoose.Schema({
@@ -19,8 +20,8 @@ const TeamSchema = new mongoose.Schema({
     required: true
   },
   status: {
-    type: String,
-    default: 'Pending'
+    type: Boolean,
+    default: false
   },
   lastUpdated: {
     type: Date,
@@ -53,6 +54,10 @@ const TeamSchema = new mongoose.Schema({
   },
   guideFacultyId:{
     type: String
+  },
+  completedDate:{
+    type:Date,
+    default:null
   }
 }, { timestamps: true });
 

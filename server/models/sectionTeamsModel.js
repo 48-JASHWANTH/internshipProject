@@ -49,8 +49,11 @@ const SectionTeamsSchema = new mongoose.Schema({
     status: {
         type: String,
         default: 'Pending'
+    },
+    dueDate:{
+        type:Date
     }
 }, { timestamps: true });
 
-const SectionTeams = mongoose.model('sectionTeamsCollection', SectionTeamsSchema);
+const SectionTeams =  mongoose.models.sectionTeamsCollection || mongoose.model("sectionTeamsCollection", SectionTeamsSchema);
 export default SectionTeams;

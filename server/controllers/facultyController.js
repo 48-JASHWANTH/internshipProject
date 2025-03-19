@@ -1,7 +1,7 @@
 // FacultyController.js
 import asynchandler from "express-async-handler";
-import Faculty from "../models/FacultyModel.js";
-import SectionTeams from "../models/SectionTeamsModel.js";
+import Faculty from "../models/facultyModel.js";
+import SectionTeams from "../models/sectionTeamsModel.js";
 import Team from "../models/teamsModel.js";
 import Student from "../models/studentModel.js";
 

@@ -3,7 +3,7 @@ POST http://localhost:1544/student/login
 Content-Type: application/json
 
 {
-    "studentID": "22071A3264",
+    "studentID": "22071A3262",
     "password": "Welcome@123"
 }
 
@@ -54,3 +54,14 @@ Content-Type: application/json
   "gender": "Male",
   "dateOfBirth": "2003-05-12"
 }
+###
+
+GET http://localhost:1544/student/dashBoard/22071A3255
+
+###
+GET http://localhost:1544/student/activeWorks/22071A3255
+###
+GET http://localhost:1544/student/archive/22071A3255
+
+###
+GET http://localhost:1544/student/campusProjects
