@@ -3,7 +3,7 @@ POST http://localhost:1544/faculty/login
 Content-Type: application/json
 
 {
-    "facultyID": "FAC12345",
+    "facultyID": "FAC12346",
     "password": "Welcome@123"
 }
 

@@ -3,57 +3,76 @@ POST http://localhost:1544/admin/login
 Content-Type: application/json
 
 {
-  "adminID": "admin123",
-  "password": "password123"
+  "adminID": "admin",
+  "password": "Welcome@123"
 }
 
 ### Add multiple students
 POST http://localhost:1544/admin/add-students
 Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZDdkNGE1ZDQ0Y2FkNWUxZTQyODI0YSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc0MjM3ODg0NCwiZXhwIjoxNzQyNDY1MjQ0fQ.jFB0U0XTChJiVvmo0f6nBQZ0ztmtVZw12FePFQ7t9bw
 
 {
   "students": {
-    "22071A3264": "BhanuTeja"
+    "22071A3255": "Bhargav",
+    "22071A3254": "Sairam",
+    "22071A3245": "Sai Kruthik"
   }
 }
 
 ### Soft delete a student
-DELETE http://localhost:1544/admin/students/22071A3264
+DELETE http://localhost:1544/admin/students/22071A3262
 Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZDdkNGE1ZDQ0Y2FkNWUxZTQyODI0YSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc0MjMyMDA5MCwiZXhwIjoxNzQyNDA2NDkwfQ.OhR4CCtCcSDoPGBIHGuWQL9JW-BXfDgW6p3l3UxBWL8
 
 ### List all deleted students
 GET http://localhost:1544/admin/students/deleted
 Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZDdkNGE1ZDQ0Y2FkNWUxZTQyODI0YSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc0MjMyMDA5MCwiZXhwIjoxNzQyNDA2NDkwfQ.OhR4CCtCcSDoPGBIHGuWQL9JW-BXfDgW6p3l3UxBWL8
+
 
 ### Restore a deleted student
-POST http://localhost:1544/admin/students/22071A3264/restore
+POST http://localhost:1544/admin/students/22071A3262/restore
 Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZDdkNGE1ZDQ0Y2FkNWUxZTQyODI0YSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc0MjMyMDA5MCwiZXhwIjoxNzQyNDA2NDkwfQ.OhR4CCtCcSDoPGBIHGuWQL9JW-BXfDgW6p3l3UxBWL8
+
 
 ### List all active students
 GET http://localhost:1544/admin/students
 Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZDdkNGE1ZDQ0Y2FkNWUxZTQyODI0YSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc0MjMyMDA5MCwiZXhwIjoxNzQyNDA2NDkwfQ.OhR4CCtCcSDoPGBIHGuWQL9JW-BXfDgW6p3l3UxBWL8
+
 
 ### Get a specific student's details
-GET http://localhost:1544/admin/students/22071A3264
+GET http://localhost:1544/admin/students/22071A3262
 Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZDdkNGE1ZDQ0Y2FkNWUxZTQyODI0YSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc0MjMyMDA5MCwiZXhwIjoxNzQyNDA2NDkwfQ.OhR4CCtCcSDoPGBIHGuWQL9JW-BXfDgW6p3l3UxBWL8
+
 
 ### Update a student
-PUT http://localhost:1544/admin/students/22071A3264
+PUT http://localhost:1544/admin/students/22071A3262
 Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZDdkNGE1ZDQ0Y2FkNWUxZTQyODI0YSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc0MjMyMDA5MCwiZXhwIjoxNzQyNDA2NDkwfQ.OhR4CCtCcSDoPGBIHGuWQL9JW-BXfDgW6p3l3UxBWL8
+
 
 {
-  "name": "Bhanu Teja",
-  "phone": "9876543210",
-  "gender": "Male",
-  "batch": "2022-26",
-  "dept": "CSE",
-  "degree": "B.Tech",
-  "skills": ["JavaScript", "React", "Node.js"]
+  "name": "Ratna Jashwanth"
 }
+
+
+
+
+
+
+
+
+
+
 
 ### Add faculty members
 POST http://localhost:1544/admin/add-faculty
 Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZDdkNGE1ZDQ0Y2FkNWUxZTQyODI0YSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc0MjMyMDA5MCwiZXhwIjoxNzQyNDA2NDkwfQ.OhR4CCtCcSDoPGBIHGuWQL9JW-BXfDgW6p3l3UxBWL8
 
 {
   "faculties": {
@@ -65,22 +84,24 @@ Content-Type: application/json
 ### List all faculty members (complete details by default)
 GET http://localhost:1544/admin/faculty
 Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZDdkNGE1ZDQ0Y2FkNWUxZTQyODI0YSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc0MjMyMDA5MCwiZXhwIjoxNzQyNDA2NDkwfQ.OhR4CCtCcSDoPGBIHGuWQL9JW-BXfDgW6p3l3UxBWL8
+
 
 ### List all faculty members (basic info only)
 GET http://localhost:1544/admin/faculty?basic=true
 Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZDdkNGE1ZDQ0Y2FkNWUxZTQyODI0YSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc0MjMyMDA5MCwiZXhwIjoxNzQyNDA2NDkwfQ.OhR4CCtCcSDoPGBIHGuWQL9JW-BXfDgW6p3l3UxBWL8
 
-### Filter faculty by department
-GET http://localhost:1544/admin/faculty?department=Computer Science
-Content-Type: application/json
 
 ### Get faculty details
 GET http://localhost:1544/admin/faculty/FAC12346
 Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZDdkNGE1ZDQ0Y2FkNWUxZTQyODI0YSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc0MjMyMDA5MCwiZXhwIjoxNzQyNDA2NDkwfQ.OhR4CCtCcSDoPGBIHGuWQL9JW-BXfDgW6p3l3UxBWL8
+
 
 ### Update faculty
 PUT http://localhost:1544/admin/faculty/FAC12346
-Content-Type: application/json
+Content-Type: application/jsonAuthorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZDdkNGE1ZDQ0Y2FkNWUxZTQyODI0YSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc0MjMyMDA5MCwiZXhwIjoxNzQyNDA2NDkwfQ.OhR4CCtCcSDoPGBIHGuWQL9JW-BXfDgW6p3l3UxBWL8
 
 {
   "qualification": "Ph.D in Computer Science",
@@ -92,11 +113,17 @@ Content-Type: application/json
 ### Try to soft delete an already deleted faculty
 DELETE http://localhost:1544/admin/faculty/FAC12346
 Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZDdkNGE1ZDQ0Y2FkNWUxZTQyODI0YSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc0MjMyMDA5MCwiZXhwIjoxNzQyNDA2NDkwfQ.OhR4CCtCcSDoPGBIHGuWQL9JW-BXfDgW6p3l3UxBWL8
+
 
 ### List deleted faculty
 GET http://localhost:1544/admin/faculty/deleted
 Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZDdkNGE1ZDQ0Y2FkNWUxZTQyODI0YSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc0MjMyMDA5MCwiZXhwIjoxNzQyNDA2NDkwfQ.OhR4CCtCcSDoPGBIHGuWQL9JW-BXfDgW6p3l3UxBWL8
+
 
 ### Restore faculty
 POST http://localhost:1544/admin/faculty/FAC12346/restore
 Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZDdkNGE1ZDQ0Y2FkNWUxZTQyODI0YSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc0MjMyMDA5MCwiZXhwIjoxNzQyNDA2NDkwfQ.OhR4CCtCcSDoPGBIHGuWQL9JW-BXfDgW6p3l3UxBWL8
+

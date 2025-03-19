@@ -43,9 +43,9 @@ Content-Type: application/json
 ### Retrieve User Activity Logs (Admin only)
 GET http://localhost:1544/admin/activity/user-activity?userType=student
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZDdkNGE1ZDQ0Y2FkNWUxZTQyODI0YSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc0MjE5ODAwMywiZXhwIjoxNzQyMjg0NDAzfQ.pd83MRgXEzj2cgOCa3KHXCao6hvTxb4tMVtBqJmsbBE
-
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZDdkNGE1ZDQ0Y2FkNWUxZTQyODI0YSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc0MjM3ODA3OCwiZXhwIjoxNzQyNDY0NDc4fQ.pTCKKNpEcxtf0AAVZbrcX1v5xYycj9_GvhYSBnIY70M
 ### Retrieve User Activity Logs with Date Range (Admin only)
+
 GET http://localhost:1544/admin/activity/user-activity?startDate=2025-03-01&endDate=2025-03-17
 Content-Type: application/json
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZDdkNGE1ZDQ0Y2FkNWUxZTQyODI0YSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc0MjE5ODAwMywiZXhwIjoxNzQyMjg0NDAzfQ.pd83MRgXEzj2cgOCa3KHXCao6hvTxb4tMVtBqJmsbBE

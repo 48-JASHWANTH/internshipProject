@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 
-dotenv.config(); // Load environment variables
+dotenv.config(); 
 
 const StudentSchema = new mongoose.Schema(
   {
@@ -21,22 +21,19 @@ const StudentSchema = new mongoose.Schema(
     mail: {
       type: String,
       default: function() {
-        return this.studentID ? `${this.studentID.toLowerCase()}@vnrvjiet.in` : '';
+        return this.studentID ? `${this.studentID}@vnrvjiet.in` : '';
       },
       unique: true,
       sparse: true
     },
     phone: {
       type: String,
-      required: true,
     },
     gender: {
       type: String,
-      required: true,
     },
     dateOfBirth: {
       type: String,
-      required: true,
     },
     notifications: {
       type: [String],
@@ -125,13 +122,13 @@ const StudentSchema = new mongoose.Schema(
 
 
 // Add a method to the schema to filter out inactive users by default
-StudentSchema.pre('find', function() {
-  this.where({ isActive: true });
-});
+// StudentSchema.pre('find', function() {
+//   this.where({ isActive: true });
+// });
 
-StudentSchema.pre('findOne', function() {
-  this.where({ isActive: true });
-});
+// StudentSchema.pre('findOne', function() {
+//   this.where({ isActive: true });
+// });
 
 const Student = mongoose.model("studentsCollection", StudentSchema);
 export default Student;
