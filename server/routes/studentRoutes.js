@@ -6,6 +6,7 @@ const studentRoutes = Router();
 
 // Public routes
 studentRoutes.post('/login', studentLogin);
+//  optimise these routes
 studentRoutes.put('/academic/:studentID', updateStudentAcademicData);
 studentRoutes.get('/academic/:studentID', getStudentAcademic);
 studentRoutes.put('/additional/:studentID', updateStudentAdditional);
