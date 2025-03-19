@@ -7,6 +7,7 @@ import adminRoutes from "./routes/adminRoutes.js";
 import facultyRoutes from "./routes/facultyRoute.js";
 import studentRoutes from "./routes/studentRoutes.js";
 import activityLogRoutes from "./routes/activityLogRoutes.js";
+import passwordResetRoutes from "./routes/passwordResetRoutes.js";
 
 console.log('Student routes:', studentRoutes);
 
@@ -32,6 +33,7 @@ app.use('/student', studentRoutes);
 app.use('/faculty', facultyRoutes);
 app.use('/admin', adminRoutes);
 app.use('/admin/activity', activityLogRoutes);
+app.use('/api/auth', passwordResetRoutes);
 
 // Add a test route to verify Express is working
 app.get('/test', (req, res) => {

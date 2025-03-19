@@ -1,6 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Login from "./modules/Login/Login";
-import Admin from "./modules/Admin/Admin";
+import AdminLayout from "./modules/Admin/AdminLayout";
 import FacultyLayout from "./modules/Faculty/FacultyLayout";
 import Dashboard from "./modules/Student/Dashboard";
 import ArchivedProjects from "./modules/Student/ArchivedProjects";
@@ -18,8 +18,16 @@ import { Toaster } from 'react-hot-toast';
 import Guide from "./modules/Faculty/ActiveWorks/Guide";
 import Incharge from "./modules/Faculty/ActiveWorks/Incharge";
 import Student from "./modules/Student/StudentLayout";
-import FacultyProfile from "./modules/Faculty/Profile/FacultyProfile";import { Navigate, Outlet } from "react-router-dom";
+import FacultyProfile from "./modules/Faculty/Profile/FacultyProfile";
+import { Navigate, Outlet } from "react-router-dom";
 import useAuthStore from "@/store/authStore";
+import AdminDashboard from './modules/Admin/Dashboard';
+import AdminProfile from './modules/Admin/Profile';
+import AdminFacultyManagement from './modules/Admin/AdminFacultyManagement';
+import AdminStudentManagement from './modules/Admin/AdminStudentManagement';
+import AddStudent from './modules/Admin/AddStudent';
+import AddFaculty from './modules/Admin/AddFaculty';
+
 function App() {
   const PrivateRoute = ({ allowedRoles }) => {
     const { user, isAuthenticated } = useAuthStore();
@@ -57,11 +65,17 @@ function App() {
         <Route path="/" element={<Login />} />
 
         {/* Admin Routes */}
-        <Route element={<PrivateRoute allowedRoles={["admin"]} />}>
-          <Route path="/admin" element={<Admin />}>
-            <Route path="dashboard" element={<Admin />} />
+        {/* <Route element={<PrivateRoute allowedRoles={["admin"]} />}> */}
+          <Route path="/Admin" element={<AdminLayout />}>
+            <Route path="Dashboard" element={<AdminDashboard />} />
+            <Route path="Profile" element={<AdminProfile />} />
+            <Route path="CampusProjects" element={<CampusProjects />} />
+            <Route path="Faculty" element={<AdminFacultyManagement />} />
+            <Route path="Students" element={<AdminStudentManagement />} />
+            <Route path="AddStudent" element={<AddStudent />} />
+            <Route path="AddFaculty" element={<AddFaculty />} />
           </Route>
-        </Route>
+        {/* </Route> */}
 
         {/* Faculty Routes */}
         <Route element={<PrivateRoute allowedRoles={["faculty"]} />}>
