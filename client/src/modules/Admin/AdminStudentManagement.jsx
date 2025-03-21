@@ -1,52 +1,149 @@
-import React, { useState } from 'react';
-import { FaSearch, FaPlus, FaTrash, FaEdit, FaUndo, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
+import React, { useState, useEffect } from 'react';
+import { FaSearch, FaPlus, FaTrash, FaEye, FaUndo, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
+import { apiClient } from '@/lib/api-client';
+import toast from 'react-hot-toast';
 
 const AdminStudentManagement = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [showDeleted, setShowDeleted] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
+  const [students, setStudents] = useState([]);
+  const [deletedStudents, setDeletedStudents] = useState([]);
   const studentsPerPage = 10;
   
-  // Mock data - replace with actual API calls
-  const studentList = [
-    { studentID: '22071A3262', name: 'John Smith', department: 'CSE', batch: '2022-26', status: 'Active' },
-    { studentID: '22071A3263', name: 'Jane Doe', department: 'IT', batch: '2022-26', status: 'Active' },
-    { studentID: '22071A3264', name: 'Michael Johnson', department: 'CSE', batch: '2022-26', status: 'Active' },
-    { studentID: '22071A3265', name: 'Emily Davis', department: 'ECE', batch: '2022-26', status: 'Active' },
-    { studentID: '22071A3266', name: 'David Wilson', department: 'MECH', batch: '2022-26', status: 'Active' },
-    { studentID: '22071A3267', name: 'Sarah Martinez', department: 'IT', batch: '2022-26', status: 'Active' },
-    { studentID: '22071A3268', name: 'James Taylor', department: 'CSE', batch: '2022-26', status: 'Active' },
-    { studentID: '22071A3269', name: 'Jennifer Anderson', department: 'ECE', batch: '2022-26', status: 'Active' },
-    { studentID: '22071A3270', name: 'Robert Thomas', department: 'MECH', batch: '2022-26', status: 'Active' },
-    { studentID: '22071A3271', name: 'Lisa Jackson', department: 'IT', batch: '2022-26', status: 'Active' },
-    { studentID: '22071A3272', name: 'Daniel White', department: 'CSE', batch: '2022-26', status: 'Active' },
-    { studentID: '22071A3273', name: 'Michelle Harris', department: 'ECE', batch: '2022-26', status: 'Active' },
-    { studentID: '22071A3274', name: 'Christopher Martin', department: 'MECH', batch: '2022-26', status: 'Active' },
-    { studentID: '22071A3275', name: 'Jessica Thompson', department: 'IT', batch: '2022-26', status: 'Active' },
-    { studentID: '22071A3276', name: 'Matthew Garcia', department: 'CSE', batch: '2022-26', status: 'Active' },
-    { studentID: '22071A3277', name: 'Amanda Martinez', department: 'ECE', batch: '2022-26', status: 'Active' },
-    { studentID: '22071A3278', name: 'Andrew Robinson', department: 'MECH', batch: '2022-26', status: 'Active' },
-    { studentID: '22071A3279', name: 'Stephanie Clark', department: 'IT', batch: '2022-26', status: 'Active' },
-    { studentID: '22071A3280', name: 'Joshua Rodriguez', department: 'CSE', batch: '2022-26', status: 'Active' },
-    { studentID: '22071A3281', name: 'Nicole Lewis', department: 'ECE', batch: '2022-26', status: 'Active' },
-    { studentID: '22071A3282', name: 'Kevin Lee', department: 'MECH', batch: '2022-26', status: 'Active' },
-    { studentID: '22071A3283', name: 'Rebecca Walker', department: 'IT', batch: '2022-26', status: 'Active' }
-  ];
-  
-  const deletedStudents = [
-    { studentID: '22071A3284', name: 'Robert Johnson', department: 'CSE', batch: '2022-26', status: 'Inactive' },
-    { studentID: '22071A3285', name: 'Maria Garcia', department: 'IT', batch: '2022-26', status: 'Inactive' },
-    { studentID: '22071A3286', name: 'William Brown', department: 'ECE', batch: '2022-26', status: 'Inactive' }
-  ];
+  // Add new state for confirmation dialog
+  const [deleteConfirm, setDeleteConfirm] = useState({
+    show: false,
+    studentId: null
+  });
 
-  const displayedStudents = showDeleted ? deletedStudents : studentList;
-  const filteredStudents = displayedStudents.filter(student => 
-    student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    student.studentID.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    student.department.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Fetch students data
+  const fetchStudents = async () => {
+    setIsLoading(true);
+    try {
+      // Fetch both active and deleted students in parallel
+      const [activeResponse, deletedResponse] = await Promise.all([
+        apiClient.get('/admin/students', {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('auth-storage') ? 
+              JSON.parse(localStorage.getItem('auth-storage')).state.token : ''}`
+          }
+        }),
+        apiClient.get('/admin/students/deleted', {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('auth-storage') ? 
+              JSON.parse(localStorage.getItem('auth-storage')).state.token : ''}`
+          }
+        })
+      ]);
+
+      console.log(activeResponse);
+
+      if (activeResponse.data.success && deletedResponse.data.success) {
+        // Ensure we only set active students in the active list
+        const activeStudents = activeResponse.data.students.filter(student => student.isActive);
+        setStudents(activeStudents.map(student => ({
+          ...student,
+          status: 'Active'
+        })));
+
+        // Ensure we only set inactive students in the deleted list
+        const deletedStudents = deletedResponse.data.students.filter(student => !student.isActive);
+        setDeletedStudents(deletedStudents.map(student => ({
+          ...student,
+          status: 'Inactive'
+        })));
+      }
+    } catch (error) {
+      console.error('Error fetching students:', error);
+      toast.error(error.response?.data?.message || 'Error fetching students');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Show delete confirmation dialog
+  const handleDeleteClick = (studentId) => {
+    setDeleteConfirm({
+      show: true,
+      studentId
+    });
+  };
+
+  // Handle student deletion with confirmation
+  const handleDeleteStudent = async () => {
+    if (!deleteConfirm.studentId) return;
+
+    try {
+      const response = await apiClient.delete(`/admin/students/${deleteConfirm.studentId}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('auth-storage') ? 
+            JSON.parse(localStorage.getItem('auth-storage')).state.token : ''}`
+        }
+      });
+
+      if (response.data.success) {
+        // Remove student from active list
+        const deletedStudent = students.find(s => s.studentID === deleteConfirm.studentId);
+        if (deletedStudent) {
+          setStudents(prev => prev.filter(s => s.studentID !== deleteConfirm.studentId));
+          setDeletedStudents(prev => [...prev, { ...deletedStudent, status: 'Inactive', isActive: false }]);
+        }
+        toast.success('Student deleted successfully');
+      }
+    } catch (error) {
+      console.error('Error deleting student:', error);
+      toast.error(error.response?.data?.message || 'Error deleting student');
+    } finally {
+      setDeleteConfirm({
+        show: false,
+        studentId: null
+      });
+    }
+  };
+
+  // Handle student restoration
+  const handleRestoreStudent = async (studentId) => {
+    try {
+      const response = await apiClient.post(`/admin/students/${studentId}/restore`, {}, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('auth-storage') ? 
+            JSON.parse(localStorage.getItem('auth-storage')).state.token : ''}`
+        }
+      });
+
+      if (response.data.success) {
+        // Remove student from deleted list and add to active list
+        const restoredStudent = deletedStudents.find(s => s.studentID === studentId);
+        if (restoredStudent) {
+          setDeletedStudents(prev => prev.filter(s => s.studentID !== studentId));
+          setStudents(prev => [...prev, { ...restoredStudent, status: 'Active', isActive: true }]);
+        }
+        toast.success('Student restored successfully');
+      }
+    } catch (error) {
+      console.error('Error restoring student:', error);
+      toast.error(error.response?.data?.message || 'Error restoring student');
+    }
+  };
+
+  // Fetch data when component mounts or when showDeleted changes
+  useEffect(() => {
+    fetchStudents();
+  }, []); // Remove showDeleted from dependency array since we're now fetching both lists at once
+
+  // Filter students based on search term and active/deleted status
+  const filteredStudents = React.useMemo(() => {
+    const list = showDeleted ? deletedStudents : students;
+    return list.filter(student => 
+      (student.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      student.studentID?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      student.department?.toLowerCase().includes(searchTerm.toLowerCase()))
+    );
+  }, [showDeleted, students, deletedStudents, searchTerm]);
 
   // Pagination logic
   const totalPages = Math.ceil(filteredStudents.length / studentsPerPage);
@@ -104,75 +201,92 @@ const AdminStudentManagement = () => {
           </div>
         </div>
         
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Student ID
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Name
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Department
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Batch
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {currentStudents.map((student) => (
-                <tr key={student.studentID} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    {student.studentID}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {student.name}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {student.department}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {student.batch}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">
-                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                      student.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                    }`}>
-                      {student.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    <div className="flex space-x-2">
-                      {showDeleted ? (
-                        <button className="text-green-600 hover:text-green-900">
-                          <FaUndo className="w-5 h-5" />
-                        </button>
-                      ) : (
-                        <>
-                          <button className="text-blue-600 hover:text-blue-900">
-                            <FaEdit className="w-5 h-5" />
-                          </button>
-                          <button className="text-red-600 hover:text-red-900">
-                            <FaTrash className="w-5 h-5" />
-                          </button>
-                        </>
-                      )}
-                    </div>
-                  </td>
+        {isLoading ? (
+          <div className="flex justify-center items-center h-64">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#9b1a31]"></div>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Student ID
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Name
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Department
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Batch
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Actions
+                  </th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {currentStudents.map((student) => (
+                  <tr key={student.studentID} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                      {student.studentID}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {student.name}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {student.department}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {student.batch}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                        student.status === 'Active' 
+                          ? 'bg-green-100 text-green-800' 
+                          : 'bg-red-100 text-red-800'
+                      }`}>
+                        {student.status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <div className="flex space-x-2">
+                        {showDeleted ? (
+                          <button 
+                            className="text-green-600 hover:text-green-900" 
+                            onClick={() => handleRestoreStudent(student.studentID)}
+                          >
+                            <FaUndo className="w-5 h-5" />
+                          </button>
+                        ) : (
+                          <>
+                            <button 
+                              className="text-blue-600 hover:text-blue-900"
+                              onClick={() => navigate(`/Admin/Students/${student.studentID}`)}
+                            >
+                              <FaEye className="w-5 h-5" />
+                            </button>
+                            <button 
+                              className="text-red-600 hover:text-red-900" 
+                              onClick={() => handleDeleteClick(student.studentID)}
+                            >
+                              <FaTrash className="w-5 h-5" />
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
         
         {/* Pagination */}
         <div className="flex items-center justify-between border-t border-gray-200 px-4 py-3 sm:px-6 mt-4">
@@ -253,6 +367,32 @@ const AdminStudentManagement = () => {
           </div>
         </div>
       </div>
+
+      {/* Confirmation Dialog */}
+      {deleteConfirm.show && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-xl max-w-md w-full mx-4">
+            <h3 className="text-lg font-semibold mb-4">Confirm Deletion</h3>
+            <p className="text-gray-600 mb-6">
+              Are you sure you want to delete this student? This action can be undone later.
+            </p>
+            <div className="flex justify-end gap-4">
+              <button
+                onClick={() => setDeleteConfirm({ show: false, studentId: null })}
+                className="px-4 py-2 text-gray-600 hover:text-gray-800"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteStudent}
+                className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

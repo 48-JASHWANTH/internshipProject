@@ -7,7 +7,7 @@ dotenv.config();
 export const verifyToken = async (req, res, next) => {
     try {
         const token = req.headers.authorization?.split(' ')[1];
-        
+        // console.log(token);
         if (!token) {
             return res.status(401).json({ 
                 success: false, 
@@ -47,22 +47,23 @@ export const verifyFaculty = (req, res, next) => {
     next();
 };
 
-export const verifyAdmin = async (req, res, next) => {
-    try {
-        if (req.user.role !== 'admin') {
-            return res.status(403).json({
-                success: false,
-                message: 'Access denied. Admin only.'
-            });
-        }
-        next();
-    } catch (error) {
-        res.status(401).json({
-            success: false,
-            message: 'Admin verification failed'
-        });
-    }
-};
+// export const verifyAdmin = async (req, res, next) => {
+//     try {
+//         console.log(req.user);
+//         if (req.user.role !== 'admin') {
+//             return res.status(403).json({
+//                 success: false,
+//                 message: 'Access denied. Admin only.'
+//             });
+//         }
+//         next();
+//     } catch (error) {
+//         res.status(401).json({
+//             success: false,
+//             message: 'Admin verification failed'
+//         });
+//     }
+// };
 
 // Optional: Verify specific permissions
 export const verifyPermissions = (allowedRoles) => {

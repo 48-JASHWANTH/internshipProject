@@ -178,7 +178,7 @@ const Dashboard = () => {
           <div className="rounded-full bg-yellow-100 p-3 mr-4">
             <FaChartLine className="text-yellow-600 text-xl" />
           </div>
-          <div>
+    <div>
             <p className="text-sm text-gray-500">Active Users</p>
             <p className="text-2xl font-bold">{stats.activeUsers}</p>
             <p className="text-xs text-red-500 mt-1">{stats.suspiciousActivities} suspicious activities</p>

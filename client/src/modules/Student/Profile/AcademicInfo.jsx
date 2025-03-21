@@ -3,6 +3,7 @@ import { Edit, X } from 'lucide-react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 
+
 const AcademicInfo = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [academicData, setAcademicData] = useState({
@@ -18,9 +19,9 @@ const AcademicInfo = () => {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
   // Get student ID from localStorage or context should make changes here of extracting data 
-  const studentID = localStorage.getItem('studentID') || '22071A3255'; // Fallback for testing
+  const authData = localStorage.getItem('auth-storage');
+  const studentID = JSON.parse(authData).state.user.studentID; // Fallback for testing
 
   // Fetch academic data on component mount
   useEffect(() => {

@@ -10,25 +10,20 @@ const Faculty = mongoose.models.facultyCollection || mongoose.model("facultyColl
     type: String,
     required: true
   },
-  jntuhID: {
-    type: String,
-    required: true,
-    unique: true
-  },
-  department: {
-    type: String,
-    required: true
-  },
-  designation: {
-    type: String,
-    required: true
-  },
-  
-  // Authentication fields
   facultyID: {
     type: String,
     required: true,
     unique: true
+  },
+  jntuhID: {
+    type: String,
+    default: ""
+  },
+  department: {
+    type: String,
+  },
+  designation: {
+    type: String,
   },
   password: {
     type: String,
@@ -36,8 +31,7 @@ const Faculty = mongoose.models.facultyCollection || mongoose.model("facultyColl
   },
   email: {
     type: String,
-    default: null,
-    unique: true,
+    default: ""
   },
   
   // Optional fields with defaults

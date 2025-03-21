@@ -6,7 +6,7 @@ import {
   getSuspiciousActivities,
   getUserStatistics
 } from "../controllers/activityLogController.js";
-import { verifyToken, verifyAdmin } from "../middleware/verifyToken.js";
+import { verifyToken } from "../middleware/verifyToken.js";
 
 const activityLogRoutes = Router();
 
@@ -14,9 +14,9 @@ const activityLogRoutes = Router();
 activityLogRoutes.post('/log-activity', logActivity);
 
 // Admin-only routes
-activityLogRoutes.get('/user-activity', verifyToken, verifyAdmin, getUserActivity);
-activityLogRoutes.get('/currently-online', verifyToken, verifyAdmin, getCurrentlyOnline);
-activityLogRoutes.get('/suspicious-activities', verifyToken, verifyAdmin, getSuspiciousActivities);
-activityLogRoutes.get('/user-statistics', verifyToken, verifyAdmin, getUserStatistics);
+activityLogRoutes.get('/user-activity', verifyToken, getUserActivity);
+activityLogRoutes.get('/currently-online', verifyToken, getCurrentlyOnline);
+activityLogRoutes.get('/suspicious-activities', verifyToken, getSuspiciousActivities);
+activityLogRoutes.get('/user-statistics', verifyToken, getUserStatistics);
 
 export default activityLogRoutes; 

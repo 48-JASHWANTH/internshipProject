@@ -20,7 +20,8 @@ const ProfileCard = () => {
   const [error, setError] = useState(null);
 
   // Get student ID from localStorage or context
-  const studentID = localStorage.getItem('studentID') || '22071A3255'; // Fallback for testing
+  const authData = localStorage.getItem('auth-storage');
+  const studentID = JSON.parse(authData).state.user.studentID; // Fallback for testing
 
   // Fetch profile data on component mount
   useEffect(() => {

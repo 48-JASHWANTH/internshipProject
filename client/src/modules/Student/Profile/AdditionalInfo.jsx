@@ -16,7 +16,8 @@ const AdditionalInfo = () => {
   const [error, setError] = useState(null);
 
   // Get student ID from localStorage or context
-  const studentID = localStorage.getItem('studentID') || '22071A3255'; // Fallback for testing
+  const authData = localStorage.getItem('auth-storage');
+  const studentID = JSON.parse(authData).state.user.studentID; 
 
   // Fetch additional data on component mount
   useEffect(() => {

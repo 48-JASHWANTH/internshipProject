@@ -10,38 +10,33 @@ Content-Type: application/json
 ### Add multiple students
 POST http://localhost:1544/admin/add-students
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZDdkNGE1ZDQ0Y2FkNWUxZTQyODI0YSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc0MjM3ODg0NCwiZXhwIjoxNzQyNDY1MjQ0fQ.jFB0U0XTChJiVvmo0f6nBQZ0ztmtVZw12FePFQ7t9bw
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZGE5Nzc1NzdjNjI3ZWU3OWExZDU0MyIsInJvbGUiOiJzdHVkZW50IiwiZW1haWwiOiIyMjA3MUEzMjU1QHZucnZqaWV0LmluIiwiaWF0IjoxNzQyMzkwNzQwLCJleHAiOjQzMzQzOTA3NDB9.PRSVzvhkLQmY4drCDjVcBCDqPmdPi6_MbpSMpxcTOqg
 
 {
   "students": {
-    "22071A3255": "Bhargav",
-    "22071A3254": "Sairam",
-    "22071A3245": "Sai Kruthik"
+    "22071A3261": "Ratnah"
   }
 }
 
 ### Soft delete a student
 DELETE http://localhost:1544/admin/students/22071A3262
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZDdkNGE1ZDQ0Y2FkNWUxZTQyODI0YSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc0MjMyMDA5MCwiZXhwIjoxNzQyNDA2NDkwfQ.OhR4CCtCcSDoPGBIHGuWQL9JW-BXfDgW6p3l3UxBWL8
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZGE5Nzc1NzdjNjI3ZWU3OWExZDU0MyIsInJvbGUiOiJzdHVkZW50IiwiZW1haWwiOiIyMjA3MUEzMjU1QHZucnZqaWV0LmluIiwiaWF0IjoxNzQyMzkwNzQwLCJleHAiOjQzMzQzOTA3NDB9.PRSVzvhkLQmY4drCDjVcBCDqPmdPi6_MbpSMpxcTOqg
 
 ### List all deleted students
 GET http://localhost:1544/admin/students/deleted
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZDdkNGE1ZDQ0Y2FkNWUxZTQyODI0YSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc0MjMyMDA5MCwiZXhwIjoxNzQyNDA2NDkwfQ.OhR4CCtCcSDoPGBIHGuWQL9JW-BXfDgW6p3l3UxBWL8
-
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZGE5Nzc1NzdjNjI3ZWU3OWExZDU0MyIsInJvbGUiOiJzdHVkZW50IiwiZW1haWwiOiIyMjA3MUEzMjU1QHZucnZqaWV0LmluIiwiaWF0IjoxNzQyMzkwNzQwLCJleHAiOjQzMzQzOTA3NDB9.PRSVzvhkLQmY4drCDjVcBCDqPmdPi6_MbpSMpxcTOqg
 
 ### Restore a deleted student
 POST http://localhost:1544/admin/students/22071A3262/restore
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZDdkNGE1ZDQ0Y2FkNWUxZTQyODI0YSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc0MjMyMDA5MCwiZXhwIjoxNzQyNDA2NDkwfQ.OhR4CCtCcSDoPGBIHGuWQL9JW-BXfDgW6p3l3UxBWL8
-
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZGE5Nzc1NzdjNjI3ZWU3OWExZDU0MyIsInJvbGUiOiJzdHVkZW50IiwiZW1haWwiOiIyMjA3MUEzMjU1QHZucnZqaWV0LmluIiwiaWF0IjoxNzQyMzkwNzQwLCJleHAiOjQzMzQzOTA3NDB9.PRSVzvhkLQmY4drCDjVcBCDqPmdPi6_MbpSMpxcTOqg
 
 ### List all active students
 GET http://localhost:1544/admin/students
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZDdkNGE1ZDQ0Y2FkNWUxZTQyODI0YSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc0MjMyMDA5MCwiZXhwIjoxNzQyNDA2NDkwfQ.OhR4CCtCcSDoPGBIHGuWQL9JW-BXfDgW6p3l3UxBWL8
-
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZGE5Nzc1NzdjNjI3ZWU3OWExZDU0MyIsInJvbGUiOiJzdHVkZW50IiwiZW1haWwiOiIyMjA3MUEzMjU1QHZucnZqaWV0LmluIiwiaWF0IjoxNzQyMzkwNzQwLCJleHAiOjQzMzQzOTA3NDB9.PRSVzvhkLQmY4drCDjVcBCDqPmdPi6_MbpSMpxcTOqg
 
 ### Get a specific student's details
 GET http://localhost:1544/admin/students/22071A3262
@@ -52,11 +47,13 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZDdkNGE1Z
 ### Update a student
 PUT http://localhost:1544/admin/students/22071A3262
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZDdkNGE1ZDQ0Y2FkNWUxZTQyODI0YSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc0MjMyMDA5MCwiZXhwIjoxNzQyNDA2NDkwfQ.OhR4CCtCcSDoPGBIHGuWQL9JW-BXfDgW6p3l3UxBWL8
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZGE5Nzc1NzdjNjI3ZWU3OWExZDU0MyIsInJvbGUiOiJzdHVkZW50IiwiZW1haWwiOiIyMjA3MUEzMjU1QHZucnZqaWV0LmluIiwiaWF0IjoxNzQyMzkwNzQwLCJleHAiOjQzMzQzOTA3NDB9.PRSVzvhkLQmY4drCDjVcBCDqPmdPi6_MbpSMpxcTOqg
 
 
 {
-  "name": "Ratna Jashwanth"
+  "name": "Ratna Jashwanth",
+  "department": "CSBS",
+  "batch": "2022-2026"
 }
 
 
@@ -72,36 +69,31 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZDdkNGE1Z
 ### Add faculty members
 POST http://localhost:1544/admin/add-faculty
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZDdkNGE1ZDQ0Y2FkNWUxZTQyODI0YSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc0MjMyMDA5MCwiZXhwIjoxNzQyNDA2NDkwfQ.OhR4CCtCcSDoPGBIHGuWQL9JW-BXfDgW6p3l3UxBWL8
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZGE5Nzc1NzdjNjI3ZWU3OWExZDU0MyIsInJvbGUiOiJzdHVkZW50IiwiZW1haWwiOiIyMjA3MUEzMjU1QHZucnZqaWV0LmluIiwiaWF0IjoxNzQyMzkwNzQwLCJleHAiOjQzMzQzOTA3NDB9.PRSVzvhkLQmY4drCDjVcBCDqPmdPi6_MbpSMpxcTOqg
 
 {
   "faculties": {
-    "FAC12346": "Dr. Rajesh Kumar",
-    "FAC67890": "Dr. Priya Sharma"
+    "FAC596415": "Mark"
   }
 }
 
 ### List all faculty members (complete details by default)
 GET http://localhost:1544/admin/faculty
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZDdkNGE1ZDQ0Y2FkNWUxZTQyODI0YSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc0MjMyMDA5MCwiZXhwIjoxNzQyNDA2NDkwfQ.OhR4CCtCcSDoPGBIHGuWQL9JW-BXfDgW6p3l3UxBWL8
-
-
-### List all faculty members (basic info only)
-GET http://localhost:1544/admin/faculty?basic=true
-Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZDdkNGE1ZDQ0Y2FkNWUxZTQyODI0YSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc0MjMyMDA5MCwiZXhwIjoxNzQyNDA2NDkwfQ.OhR4CCtCcSDoPGBIHGuWQL9JW-BXfDgW6p3l3UxBWL8
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZGE5Nzc1NzdjNjI3ZWU3OWExZDU0MyIsInJvbGUiOiJzdHVkZW50IiwiZW1haWwiOiIyMjA3MUEzMjU1QHZucnZqaWV0LmluIiwiaWF0IjoxNzQyMzkwNzQwLCJleHAiOjQzMzQzOTA3NDB9.PRSVzvhkLQmY4drCDjVcBCDqPmdPi6_MbpSMpxcTOqg
 
 
 ### Get faculty details
 GET http://localhost:1544/admin/faculty/FAC12346
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZDdkNGE1ZDQ0Y2FkNWUxZTQyODI0YSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc0MjMyMDA5MCwiZXhwIjoxNzQyNDA2NDkwfQ.OhR4CCtCcSDoPGBIHGuWQL9JW-BXfDgW6p3l3UxBWL8
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZGE5Nzc1NzdjNjI3ZWU3OWExZDU0MyIsInJvbGUiOiJzdHVkZW50IiwiZW1haWwiOiIyMjA3MUEzMjU1QHZucnZqaWV0LmluIiwiaWF0IjoxNzQyMzkwNzQwLCJleHAiOjQzMzQzOTA3NDB9.PRSVzvhkLQmY4drCDjVcBCDqPmdPi6_MbpSMpxcTOqg
 
 
 ### Update faculty
 PUT http://localhost:1544/admin/faculty/FAC12346
-Content-Type: application/jsonAuthorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZDdkNGE1ZDQ0Y2FkNWUxZTQyODI0YSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc0MjMyMDA5MCwiZXhwIjoxNzQyNDA2NDkwfQ.OhR4CCtCcSDoPGBIHGuWQL9JW-BXfDgW6p3l3UxBWL8
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZGE5Nzc1NzdjNjI3ZWU3OWExZDU0MyIsInJvbGUiOiJzdHVkZW50IiwiZW1haWwiOiIyMjA3MUEzMjU1QHZucnZqaWV0LmluIiwiaWF0IjoxNzQyMzkwNzQwLCJleHAiOjQzMzQzOTA3NDB9.PRSVzvhkLQmY4drCDjVcBCDqPmdPi6_MbpSMpxcTOqg
+
 
 {
   "qualification": "Ph.D in Computer Science",
@@ -113,17 +105,14 @@ Content-Type: application/jsonAuthorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6
 ### Try to soft delete an already deleted faculty
 DELETE http://localhost:1544/admin/faculty/FAC12346
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZDdkNGE1ZDQ0Y2FkNWUxZTQyODI0YSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc0MjMyMDA5MCwiZXhwIjoxNzQyNDA2NDkwfQ.OhR4CCtCcSDoPGBIHGuWQL9JW-BXfDgW6p3l3UxBWL8
-
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZGE5Nzc1NzdjNjI3ZWU3OWExZDU0MyIsInJvbGUiOiJzdHVkZW50IiwiZW1haWwiOiIyMjA3MUEzMjU1QHZucnZqaWV0LmluIiwiaWF0IjoxNzQyMzkwNzQwLCJleHAiOjQzMzQzOTA3NDB9.PRSVzvhkLQmY4drCDjVcBCDqPmdPi6_MbpSMpxcTOqg
 
 ### List deleted faculty
 GET http://localhost:1544/admin/faculty/deleted
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZDdkNGE1ZDQ0Y2FkNWUxZTQyODI0YSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc0MjMyMDA5MCwiZXhwIjoxNzQyNDA2NDkwfQ.OhR4CCtCcSDoPGBIHGuWQL9JW-BXfDgW6p3l3UxBWL8
-
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZGE5Nzc1NzdjNjI3ZWU3OWExZDU0MyIsInJvbGUiOiJzdHVkZW50IiwiZW1haWwiOiIyMjA3MUEzMjU1QHZucnZqaWV0LmluIiwiaWF0IjoxNzQyMzkwNzQwLCJleHAiOjQzMzQzOTA3NDB9.PRSVzvhkLQmY4drCDjVcBCDqPmdPi6_MbpSMpxcTOqg
 
 ### Restore faculty
 POST http://localhost:1544/admin/faculty/FAC12346/restore
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZDdkNGE1ZDQ0Y2FkNWUxZTQyODI0YSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc0MjMyMDA5MCwiZXhwIjoxNzQyNDA2NDkwfQ.OhR4CCtCcSDoPGBIHGuWQL9JW-BXfDgW6p3l3UxBWL8
-
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZGE5Nzc1NzdjNjI3ZWU3OWExZDU0MyIsInJvbGUiOiJzdHVkZW50IiwiZW1haWwiOiIyMjA3MUEzMjU1QHZucnZqaWV0LmluIiwiaWF0IjoxNzQyMzkwNzQwLCJleHAiOjQzMzQzOTA3NDB9.PRSVzvhkLQmY4drCDjVcBCDqPmdPi6_MbpSMpxcTOqg
