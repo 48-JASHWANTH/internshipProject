@@ -1,22 +1,21 @@
 import { Router } from "express";
 import { studentLogin } from "../controllers/authController.js";
-import { verifyToken, verifyStudent } from "../middleware/verifyToken.js";
-import { updateStudentAcademicData, getStudentAcademic, updateStudentAdditional, getStudentAdditional,updateStudentPersonal,getStudentPersonal, getStudentDashBoardDetails, getStudentActiveWorks, getStudentArchive, getCampusProjects} from "../controllers/studentController.js";
+import { verifyToken} from "../middleware/verifyToken.js";
+import { updateStudentAcademicData, updateStudentAdditional,updateStudentPersonal, getStudentDashBoardDetails, getStudentActiveWorks, getStudentArchive, getCampusProjects, getStudentData } from "../controllers/studentController.js";
 const studentRoutes = Router();
 
 // Public routes
 studentRoutes.post('/login', studentLogin);
 //  optimise these routes
-studentRoutes.put('/academic/:studentID', updateStudentAcademicData);
-studentRoutes.get('/academic/:studentID', getStudentAcademic);
-studentRoutes.put('/additional/:studentID', updateStudentAdditional);
-studentRoutes.get('/additional/:studentID', getStudentAdditional);
-studentRoutes.put('/personal/:studentID', updateStudentPersonal);
-studentRoutes.get('/personal/:studentID', getStudentPersonal);
+studentRoutes.put('/academic/:studentID', verifyToken , updateStudentAcademicData);
+studentRoutes.put('/additional/:studentID',verifyToken ,  updateStudentAdditional);
+studentRoutes.put('/personal/:studentID',verifyToken ,  updateStudentPersonal);
+// Combined route for getting student data
+studentRoutes.get('/data/:studentID', verifyToken, getStudentData);
 
-
-studentRoutes.get('/dashboard/:studentID',getStudentDashBoardDetails)
-studentRoutes.get('/activeWorks/:studentID',getStudentActiveWorks)
-studentRoutes.get('/archive/:studentID',getStudentArchive)
-studentRoutes.get('/campusProjects',getCampusProjects)
+// Dashboard related routes
+studentRoutes.get('/dashboard/:studentID',verifyToken , getStudentDashBoardDetails)
+studentRoutes.get('/activeWorks/:studentID',verifyToken , getStudentActiveWorks)
+studentRoutes.get('/archive/:studentID',verifyToken , getStudentArchive)
+studentRoutes.get('/campusProjects',verifyToken , getCampusProjects)
 export default studentRoutes;

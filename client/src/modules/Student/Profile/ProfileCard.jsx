@@ -1,14 +1,16 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Edit, X } from 'lucide-react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
+import { useStore } from '@/store/useStore';
+import { apiClient } from '@/lib/api-client';
 
 const ProfileCard = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [profileInfo, setProfileInfo] = useState({
     name: '',
     regNumber: '',
-    email: '',
+    mail: '',
     phone: '',
     gender: '',
     dateOfBirth: '',
@@ -16,45 +18,31 @@ const ProfileCard = () => {
   });
   const [editedData, setEditedData] = useState({});
   const [selectedFile, setSelectedFile] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  // const [loading, setLoading] = useState(true);
+  // const [error, setError] = useState(null);
 
   // Get student ID from localStorage or context
   const authData = localStorage.getItem('auth-storage');
   const studentID = JSON.parse(authData).state.user.studentID; // Fallback for testing
+  const { studentData, loading, error, fetchStudentData ,setLoading} = useStore();
+  
 
-  // Fetch profile data on component mount
+
   useEffect(() => {
-    const fetchProfileData = async () => {
-      try {
-        setLoading(true);
-        const response = await axios.get(`http://localhost:1544/student/personal/${studentID}`);
-        
-        // Map the response data to our component state
-        const data = {
-          name: response.data.name || '',
-          regNumber: response.data.studentID || '',
-          email: response.data.mail || '',
-          phone: response.data.phone || '',
-          gender: response.data.gender || '',
-          dateOfBirth: response.data.dateOfBirth || '',
-          profilePic: response.data.profilePic || ''
-        };
-        
-        setProfileInfo(data);
-        setEditedData(data);
-        setError(null);
-      } catch (err) {
-        console.error('Error fetching profile data:', err);
-        setError('Failed to load profile information. Please try again later.');
-        toast.error('Failed to load profile information');
-      } finally {
-        setLoading(false);
-      }
-    };
+    if(!studentData){
+      console.log("from personal")
+      fetchStudentData(studentID);
+    }
+  }, [fetchStudentData,studentID]);
+  useEffect(()=>{
+    if(studentData){
+      setProfileInfo(studentData.personal);
+      setEditedData(studentData.personal)
+    }
+    
+  },[studentData])
 
-    fetchProfileData();
-  }, [studentID]);
+
 
   const handleFileSelect = (e) => {
     const file = e.target.files[0];
@@ -77,15 +65,15 @@ const ProfileCard = () => {
       // Prepare data for the API
       const updateData = {
         name: editedData.name,
-        mail: editedData.email,
+        mail: editedData.mail,
         phone: editedData.phone,
         gender: editedData.gender,
         dateOfBirth: editedData.dateOfBirth
       };
       
-      const response = await axios.put(
-        `http://localhost:1544/student/personal/${studentID}`, 
-        updateData
+      const response = await apiClient.put(
+        `student/personal/${studentID}`, 
+        updateData,{withCredentials:true}
       );
       
       if (response.status === 200) {
@@ -95,7 +83,7 @@ const ProfileCard = () => {
         setProfileInfo({
           name: response.data.name || '',
           regNumber: response.data.studentID || '',
-          email: response.data.mail || '',
+          mail: response.data.mail || '',
           phone: response.data.phone || '',
           gender: response.data.gender || '',
           dateOfBirth: response.data.dateOfBirth || '',
@@ -183,8 +171,8 @@ const ProfileCard = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4">
           {[
             { label: "Name", value: profileInfo.name },
-            { label: "Registration Number", value: profileInfo.regNumber },
-            { label: "Email", value: profileInfo.email },
+            { label: "Registration Number", value: studentID },
+            { label: "Email", value: profileInfo.mail },
             { label: "Phone", value: profileInfo.phone },
             { label: "Gender", value: profileInfo.gender },
             { label: "Date of Birth", value: profileInfo.dateOfBirth ? new Date(profileInfo.dateOfBirth).toLocaleDateString('en-GB') : '' }
@@ -243,12 +231,13 @@ const ProfileCard = () => {
                   <input
                     type="text"
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400"
-                    value={editedData.name.split(' ')[0] || ''}
+                    value={editedData.name ? editedData.name.split(' ')[0] : ''}
                     onChange={(e) => {
-                      const lastName = editedData.name.split(' ').slice(1).join(' ');
+                      const lastName = editedData.name ? editedData.name.split(' ').slice(1).join(' ') : '';
                       setEditedData({ ...editedData, name: `${e.target.value} ${lastName}` });
                     }}
                   />
+
                 </div>
                 <div>
                   <label className="block text-xs md:text-sm font-medium text-gray-700 mb-2">
@@ -257,12 +246,13 @@ const ProfileCard = () => {
                   <input
                     type="text"
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400"
-                    value={editedData.name.split(' ').slice(1).join(' ') || ''}
+                    value={editedData.name ? editedData.name.split(' ').slice(1).join(' ') : ''}
                     onChange={(e) => {
-                      const firstName = editedData.name.split(' ')[0] || '';
+                      const firstName = editedData.name ? editedData.name.split(' ')[0] : '';
                       setEditedData({ ...editedData, name: `${firstName} ${e.target.value}` });
                     }}
                   />
+
                 </div>
               </div>
 
@@ -294,8 +284,8 @@ const ProfileCard = () => {
                 <input
                   type="email"
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400"
-                  value={editedData.email}
-                  onChange={(e) => setEditedData({ ...editedData, email: e.target.value })}
+                  value={editedData.mail}
+                  onChange={(e) => setEditedData({ ...editedData, mail: e.target.value })}
                 />
               </div>
 
@@ -310,7 +300,8 @@ const ProfileCard = () => {
                   <input
                     type="tel"
                     className="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400"
-                    value={editedData.phone.replace('+91 ', '')}
+                    value={editedData.phone ? editedData.phone.replace('+91 ', '') : ''}
+
                     onChange={(e) => setEditedData({ ...editedData, phone: e.target.value.startsWith('+91 ') ? e.target.value : '+91 ' + e.target.value })}
                   />
                 </div>
@@ -335,7 +326,7 @@ const ProfileCard = () => {
                   <input
                     type="text"
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 bg-gray-50 cursor-not-allowed"
-                    value={editedData.regNumber}
+                    value={studentID}
                     readOnly
                   />
                 </div>

@@ -20,7 +20,6 @@ import Incharge from "./modules/Faculty/ActiveWorks/Incharge";
 import Student from "./modules/Student/StudentLayout";
 import FacultyProfile from "./modules/Faculty/Profile/FacultyProfile";
 import { Navigate, Outlet } from "react-router-dom";
-import useAuthStore from "@/store/authStore";
 import AdminDashboard from './modules/Admin/Dashboard';
 import AdminProfile from './modules/Admin/Profile';
 import AdminFacultyManagement from './modules/Admin/AdminFacultyManagement';
@@ -29,10 +28,14 @@ import AddStudent from './modules/Admin/AddStudent';
 import AddFaculty from './modules/Admin/AddFaculty';
 import StudentView from './modules/Admin/StudentView';
 import ViewFaculty from './modules/Admin/ViewFaculty';
+import { useStore } from "./store/useStore";
+
+
+
 
 function App() {
   const PrivateRoute = ({ allowedRoles }) => {
-    const { user, isAuthenticated } = useAuthStore();
+    const { user, isAuthenticated } = useStore();
   
     if (!isAuthenticated || !allowedRoles.includes(user?.role)) {
       return <Navigate to="/" />;
@@ -112,4 +115,5 @@ function App() {
     </>
   );
 }
+
 export default App;

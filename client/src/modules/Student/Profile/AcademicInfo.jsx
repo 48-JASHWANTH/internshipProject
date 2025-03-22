@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Edit, X } from 'lucide-react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
+import {useStore} from '@/store/useStore';
 
 
 const AcademicInfo = () => {
@@ -17,31 +18,22 @@ const AcademicInfo = () => {
     underGraduate: '',
     postGraduate: 'NA'
   });
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   // Get student ID from localStorage or context should make changes here of extracting data 
   const authData = localStorage.getItem('auth-storage');
-  const studentID = JSON.parse(authData).state.user.studentID; // Fallback for testing
-
-  // Fetch academic data on component mount
+  const studentID = JSON.parse(authData).state.user.studentID;
+  const { studentData, loading, error, fetchStudentData ,setLoading} = useStore();
+  
   useEffect(() => {
-    const fetchAcademicData = async () => {
-      try {
-        setLoading(true);
-        const response = await axios.get(`http://localhost:1544/student/academic/${studentID}`);
-        setAcademicData(response.data);
-        setError(null);
-      } catch (err) {
-        console.error('Error fetching academic data:', err);
-        setError('Failed to load academic information. Please try again later.');
-        toast.error('Failed to load academic information');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchAcademicData();
-  }, [studentID]);
+   if(!studentData){
+    console.log("from academic")
+    fetchStudentData(studentID);
+   }
+  }, [fetchStudentData,studentID]);
+  useEffect(()=>{
+    if(studentData)
+    setAcademicData(studentData.academic);
+  },[studentData])
+  
 
   const handleSaveChanges = async (e) => {
     e.preventDefault();
@@ -50,7 +42,7 @@ const AcademicInfo = () => {
       setLoading(true);
       const response = await axios.put(
         `http://localhost:1544/student/academic/${studentID}`, 
-        academicData
+        academicData,{withCredentials:true}
       );
       
       if (response.status === 200) {

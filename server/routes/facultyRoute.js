@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { createTeams } from "../controllers/facultyController.js";
 import { facultyLogin } from "../controllers/authController.js";
-import { verifyToken, verifyFaculty } from "../middleware/verifyToken.js";
+import { verifyToken } from "../middleware/verifyToken.js";
 
 const facultyRoutes = Router();
 

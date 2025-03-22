@@ -1,14 +1,17 @@
 import React, { useState, useRef, useEffect } from "react";
 import { FaUserCircle, FaBell, FaBars, FaTimes } from "react-icons/fa";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import vnrlogo from "../images/vnrvjiet.png";
-import useProfileStore from "../../store/useProfileStore";
+import { useStore } from '@/store/useStore';
 
 const Navbar = ({ isMobileMenuOpen, setIsMobileMenuOpen }) => {
-  const { profileData } = useProfileStore();
+  const navigate = useNavigate();
   const [showProfile, setShowProfile] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
-  const navigate = useNavigate(); 
+  
+  const profileData = useStore(state => state.profileData);
+  const user = useStore(state => state.user);
+  const logout = useStore(state => state.logout);
 
   const dropdownRef = useRef(null);
 
@@ -23,20 +26,20 @@ const Navbar = ({ isMobileMenuOpen, setIsMobileMenuOpen }) => {
   };
 
   const handleLogout = () => {
-    setShowProfile(false); // Close dropdown
-    localStorage.removeItem("userToken");  
-    navigate("/"); 
+    setShowProfile(false);
+    logout();
+    navigate("/");
   };
 
   const handleLogo = () => {
-    setShowProfile(false); // Close dropdown
-    navigate("/Student/Dashboard"); 
+    setShowProfile(false);
+    navigate("/Student/Dashboard");
   };
 
   const handleProfile = () => {
-    setShowProfile(false); // Close dropdown
+    setShowProfile(false);
     navigate("/Student/Profile");
-  };  
+  };
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -75,7 +78,7 @@ const Navbar = ({ isMobileMenuOpen, setIsMobileMenuOpen }) => {
             onClick={toggleProfile}
             className="cursor-pointer flex items-center justify-center w-10 h-10 bg-gray-200 rounded-full overflow-hidden"
           >
-            {profileData.profilePic ? (
+            {profileData?.profilePic ? (
               <img 
                 src={profileData.profilePic} 
                 alt="Profile" 
@@ -116,7 +119,7 @@ const Navbar = ({ isMobileMenuOpen, setIsMobileMenuOpen }) => {
           <div className="absolute top-14 right-4 w-80 bg-white border border-gray-300 rounded-lg shadow-lg">
             <div className="flex items-center px-4 py-2 border-b border-gray-300">
               <div className="w-16 h-16 rounded-full overflow-hidden mr-3">
-                {profileData.profilePic ? (
+                {profileData?.profilePic ? (
                   <img 
                     src={profileData.profilePic} 
                     alt="Profile" 
@@ -127,8 +130,8 @@ const Navbar = ({ isMobileMenuOpen, setIsMobileMenuOpen }) => {
                 )}
               </div>
               <div>
-                <p className="font-bold text-sm">{`${profileData.regNumber} - ${profileData.name}`}</p>
-                <p className="text-xs text-gray-500">{profileData.email}</p>
+                <p className="font-bold text-sm">{`${profileData?.regNumber || ''} - ${profileData?.name || ''}`}</p>
+                <p className="text-xs text-gray-500">{profileData?.email || ''}</p>
               </div>
             </div>
             <div className="flex flex-col">

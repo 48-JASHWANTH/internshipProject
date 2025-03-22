@@ -24,35 +24,6 @@ export const updateStudentAcademicData = async (req, res) => {
     }
   };
 
-  export const getStudentAcademic = async (req, res) => {
-    try {
-        const { studentID } = req.params;
-
-        const student = await Student.findOne({ studentID }, {
-            campus: 1, batch: 1, department: 1, degree: 1,
-            tenth: 1, twelfth: 1, diploma: 1, underGraduate: 1, postGraduate: 1, _id: 0
-        });
-
-        if (!student) {
-            return res.status(404).json({ message: 'Student not found' });
-        }
-
-        res.status(200).json(student);
-    } catch (error) {
-        res.status(500).json({ message: 'Server error', error });
-    }
-};
-
-export const getStudentAdditional = async (req, res) => {
-    try {
-      const student = await Student.findOne({ studentID: req.params.studentID });
-      if (!student) return res.status(404).json({ message: 'Student not found' });
-      res.json(student);
-    } catch (error) {
-      res.status(500).json({ message: error.message });
-    }
-  };
-
 export const updateStudentAdditional = async (req, res) => {
     try {
       const student = await Student.findOneAndUpdate(
@@ -86,18 +57,6 @@ export const updateStudentAdditional = async (req, res) => {
     }
   };
   
-  export const getStudentPersonal = async (req, res) => {
-    try {
-      const { studentID } = req.params;
-      const student = await Student.findOne({ studentID }).select(
-        "name mail phone gender dateOfBirth"
-      );
-  
-      res.status(200).json(student);
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  };
   
 
   export const getStudentDashBoardDetails = async (req, res) => {
@@ -250,3 +209,50 @@ export const updateStudentAdditional = async (req, res) => {
       res.status(500).json({ message: "Server Error", error: error.message });
     }
   };
+
+export const getStudentData = async (req, res) => {
+  try {
+    const { studentID } = req.params;
+
+    const student = await Student.findOne({ studentID });
+    if (!student) {
+      return res.status(404).json({ message: 'Student not found' });
+    }
+
+    // Combine all student data
+    const studentData = {
+      // Personal data
+      personal: {
+        name: student.name,
+        mail: student.mail,
+        phone: student.phone,
+        gender: student.gender,
+        dateOfBirth: student.dateOfBirth
+      },
+      // Academic data
+      academic: {
+        campus: student.campus,
+        batch: student.batch,
+        department: student.department,
+        degree: student.degree,
+        tenth: student.tenth,
+        twelfth: student.twelfth,
+        diploma: student.diploma,
+        underGraduate: student.underGraduate,
+        postGraduate: student.postGraduate
+      },
+      // Additional data
+      additional: {
+        backlogsHistory: student.backlogsHistory,
+        currentBacklogs: student.currentBacklogs,
+        interestedInPlacement: student.interestedInPlacement,
+        skills: student.skills,
+        languages: student.languages
+      }
+    };
+
+    res.status(200).json(studentData);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};

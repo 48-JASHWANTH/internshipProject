@@ -1,11 +1,13 @@
+import React from 'react';
 import { useState, useEffect } from "react";
 import { FaLock, FaLinkedin, FaGraduationCap, FaUserTie } from "react-icons/fa";
 import { Edit, X, Check } from "lucide-react";
-import useFacultyProfileStore from "../../../store/useFacultyProfileStore";
+
+import { useStore } from "@/store/useStore";
 
 const Account = ({ handleChangePassword }) => {
   const [isEditing, setIsEditing] = useState(false);
-  const { profileData, updateSocialLinks } = useFacultyProfileStore();
+  const { profileData, updateSocialLinks } = useStore();
   const [editedLinks, setEditedLinks] = useState(profileData.socialLinks || {
     googleScholar: "",
     vidwan: "",

@@ -4,11 +4,13 @@ import { useNavigate } from 'react-router-dom';
 import * as XLSX from 'xlsx';
 import toast from 'react-hot-toast';
 import { apiClient } from '@/lib/api-client';
-import useAuthStore from '@/store/authStore';
+import { useStore } from '@/store/useStore';
 
 const AddFaculty = () => {
   const navigate = useNavigate();
-  const { user } = useAuthStore();
+  const { user } = useStore(state => ({
+    user: state.user
+  }));
   const [method, setMethod] = useState(''); // 'manual' or 'excel'
   const [formData, setFormData] = useState({
     facultyID: '',

@@ -1,10 +1,10 @@
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import VideoComponent from "./VideoComponent";
-import { FaUserTie, FaChalkboardTeacher, FaUserShield, FaUserGraduate } from "react-icons/fa"; 
+import { FaUserTie, FaUserShield, FaUserGraduate } from "react-icons/fa"; 
 import { FaEye, FaEyeSlash } from "react-icons/fa";
-import useAuthStore from '@/store/authStore';
-import { toast } from 'react-hot-toast';
+import { toast } from 'react-toastify';
+import { useStore } from "@/store/useStore";
 
 function Login() {
   const navigate = useNavigate();
@@ -13,7 +13,8 @@ function Login() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const { login, error, clearError } = useAuthStore();
+  
+  const login = useStore(state => state.login);
 
   const handleLogin = async (e) => {
     e.preventDefault();

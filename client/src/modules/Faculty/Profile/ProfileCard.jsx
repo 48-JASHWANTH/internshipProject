@@ -1,233 +1,228 @@
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Edit, X } from 'lucide-react';
-import useFacultyProfileStore from '../../../store/useFacultyProfileStore';
+import axios from 'axios';
+import { toast } from 'react-toastify';
+import { useStore } from '@/store/useStore';
 
 const ProfileCard = () => {
-  const { profileData, updateProfileData } = useFacultyProfileStore();
   const [isEditing, setIsEditing] = useState(false);
-  const [editedData, setEditedData] = useState({ ...profileData });
+  const [profileInfo, setProfileInfo] = useState({
+    name: '',
+    regNumber: '',
+    email: '',
+    phone: '',
+    gender: '',
+    dateOfBirth: '',
+    profilePic: ''
+  });
+  const [editedData, setEditedData] = useState({});
   const [selectedFile, setSelectedFile] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const handleFileSelect = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setSelectedFile(reader.result);
-        setEditedData({ ...editedData, profilePic: reader.result });
-      };
-      reader.readAsDataURL(file);
+  const updateProfileData = useStore(state => state.updateProfileData);
+  const user = useStore(state => state.user);
+
+  // Get faculty ID from user state
+  const facultyID = user?.facultyID;
+
+  // Fetch profile data on component mount
+  useEffect(() => {
+    const fetchProfileData = async () => {
+      if (!facultyID) return;
+
+      try {
+        setLoading(true);
+        const response = await axios.get(`http://localhost:1544/faculty/personal/${facultyID}`);
+        
+        // Map the response data to our component state
+        const data = {
+          name: response.data.name || '',
+          regNumber: response.data.facultyID || '',
+          email: response.data.mail || '',
+          phone: response.data.phone || '',
+          gender: response.data.gender || '',
+          dateOfBirth: response.data.dateOfBirth || '',
+          profilePic: response.data.profilePic || ''
+        };
+        
+        setProfileInfo(data);
+        setEditedData(data);
+        updateProfileData(data);
+        setError(null);
+      } catch (err) {
+        console.error('Error fetching profile data:', err);
+        setError('Failed to load profile information. Please try again later.');
+        toast.error('Failed to load profile information');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProfileData();
+  }, [facultyID, updateProfileData]);
+
+  const handleSaveChanges = async () => {
+    if (!facultyID) return;
+
+    try {
+      setLoading(true);
+      const formData = new FormData();
+      
+      // Append all edited data
+      Object.keys(editedData).forEach(key => {
+        if (key !== 'profilePic') {
+          formData.append(key, editedData[key]);
+        }
+      });
+
+      // Append profile picture if selected
+      if (selectedFile) {
+        formData.append('profilePic', selectedFile);
+      }
+
+      const response = await axios.put(
+        `http://localhost:1544/faculty/personal/${facultyID}`,
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        }
+      );
+
+      if (response.data.success) {
+        setProfileInfo(editedData);
+        updateProfileData(editedData);
+        setIsEditing(false);
+        toast.success('Profile updated successfully');
+      }
+    } catch (err) {
+      console.error('Error updating profile:', err);
+      toast.error(err.response?.data?.message || 'Error updating profile');
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleSaveChanges = (e) => {
-    e.preventDefault();
-    updateProfileData(editedData);
-    setIsEditing(false);
-    setSelectedFile(null);
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setSelectedFile(file);
+      setEditedData(prev => ({
+        ...prev,
+        profilePic: URL.createObjectURL(file)
+      }));
+    }
   };
 
+  if (loading) {
+    return <div className="text-center py-4">Loading...</div>;
+  }
+
+  if (error) {
+    return <div className="text-center text-red-600 py-4">{error}</div>;
+  }
+
   return (
-    <div className="w-full bg-white rounded-lg shadow-lg">
-      <div className="p-4 md:p-6">
-        <div className="flex flex-col items-center mb-6">
-          <div className="w-20 h-20 md:w-24 md:h-24 rounded-full overflow-hidden bg-gray-200 mb-3">
-            <img 
-              src={profileData.profilePic || "../../assets/profilepic.png"} 
-              alt="Profile" 
-              className="w-full h-full object-cover"
-            />
+    <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+      {/* Profile Picture Section */}
+      <div className="relative">
+        <div className="h-32 bg-gradient-to-r from-red-900 to-yellow-400" />
+        <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2">
+          <div className="relative w-24 h-24 rounded-full border-4 border-white overflow-hidden bg-gray-200">
+            {isEditing ? (
+              <label className="cursor-pointer w-full h-full flex items-center justify-center">
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleFileChange}
+                />
+                <Edit className="w-6 h-6 text-gray-600" />
+              </label>
+            ) : (
+              editedData.profilePic ? (
+                <img
+                  src={editedData.profilePic}
+                  alt="Profile"
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center">
+                  <span className="text-4xl text-gray-400">👤</span>
+                </div>
+              )
+            )}
           </div>
-          <h3 className="text-base md:text-lg font-semibold text-gray-800">{profileData.empname}</h3>
-          <span className="text-sm text-orange-400">Published</span>
-        </div>
-
-        <div className="flex justify-between items-center mb-4">
-          <h4 className="text-base md:text-lg font-semibold text-gray-800">Personal Information</h4>
-          <button 
-            onClick={() => setIsEditing(true)}
-            className="text-[#82001A] hover:text-[#6b0016] transition-colors duration-200"
-            aria-label="Edit personal information"
-          >
-            <Edit className="w-4 h-4 md:w-5 md:h-5" />
-          </button>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4">
-          {[
-            { label: "Employee Code", value: profileData.empcode },
-            { label: "Employee Name", value: profileData.empname },
-            { label: "JNTUH ID", value: profileData.jntuId },
-            { label: "Email", value: profileData.email },
-            { label: "Phone", value: profileData.contactNumber },
-            { label: "Gender", value: profileData.gender },
-            { label: "Date of Birth", value: profileData.dateOfBirth ? new Date(profileData.dateOfBirth).toLocaleDateString('en-GB') : '' }
-          ].map(({ label, value }) => (
-            <div key={label} className="space-y-1">
-              <label className="block text-xs md:text-sm text-gray-600">{label}</label>
-              <div className="text-xs md:text-sm font-medium text-gray-800 break-words">{value}</div>
-            </div>
-          ))}
         </div>
       </div>
 
-      {/* Edit Modal */}
-      {isEditing && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-[600px] max-h-[90vh] overflow-y-auto">
-            <div className="p-4 md:p-6 border-b border-gray-200">
-              <div className="flex justify-between items-center">
-                <div>
-                  <h2 className="text-xl md:text-2xl font-semibold text-gray-800">Personal Information</h2>
-                  <p className="text-xs md:text-sm text-gray-500 mt-1">Update your photo and personal details here</p>
-                </div>
-                <button   
-                  onClick={() => setIsEditing(false)}
-                  className="text-gray-400 hover:text-gray-600 transition-colors duration-200"
-                  aria-label="Close modal"
-                >
-                  <X className="w-5 h-5 md:w-6 md:h-6" />
-                </button>
-              </div>
-            </div>
-
-            <form onSubmit={handleSaveChanges} className="p-4 md:p-6 space-y-4 md:space-y-6">
-              <div className="flex items-center gap-4 mb-6">
-                <img 
-                  src={selectedFile || editedData.profilePic || "../../assets/profilepic.png"} 
-                  alt="Profile" 
-                  className="w-14 h-14 md:w-16 md:h-16 rounded-2xl object-cover"
-                />
-                <label className="px-3 py-2 text-xs md:text-sm font-medium text-white bg-yellow-400 rounded-lg hover:bg-yellow-600 transition-colors duration-200 cursor-pointer">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={handleFileSelect}
-                  />
-                  Upload    
-                </label>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-                <div>
-                  <label className="block text-xs md:text-sm font-medium text-gray-700 mb-2">
-                    Employee Code <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400"
-                    value={editedData.empcode || ''}
-                    onChange={(e) => setEditedData({ ...editedData, empcode: e.target.value })}
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs md:text-sm font-medium text-gray-700 mb-2">
-                    Employee Name <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400"
-                    value={editedData.empname || ''}
-                    onChange={(e) => setEditedData({ ...editedData, empname: e.target.value })}
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs md:text-sm font-medium text-gray-700 mb-2">
-                  Gender <span className="text-red-500">*</span>
-                </label>
-                <div className="flex gap-6">
-                  {['Male', 'Female'].map((option) => (
-                    <label key={option} className="flex items-center">
-                      <input
-                        type="radio"
-                        name="gender"
-                        value={option}
-                        checked={editedData.gender === option}
-                        onChange={(e) => setEditedData({ ...editedData, gender: e.target.value })}
-                        className="w-4 h-4 text-[#82001A] focus:ring-[#82001A] border-gray-300"
-                      />
-                      <span className="ml-2 text-gray-700">{option}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs md:text-sm font-medium text-gray-700 mb-2">
-                  Email <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="email"
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400"
-                  value={editedData.email || ''}
-                  onChange={(e) => setEditedData({ ...editedData, email: e.target.value })}
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs md:text-sm font-medium text-gray-700 mb-2">
-                  Phone No <span className="text-red-500">*</span>
-                </label>
-                <div className="flex gap-2">
-                  <select className="w-20 border border-gray-300 rounded-lg px-2 py-2 focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400">
-                    <option>+91</option>
-                  </select>
-                  <input
-                    type="tel"
-                    className="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400"
-                    value={(editedData.contactNumber || '').replace('+91 ', '')}
-                    onChange={(e) => setEditedData({ ...editedData, contactNumber: '+91 ' + e.target.value })}
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-                <div>
-                  <label className="block text-xs md:text-sm font-medium text-gray-700 mb-2">
-                    Date of Birth <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="date"
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400"
-                    value={editedData.dateOfBirth || ''}
-                    onChange={(e) => setEditedData({ ...editedData, dateOfBirth: e.target.value })}
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs md:text-sm font-medium text-gray-700 mb-2">
-                    JNTUH ID <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400"
-                    value={editedData.jntuId || ''}
-                    onChange={(e) => setEditedData({ ...editedData, jntuId: e.target.value })}
-                  />
-                </div>
-              </div>
-
-              <div className="flex justify-end gap-3 pt-6 border-t border-gray-200">
-                <button
-                  type="button"
-                  className="px-3 py-2 text-xs md:text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
-                  onClick={() => setIsEditing(false)}
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-3 py-2 text-xs md:text-sm font-medium text-white bg-[#82001A] rounded-lg hover:bg-[#6b0016]"
-                >
-                  Save Changes
-                </button>
-              </div>
-            </form>
-          </div>
+      {/* Profile Info Section */}
+      <div className="pt-16 pb-6 px-6">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-semibold text-gray-900">Profile Info</h2>
+          {!isEditing ? (
+            <button
+              onClick={() => setIsEditing(true)}
+              className="text-[#82001A] hover:text-[#9b1a31]"
+            >
+              <Edit className="w-5 h-5" />
+            </button>
+          ) : (
+            <button
+              onClick={() => setIsEditing(false)}
+              className="text-gray-600 hover:text-gray-800"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          )}
         </div>
-      )}
+
+        <div className="space-y-4">
+          {Object.entries({
+            Name: 'name',
+            'Faculty ID': 'regNumber',
+            Email: 'email',
+            Phone: 'phone',
+            Gender: 'gender',
+            'Date of Birth': 'dateOfBirth'
+          }).map(([label, key]) => (
+            <div key={key}>
+              <label className="block text-sm font-medium text-gray-600">
+                {label}
+              </label>
+              {isEditing ? (
+                <input
+                  type={key === 'dateOfBirth' ? 'date' : 'text'}
+                  value={editedData[key] || ''}
+                  onChange={(e) =>
+                    setEditedData(prev => ({
+                      ...prev,
+                      [key]: e.target.value
+                    }))
+                  }
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#9b1a31] focus:ring focus:ring-[#9b1a31] focus:ring-opacity-50"
+                />
+              ) : (
+                <p className="mt-1 text-gray-900">{profileInfo[key] || '-'}</p>
+              )}
+            </div>
+          ))}
+        </div>
+
+        {isEditing && (
+          <div className="mt-6 flex justify-end">
+            <button
+              onClick={handleSaveChanges}
+              disabled={loading}
+              className="px-4 py-2 bg-[#82001A] text-white rounded-md hover:bg-[#9b1a31] disabled:opacity-50"
+            >
+              {loading ? 'Saving...' : 'Save Changes'}
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

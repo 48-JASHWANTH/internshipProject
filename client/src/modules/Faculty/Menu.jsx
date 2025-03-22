@@ -1,12 +1,12 @@
 import React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { FaChevronRight, FaHome, FaArchive, FaForumbee, FaBriefcase, FaGraduationCap, FaUserCircle, FaPlus } from "react-icons/fa";
-import useFacultyProfileStore from '../../store/useFacultyProfileStore';
+import { useStore } from "@/store/useStore";
 
 const Menu = ({ isProfilePage, isMobileMenuOpen, setIsMobileMenuOpen }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { profileData } = useFacultyProfileStore();
+  const { profileData } = useStore();
   const [expandedItem, setExpandedItem] = React.useState(null);
 
   const menuItems = [

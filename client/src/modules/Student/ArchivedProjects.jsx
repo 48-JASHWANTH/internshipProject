@@ -1,10 +1,10 @@
 import React, { useState, useMemo } from 'react';
 import { FaSearch, FaFilter, FaGithub, FaDownload, FaEye } from 'react-icons/fa';
-import useProjectStore from '../../store/projectStore';
+import {useStore} from '@/store/useStore';
 import { Link } from 'react-router-dom';
 
 const ArchivedProjects = () => {
-  const { projects } = useProjectStore();
+  const { projects } = useStore();
   const [searchTerm, setSearchTerm] = useState('');
   const [filters, setFilters] = useState({
     year: 'all',

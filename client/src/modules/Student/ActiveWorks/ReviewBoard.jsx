@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Pencil, CheckCircle, XCircle, Info } from 'lucide-react';
-import useProjectStore from '../../../store/projectStore';
+import { useStore } from '@/store/useStore';
 
 const ReviewPage = () => {
   const { projectId } = useParams();
-  const { projects, updateProject } = useProjectStore();
+  const { projects, updateProject } = useStore();
   const project = projects.find(work => work.id === projectId);
   const reviews = project?.reviews || [];
   

@@ -8,7 +8,6 @@ import facultyRoutes from "./routes/facultyRoute.js";
 import studentRoutes from "./routes/studentRoutes.js";
 import activityLogRoutes from "./routes/activityLogRoutes.js";
 import passwordResetRoutes from "./routes/passwordResetRoutes.js";
-
 console.log('Student routes:', studentRoutes);
 
 dotenv.config()

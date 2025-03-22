@@ -2,10 +2,13 @@ import React, { useState, useRef, useEffect } from "react";
 import { FaUserCircle, FaBell, FaBars, FaTimes } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import vnrlogo from "../images/vnrvjiet.png";
-import useProfileStore from "../../store/useProfileStore";
+import { useStore } from "@/store/useStore";
 
 const Navbar = ({ isMobileMenuOpen, setIsMobileMenuOpen }) => {
-  const { profileData } = useProfileStore();
+  const { profileData, logout } = useStore(state => ({
+    profileData: state.profileData,
+    logout: state.logout
+  }));
   const [showProfile, setShowProfile] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const navigate = useNavigate(); 
@@ -23,9 +26,9 @@ const Navbar = ({ isMobileMenuOpen, setIsMobileMenuOpen }) => {
   };
 
   const handleLogout = () => {
-    setShowProfile(false); // Close dropdown
-    localStorage.removeItem("userToken");  
-    navigate("/"); 
+    setShowProfile(false);
+    logout();
+    navigate("/");
   };
 
   const handleLogo = () => {

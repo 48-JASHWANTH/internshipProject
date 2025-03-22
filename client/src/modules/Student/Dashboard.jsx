@@ -13,6 +13,7 @@ import {
   Tooltip,
   Legend
 } from 'chart.js';
+import { useNavigate } from 'react-router-dom';
 
 ChartJS.register(
   CategoryScale,

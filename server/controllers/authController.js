@@ -6,6 +6,7 @@ import Admin from '../models/adminModel.js';
 import ActivityLog from '../models/activityLogModel.js';
 import asyncHandler from 'express-async-handler';
 
+const maxAge = 3*24*60*60*1000
 // Generate JWT Token
 const generateToken = (user) => {
     return jwt.sign(
@@ -15,7 +16,7 @@ const generateToken = (user) => {
             email: user.email 
         },
         process.env.JWT_SECRET,
-        { expiresIn: '24h' }
+        { expiresIn: maxAge }
     );
 };
 
@@ -62,10 +63,12 @@ export const facultyLogin = asyncHandler(async (req, res) => {
             });
         }
 
-        const token = generateToken({
+        res.cookie("jwt", generateToken({
             _id: faculty._id,
             role: 'faculty',
             email: faculty.email
+        }),{
+            maxAge,secure:true,sameSite:"None"
         });
 
         // Log successful login
@@ -80,7 +83,6 @@ export const facultyLogin = asyncHandler(async (req, res) => {
 
         res.json({
             success: true,
-            token,
             user: {
                 facultyID: faculty.facultyID,
                 email: faculty.email,
@@ -140,10 +142,12 @@ export const studentLogin = asyncHandler(async (req, res) => {
             });
         }
 
-        const token = generateToken({
+        res.cookie("jwt", generateToken({
             _id: student._id,
             role: 'student',
             email: student.mail
+        }),{
+            maxAge,secure:true,sameSite:"None"
         });
 
         // Log successful login
@@ -158,7 +162,6 @@ export const studentLogin = asyncHandler(async (req, res) => {
 
         res.json({
             success: true,
-            token,
             user: {
                 studentID: student.studentID,
                 email: student.mail,
@@ -167,6 +170,7 @@ export const studentLogin = asyncHandler(async (req, res) => {
         });
 
     } catch (error) {
+        console.log(error)
         res.status(500).json({
             success: false,
             message: "Server error during login"
