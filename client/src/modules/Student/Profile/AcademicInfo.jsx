@@ -3,6 +3,7 @@ import { Edit, X } from 'lucide-react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import {useStore} from '@/store/useStore';
+import { apiClient } from '@/lib/api-client';
 
 
 const AcademicInfo = () => {
@@ -19,8 +20,9 @@ const AcademicInfo = () => {
     postGraduate: 'NA'
   });
   // Get student ID from localStorage or context should make changes here of extracting data 
-  const authData = localStorage.getItem('auth-storage');
+  const authData = localStorage.getItem('app-storage');
   const studentID = JSON.parse(authData).state.user.studentID;
+  console.log(studentID)
   const { studentData, loading, error, fetchStudentData ,setLoading} = useStore();
   
   useEffect(() => {
@@ -40,8 +42,8 @@ const AcademicInfo = () => {
     
     try {
       setLoading(true);
-      const response = await axios.put(
-        `http://localhost:1544/student/academic/${studentID}`, 
+      const response = await apiClient.put(
+        `/academic/${studentID}`, 
         academicData,{withCredentials:true}
       );
       
