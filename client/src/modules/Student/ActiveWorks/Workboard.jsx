@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
-import useProjectStore from '../../../store/projectStore';
+import { useStore } from '@/store/useStore';
 import { FaArrowRight, FaCheck } from 'react-icons/fa';
 
 const Workboard = ({ projectId }) => {
-  const { projects, updateProject } = useProjectStore();
+  const { projects, updateProject } = useStore();
   const [enabled, setEnabled] = useState(false);
   const [taskToComplete, setTaskToComplete] = useState(null);
 

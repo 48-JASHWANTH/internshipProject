@@ -3,93 +3,357 @@ import { FaArrowLeft, FaUpload, FaUserPlus } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import * as XLSX from 'xlsx';
 import toast from 'react-hot-toast';
+import { apiClient } from '@/lib/api-client';
+import { useStore } from '@/store/useStore';
 
 const AddFaculty = () => {
   const navigate = useNavigate();
+  const { user } = useStore(state => ({
+    user: state.user
+  }));
   const [method, setMethod] = useState(''); // 'manual' or 'excel'
-  const [facultyID, setFacultyID] = useState('');
-  const [name, setName] = useState('');
-  const [department, setDepartment] = useState('');
+  const [formData, setFormData] = useState({
+    facultyID: '',
+    name: '',
+    department: '',
+    email: '',
+    mobile: ''
+  });
   const [file, setFile] = useState(null);
   const [previewData, setPreviewData] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  const departments = ['Computer Science', 'Information Technology', 'Electronics & Communication', 'Electrical & Electronics', 'Mechanical Engineering', 'Civil Engineering'];
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      [name]: value
+    });
+  };
 
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
     setFile(selectedFile);
-    
+
     if (selectedFile) {
       const reader = new FileReader();
-      reader.onload = (evt) => {
+      reader.onload = (event) => {
         try {
-          const data = evt.target.result;
-          const workbook = XLSX.read(data, { type: 'binary' });
+          const data = new Uint8Array(event.target.result);
+          const workbook = XLSX.read(data, { type: 'array' });
           const sheetName = workbook.SheetNames[0];
           const worksheet = workbook.Sheets[sheetName];
           const jsonData = XLSX.utils.sheet_to_json(worksheet);
           
-          // Validate data format
-          const validData = jsonData.filter(row => 
-            row.facultyID && row.name && 
-            typeof row.facultyID === 'string' && 
-            typeof row.name === 'string'
-          );
-          
-          if (validData.length === 0) {
-            toast.error('No valid data found in the Excel file. Please use the correct format.');
-            setFile(null);
-            return;
-          }
-          
-          // Show preview of first 5 entries
-          setPreviewData(validData.slice(0, 5));
+          // Preview first 5 entries
+          setPreviewData(jsonData.slice(0, 5));
         } catch (error) {
-          toast.error('Error reading file. Please make sure it\'s a valid Excel file.');
-          setFile(null);
+          console.error('Error parsing Excel file:', error);
+          toast.error('Error parsing Excel file');
         }
       };
-      reader.readAsBinaryString(selectedFile);
+      reader.readAsArrayBuffer(selectedFile);
     }
   };
 
-  const handleManualSubmit = (e) => {
+  const handleManualSubmit = async (e) => {
     e.preventDefault();
-    setIsLoading(true);
     
-    // Validate inputs
-    if (!facultyID || !name || !department) {
-      toast.error('All fields are required');
-      setIsLoading(false);
+    if (!formData.facultyID || !formData.name || !formData.department) {
+      toast.error('Please fill all required fields');
       return;
     }
-    
-    // API call to add faculty
-    setTimeout(() => {
-      toast.success('Faculty added successfully');
+
+    setIsLoading(true);
+    try {
+      const response = await apiClient.post('/admin/add-faculty', {
+        faculties: {
+          [formData.facultyID]: formData.name
+        },
+        details: {
+          [formData.facultyID]: {
+            department: formData.department,
+            email: formData.email,
+            mobile: formData.mobile
+          }
+        }
+      }, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('auth-storage') ? 
+            JSON.parse(localStorage.getItem('auth-storage')).state.token : ''}`
+        }
+      });
+
+      if (response.data.success) {
+        toast.success('Faculty added successfully');
+        navigate('/Admin/Faculty');
+      } else {
+        toast.error(response.data.message || 'Failed to add faculty');
+      }
+    } catch (error) {
+      console.error('Error adding faculty:', error);
+      toast.error(error.response?.data?.message || 'Error adding faculty');
+    } finally {
       setIsLoading(false);
-      navigate('/Admin/Faculty');
-    }, 1000);
+    }
   };
 
-  const handleExcelSubmit = (e) => {
+  const handleExcelSubmit = async (e) => {
     e.preventDefault();
-    setIsLoading(true);
     
     if (!file) {
       toast.error('Please select a file');
-      setIsLoading(false);
       return;
     }
-    
-    // API call to upload Excel
-    setTimeout(() => {
-      toast.success('Faculty imported successfully');
+
+    setIsLoading(true);
+    try {
+      const reader = new FileReader();
+      reader.onload = async (event) => {
+        try {
+          const data = new Uint8Array(event.target.result);
+          const workbook = XLSX.read(data, { type: 'array' });
+          const sheetName = workbook.SheetNames[0];
+          const worksheet = workbook.Sheets[sheetName];
+          const jsonData = XLSX.utils.sheet_to_json(worksheet);
+          
+          // Process data for API format
+          const faculty = {};
+          const details = {};
+          
+          jsonData.forEach(row => {
+            if (row.facultyID && row.name) {
+              faculty[row.facultyID] = row.name;
+              details[row.facultyID] = {
+                department: row.department || '',
+                email: row.email || '',
+                mobile: row.mobile || ''
+              };
+            }
+          });
+          
+          // Send to API
+          const response = await apiClient.post('/admin/add-faculty', {
+            faculty,
+            details
+          }, {
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('auth-storage') ? 
+                JSON.parse(localStorage.getItem('auth-storage')).state.token : ''}`
+            }
+          });
+
+          if (response.data.success) {
+            toast.success(`${Object.keys(faculty).length} faculty members added successfully`);
+            navigate('/Admin/Faculty');
+          } else {
+            toast.error(response.data.message || 'Failed to add faculty');
+          }
+        } catch (error) {
+          console.error('Error processing Excel file:', error);
+          toast.error('Error processing Excel file');
+          setIsLoading(false);
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    } catch (error) {
+      console.error('Error adding faculty:', error);
+      toast.error(error.response?.data?.message || 'Error adding faculty');
       setIsLoading(false);
-      navigate('/Admin/Faculty');
-    }, 1500);
+    }
   };
+
+  const renderMethodSelection = () => (
+    <div className="flex flex-col items-center justify-center py-12">
+      <h2 className="text-xl font-semibold mb-8">Choose a method to add faculty</h2>
+      <div className="flex flex-col sm:flex-row gap-6">
+        <button
+          onClick={() => setMethod('manual')}
+          className="flex flex-col items-center p-8 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow"
+        >
+          <FaUserPlus className="text-[#9b1a31] text-4xl mb-4" />
+          <span className="text-lg font-medium">Add Manually</span>
+          <p className="text-gray-500 text-sm mt-2 text-center">Add a single faculty member with details</p>
+        </button>
+        
+        <button
+          onClick={() => setMethod('excel')}
+          className="flex flex-col items-center p-8 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow"
+        >
+          <FaUpload className="text-[#9b1a31] text-4xl mb-4" />
+          <span className="text-lg font-medium">Import from Excel</span>
+          <p className="text-gray-500 text-sm mt-2 text-center">Upload an Excel file with multiple faculty members</p>
+        </button>
+      </div>
+    </div>
+  );
+
+  const renderManualForm = () => (
+    <div className="bg-white rounded-lg shadow-md p-6">
+      <h2 className="text-xl font-semibold mb-6">Add Faculty Member</h2>
+      <form onSubmit={handleManualSubmit}>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Faculty ID <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              name="facultyID"
+              value={formData.facultyID}
+              onChange={handleInputChange}
+              className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#9b1a31]"
+              required
+            />
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Name <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              name="name"
+              value={formData.name}
+              onChange={handleInputChange}
+              className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#9b1a31]"
+              required
+            />
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Department <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              name="department"
+              value={formData.department}
+              onChange={handleInputChange}
+              className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#9b1a31]"
+              required
+            />
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Email
+            </label>
+            <input
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleInputChange}
+              className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#9b1a31]"
+            />
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Mobile
+            </label>
+            <input
+              type="text"
+              name="mobile"
+              value={formData.mobile}
+              onChange={handleInputChange}
+              className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#9b1a31]"
+            />
+          </div>
+        </div>
+        
+        <div className="mt-6 flex justify-end">
+          <button
+            type="button"
+            onClick={() => setMethod('')}
+            className="px-4 py-2 text-gray-700 mr-4"
+          >
+            Back
+          </button>
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="px-4 py-2 bg-[#9b1a31] text-white rounded-md hover:bg-[#7d1526] disabled:opacity-70"
+          >
+            {isLoading ? 'Adding...' : 'Add Faculty'}
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+
+  const renderExcelForm = () => (
+    <div className="bg-white rounded-lg shadow-md p-6">
+      <h2 className="text-xl font-semibold mb-6">Import Faculty from Excel</h2>
+      <form onSubmit={handleExcelSubmit}>
+        <div className="mb-6">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Upload Excel File <span className="text-red-500">*</span>
+          </label>
+          <input
+            type="file"
+            accept=".xlsx, .xls"
+            onChange={handleFileChange}
+            className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#9b1a31]"
+            required
+          />
+          <p className="mt-1 text-sm text-gray-500">
+            File should have columns: facultyID, name, department, email, mobile
+          </p>
+        </div>
+        
+        {previewData.length > 0 && (
+          <div className="mb-6">
+            <h3 className="text-md font-medium mb-2">Preview (first 5 entries):</h3>
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    {Object.keys(previewData[0]).map((key) => (
+                      <th
+                        key={key}
+                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      >
+                        {key}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {previewData.map((row, index) => (
+                    <tr key={index}>
+                      {Object.keys(previewData[0]).map((key) => (
+                        <td key={`${index}-${key}`} className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {row[key]}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+        
+        <div className="flex justify-end">
+          <button
+            type="button"
+            onClick={() => setMethod('')}
+            className="px-4 py-2 text-gray-700 mr-4"
+          >
+            Back
+          </button>
+          <button
+            type="submit"
+            disabled={isLoading || !file}
+            className="px-4 py-2 bg-[#9b1a31] text-white rounded-md hover:bg-[#7d1526] disabled:opacity-70"
+          >
+            {isLoading ? 'Importing...' : 'Import Faculty'}
+          </button>
+        </div>
+      </form>
+    </div>
+  );
 
   return (
     <div className="p-6">
@@ -103,194 +367,9 @@ const AddFaculty = () => {
         <h1 className="text-2xl font-bold text-gray-800">Add Faculty</h1>
       </div>
       
-      {!method ? (
-        <div className="bg-white rounded-lg shadow-md p-8">
-          <h2 className="text-xl font-semibold text-center mb-8">Choose a method to add faculty</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <button
-              onClick={() => setMethod('manual')}
-              className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-gray-300 rounded-lg hover:border-[#9b1a31] hover:bg-gray-50 transition-all"
-            >
-              <FaUserPlus size={48} className="text-[#9b1a31] mb-4" />
-              <h3 className="text-lg font-medium">Manual Entry</h3>
-              <p className="text-gray-500 text-center mt-2">Add a single faculty member by entering their details manually</p>
-            </button>
-            
-            <button
-              onClick={() => setMethod('excel')}
-              className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-gray-300 rounded-lg hover:border-[#9b1a31] hover:bg-gray-50 transition-all"
-            >
-              <FaUpload size={48} className="text-[#9b1a31] mb-4" />
-              <h3 className="text-lg font-medium">Excel Upload</h3>
-              <p className="text-gray-500 text-center mt-2">Import multiple faculty members at once using an Excel file</p>
-            </button>
-          </div>
-        </div>
-      ) : method === 'manual' ? (
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-xl font-semibold mb-6">Add Faculty Manually</h2>
-          <form onSubmit={handleManualSubmit}>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Faculty ID</label>
-                <input
-                  type="text"
-                  value={facultyID}
-                  onChange={(e) => setFacultyID(e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-[#9b1a31] focus:border-[#9b1a31]"
-                  placeholder="e.g., FAC12345"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
-                <input
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-[#9b1a31] focus:border-[#9b1a31]"
-                  placeholder="e.g., Dr. John Smith"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Department</label>
-                <select
-                  value={department}
-                  onChange={(e) => setDepartment(e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-[#9b1a31] focus:border-[#9b1a31]"
-                >
-                  <option value="">Select Department</option>
-                  {departments.map(dept => (
-                    <option key={dept} value={dept}>{dept}</option>
-                  ))}
-                </select>
-              </div>
-            </div>
-            
-            <div className="mt-8 flex justify-end">
-              <button
-                type="button"
-                onClick={() => setMethod('')}
-                className="mr-4 px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
-              >
-                Back
-              </button>
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="px-4 py-2 bg-[#9b1a31] text-white rounded-md hover:bg-[#7d1526] disabled:opacity-70"
-              >
-                {isLoading ? 'Adding...' : 'Add Faculty'}
-              </button>
-            </div>
-          </form>
-        </div>
-      ) : (
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-xl font-semibold mb-6">Import Faculty from Excel</h2>
-          
-          <div className="mb-6">
-            <p className="text-gray-600 mb-2">Please upload an Excel file with the following columns:</p>
-            <div className="bg-gray-50 p-3 rounded-md">
-              <code>facultyID</code>, <code>name</code>, <code>department</code>
-            </div>
-          </div>
-          
-          <form onSubmit={handleExcelSubmit}>
-            <div className="mt-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Upload Excel File</label>
-              <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-dashed border-gray-300 rounded-md">
-                <div className="space-y-1 text-center">
-                  <FaUpload className="mx-auto h-12 w-12 text-gray-400" />
-                  <div className="flex text-sm text-gray-600">
-                    <label
-                      htmlFor="file-upload"
-                      className="relative cursor-pointer bg-white rounded-md font-medium text-[#9b1a31] hover:text-[#7d1526]"
-                    >
-                      <span>Upload a file</span>
-                      <input
-                        id="file-upload"
-                        name="file-upload"
-                        type="file"
-                        className="sr-only"
-                        accept=".xlsx,.xls"
-                        onChange={handleFileChange}
-                      />
-                    </label>
-                    <p className="pl-1">or drag and drop</p>
-                  </div>
-                  <p className="text-xs text-gray-500">XLSX or XLS up to 10MB</p>
-                </div>
-              </div>
-              {file && (
-                <p className="mt-2 text-sm text-gray-600">
-                  Selected file: <span className="font-medium">{file.name}</span>
-                </p>
-              )}
-            </div>
-            
-            {previewData.length > 0 && (
-              <div className="mt-6">
-                <h3 className="text-lg font-medium mb-2">Preview (first 5 entries)</h3>
-                <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Faculty ID
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Name
-                        </th>
-                        {previewData[0].department && (
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Department
-                          </th>
-                        )}
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {previewData.map((faculty, index) => (
-                        <tr key={index}>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                            {faculty.facultyID}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {faculty.name}
-                          </td>
-                          {previewData[0].department && (
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                              {faculty.department}
-                            </td>
-                          )}
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            )}
-            
-            <div className="mt-8 flex justify-end">
-              <button
-                type="button"
-                onClick={() => setMethod('')}
-                className="mr-4 px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
-              >
-                Back
-              </button>
-              <button
-                type="submit"
-                disabled={isLoading || !file}
-                className="px-4 py-2 bg-[#9b1a31] text-white rounded-md hover:bg-[#7d1526] disabled:opacity-70"
-              >
-                {isLoading ? 'Importing...' : 'Import Faculty'}
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
+      {!method && renderMethodSelection()}
+      {method === 'manual' && renderManualForm()}
+      {method === 'excel' && renderExcelForm()}
     </div>
   );
 };

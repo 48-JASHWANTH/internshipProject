@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import useProjectStore from '../../store/projectStore';
+import {useStore} from '@/store/useStore';
 import ProjectCard from '../../components/ProjectCard';
 import { FaSearch, FaFilter } from 'react-icons/fa';
 
 const CampusProjects = () => {
-  const { completedProjects } = useProjectStore();
+  const { completedProjects } = useStore();
   const [searchTerm, setSearchTerm] = useState('');
   const [filters, setFilters] = useState({
     year: 'all',
@@ -16,13 +16,26 @@ const CampusProjects = () => {
   const branches = ['all', 'CSE', 'ECE', 'ME', 'CE'];
   const categories = ['all', 'web', 'mobile', 'ai/ml', 'iot'];
 
-  const filteredProjects = completedProjects.filter(project => {
-    const matchesSearch = project.title.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesYear = filters.year === 'all' || project.year === filters.year;
-    const matchesBranch = filters.branch === 'all' || project.branch === filters.branch;
-    const matchesCategory = filters.category === 'all' || project.category === filters.category;
-    return matchesSearch && matchesYear && matchesBranch && matchesCategory;
-  });
+  const filteredProjects =[
+        {
+            id: 1,
+            title: "E-Learning Platform",
+            description: "Building a comprehensive learning management system",
+            team: ["John Doe", "Jane Smith"],
+            deadline: "2024-05-01",
+            category: "Major",
+            status: "In Progress"
+        },
+        {
+            id: 2,
+            title: "Library Management System",
+            description: "Digital system for library resource management",
+            team: ["Alice Brown"],
+            deadline: "2024-03-15",
+            category: "Mini",
+            status: "Review"
+        }
+    ];
 
   return (
     <div className="flex justify-center p-6">

@@ -3,7 +3,7 @@ POST http://localhost:1544/student/login
 Content-Type: application/json
 
 {
-    "studentID": "22071A3262",
+    "studentID": "22071A3255",
     "password": "Welcome@123"
 }
 
@@ -11,6 +11,7 @@ Content-Type: application/json
 ### Update Student Academic Data
 PUT http://localhost:1544/student/academic/22071A3255
 Content-Type: application/json
+Cookie: jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZGE5Nzc1NzdjNjI3ZWU3OWExZDU0MyIsInJvbGUiOiJzdHVkZW50IiwiZW1haWwiOiIyMjA3MUEzMjU1QHZucnZqaWV0LmluIiwiaWF0IjoxNzQyNTc0MzgxLCJleHAiOjIwMDE3NzQzODF9.Qz7a3JQ_H1VHu4LZKTyunu2G66twCd4nQ2_jxqUAuj0
 
 {
   "campus": "VNR VJIET",
@@ -26,10 +27,12 @@ Content-Type: application/json
 ###
 
 GET http://localhost:1544/student/academic/22071A3255
+Cookie: jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZGE5Nzc1NzdjNjI3ZWU3OWExZDU0MyIsInJvbGUiOiJzdHVkZW50IiwiZW1haWwiOiIyMjA3MUEzMjU1QHZucnZqaWV0LmluIiwiaWF0IjoxNzQyNTc0MzgxLCJleHAiOjIwMDE3NzQzODF9.Qz7a3JQ_H1VHu4LZKTyunu2G66twCd4nQ2_jxqUAuj0
 
 ###
 PUT http://localhost:1544/student/additional/22071A3255
 Content-Type: application/json
+Cookie: jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZGE5Nzc1NzdjNjI3ZWU3OWExZDU0MyIsInJvbGUiOiJzdHVkZW50IiwiZW1haWwiOiIyMjA3MUEzMjU1QHZucnZqaWV0LmluIiwiaWF0IjoxNzQyNTc0MzgxLCJleHAiOjIwMDE3NzQzODF9.Qz7a3JQ_H1VHu4LZKTyunu2G66twCd4nQ2_jxqUAuj0
 
 {
   "backlogsHistory": "No",
@@ -41,10 +44,12 @@ Content-Type: application/json
 
 ###
 GET http://localhost:1544/student/additional/22071A3255
+Cookie: jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZGE5Nzc1NzdjNjI3ZWU3OWExZDU0MyIsInJvbGUiOiJzdHVkZW50IiwiZW1haWwiOiIyMjA3MUEzMjU1QHZucnZqaWV0LmluIiwiaWF0IjoxNzQyNTc0MzgxLCJleHAiOjIwMDE3NzQzODF9.Qz7a3JQ_H1VHu4LZKTyunu2G66twCd4nQ2_jxqUAuj0
 
 ###
 PUT http://localhost:1544/student/personal/22071A3255
 Content-Type: application/json
+Cookie: jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZGE5Nzc1NzdjNjI3ZWU3OWExZDU0MyIsInJvbGUiOiJzdHVkZW50IiwiZW1haWwiOiIyMjA3MUEzMjU1QHZucnZqaWV0LmluIiwiaWF0IjoxNzQyNTc0MzgxLCJleHAiOjIwMDE3NzQzODF9.Qz7a3JQ_H1VHu4LZKTyunu2G66twCd4nQ2_jxqUAuj0
 
 {
   "name": "Bhargav Tammana",
@@ -57,11 +62,16 @@ Content-Type: application/json
 ###
 
 GET http://localhost:1544/student/dashBoard/22071A3255
+Cookie: jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZGE5Nzc1NzdjNjI3ZWU3OWExZDU0MyIsInJvbGUiOiJzdHVkZW50IiwiZW1haWwiOiIyMjA3MUEzMjU1QHZucnZqaWV0LmluIiwiaWF0IjoxNzQyNTc0MzgxLCJleHAiOjIwMDE3NzQzODF9.Qz7a3JQ_H1VHu4LZKTyunu2G66twCd4nQ2_jxqUAuj0
 
 ###
 GET http://localhost:1544/student/activeWorks/22071A3255
+Cookie: jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZGE5Nzc1NzdjNjI3ZWU3OWExZDU0MyIsInJvbGUiOiJzdHVkZW50IiwiZW1haWwiOiIyMjA3MUEzMjU1QHZucnZqaWV0LmluIiwiaWF0IjoxNzQyNTc0MzgxLCJleHAiOjIwMDE3NzQzODF9.Qz7a3JQ_H1VHu4LZKTyunu2G66twCd4nQ2_jxqUAuj0
+
 ###
 GET http://localhost:1544/student/archive/22071A3255
+Cookie: jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZGE5Nzc1NzdjNjI3ZWU3OWExZDU0MyIsInJvbGUiOiJzdHVkZW50IiwiZW1haWwiOiIyMjA3MUEzMjU1QHZucnZqaWV0LmluIiwiaWF0IjoxNzQyNTc0MzgxLCJleHAiOjIwMDE3NzQzODF9.Qz7a3JQ_H1VHu4LZKTyunu2G66twCd4nQ2_jxqUAuj0
 
 ###
 GET http://localhost:1544/student/campusProjects
+Cookie: jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZGE5Nzc1NzdjNjI3ZWU3OWExZDU0MyIsInJvbGUiOiJzdHVkZW50IiwiZW1haWwiOiIyMjA3MUEzMjU1QHZucnZqaWV0LmluIiwiaWF0IjoxNzQyNTc0MzgxLCJleHAiOjIwMDE3NzQzODF9.Qz7a3JQ_H1VHu4LZKTyunu2G66twCd4nQ2_jxqUAuj0

@@ -1,7 +1,9 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Edit, X } from 'lucide-react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
+import { useStore } from '@/store/useStore';
+import { apiClient } from '@/lib/api-client';
 
 const AdditionalInfo = () => {
   const [isEditing, setIsEditing] = useState(false);
@@ -12,50 +14,33 @@ const AdditionalInfo = () => {
     skills: "",
     languages: ""
   });
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+
 
   // Get student ID from localStorage or context
-  const studentID = localStorage.getItem('studentID') || '22071A3255'; // Fallback for testing
-
+  const authData = localStorage.getItem('auth-storage');
+  const studentID = JSON.parse(authData).state.user.studentID; 
+  const { studentData, loading, error, fetchStudentData ,setLoading} = useStore();
   // Fetch additional data on component mount
   useEffect(() => {
-    const fetchAdditionalData = async () => {
-      try {
-        setLoading(true);
-        const response = await axios.get(`http://localhost:1544/student/additional/${studentID}`);
-        
-        // Extract only the fields we need
-        const { backlogsHistory, currentBacklogs, interestedInPlacement, skills, languages } = response.data;
-        setAdditionalData({
-          backlogsHistory: backlogsHistory || "No",
-          currentBacklogs: currentBacklogs || "0",
-          interestedInPlacement: interestedInPlacement || "Yes",
-          skills: skills || "",
-          languages: languages || ""
-        });
-        
-        setError(null);
-      } catch (err) {
-        console.error('Error fetching additional data:', err);
-        setError('Failed to load additional information. Please try again later.');
-        toast.error('Failed to load additional information');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchAdditionalData();
-  }, [studentID]);
+    if(!studentData){
+      console.log("from additional")
+      fetchStudentData(studentID);
+    }
+    
+  }, [fetchStudentData,studentID]);
+  useEffect(()=>{
+    if(studentData)
+    setAdditionalData(studentData.additional);
+  },[studentData])
 
   const handleSaveChanges = async (e) => {
     e.preventDefault();
     
     try {
       setLoading(true);
-      const response = await axios.put(
-        `http://localhost:1544/student/additional/${studentID}`, 
-        additionalData
+      const response = await apiClient.put(
+        `student/additional/${studentID}`, 
+        additionalData,{withCredentials:true}
       );
       
       if (response.status === 200) {

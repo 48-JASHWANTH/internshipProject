@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
   ArrowLeft, 
@@ -6,20 +6,18 @@ import {
   Calendar, 
   ChevronRight,
   Github,
-
   File,
-
 } from 'lucide-react';
-import useProjectStore from '../../../store/projectStore';
 import { Dialog } from '@headlessui/react';
 import Workboard from './Workboard';
 import { toast } from 'react-hot-toast';
 import ReviewBoard from './ReviewBoard';
+import { useStore } from '@/store/useStore';
 
 const ProjectDetails = () => {
   const { projectId } = useParams();
   const navigate = useNavigate();
-  const { projects, updateProject, updateProjectResource } = useProjectStore();
+  const { projects, updateProject, updateProjectResource } = useStore();
   const [isGithubModalOpen, setIsGithubModalOpen] = useState(false);
   const [githubUrl, setGithubUrl] = useState('');
   const [activeView, setActiveView] = useState('details');

@@ -1,12 +1,12 @@
 import React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useStore } from "@/store/useStore";
 import { FaChevronRight, FaHome, FaArchive, FaForumbee, FaBriefcase, FaGraduationCap, FaUserCircle, FaBell } from "react-icons/fa";
-import useProfileStore from '../../store/useProfileStore';
 
 const Sidemenu = ({ isProfilePage, isMobileMenuOpen, setIsMobileMenuOpen }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { profileData } = useProfileStore();
+  const { profileData } = useStore();
 
   const menuItems = [
     { text: "Dashboard", icon: <FaHome size={20} />, path: "/Student/Dashboard" },

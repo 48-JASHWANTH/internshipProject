@@ -1,30 +1,52 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import useProjectStore from '../../../store/projectStore';
+import { useStore } from '@/store/useStore';
 import ProjectCard from '../../../modules/components/ProjectCard';
 import { Search } from 'lucide-react';
 
 const ActiveWorks = () => {
   const navigate = useNavigate();
-  const { projects } = useProjectStore();
+  // const {activeWorks,setActiveWorks} = useStore();
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const activeWorks = [
+        {
+            id: 1,
+            title: "E-Learning Platform",
+            description: "Building a comprehensive learning management system",
+            team: ["John Doe", "Jane Smith"],
+            deadline: "2024-05-01",
+            category: "Major",
+            status: "In Progress"
+        },
+        {
+            id: 2,
+            title: "Library Management System",
+            description: "Digital system for library resource management",
+            team: ["Alice Brown"],
+            deadline: "2024-03-15",
+            category: "Mini",
+            status: "Review"
+        }]
+
   
   const categories = ['all', 'CBP', 'Mini', 'Major'];
 
+
+
   // Filter active projects only
-  const activeWorks = useMemo(() => {
-    return projects.filter(project => project.status === 'active');
-  }, [projects]);
+  const activeWorksFiltered = useMemo(() => {
+    return activeWorks
+  }, [activeWorks]);
 
   // Memoized filtered works
   const filteredWorks = useMemo(() => {
-    return activeWorks.filter(work => 
+    return activeWorksFiltered.filter(work => 
       (selectedCategory === 'all' || work.category === selectedCategory) &&
       (work.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
        work.facultyGuide.toLowerCase().includes(searchQuery.toLowerCase()))
     );
-  }, [activeWorks, selectedCategory, searchQuery]);
+  }, [activeWorksFiltered, selectedCategory, searchQuery]);
 
   const handleProjectClick = (projectId) => {
     navigate(`/Student/ActiveWorks/${projectId}`);

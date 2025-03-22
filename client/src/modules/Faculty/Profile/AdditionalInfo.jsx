@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { Edit, X } from 'lucide-react';
-import useFacultyProfileStore from '../../../store/useFacultyProfileStore';
+import {useStore} from '@/store/useStore';
 
 const AdditionalInfo = () => {
-  const { profileData, updateProfileData } = useFacultyProfileStore();
+  const { profileData, updateProfileData } = useStore();
   const [isEditing, setIsEditing] = useState(false);
   const [additionalData, setAdditionalData] = useState({
     joiningDate: profileData.joiningDate || "",

@@ -4,3 +4,5 @@ import { HOST } from "@/utils/constants";
 export const apiClient = axios.create({
     baseURL: "http://localhost:1544"
 })
+
+

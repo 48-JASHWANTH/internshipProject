@@ -3,30 +3,18 @@ import Faculty from "../models/facultyModel.js";
 // Add faculty
 export const addFaculty = async (req, res) => {
   try {
+    //console.log(req.body);
     const { faculties } = req.body; // Object with facultyID: name pairs
-    
-    if (!faculties || Object.keys(faculties).length === 0) {
-      return res.status(400).json({
-        success: false,
-        message: "No faculty data provided"
-      });
-    }
-
+    //console.log(faculties);
     const createdFaculties = await Promise.all(
       Object.entries(faculties).map(async ([facultyID, name]) => {
-        // Create faculty with just ID and name
-        // All other fields will use their default values
+        console.log(facultyID, name);
         return await Faculty.create({
           facultyID,
           name,
-          // Set required fields with default values
-          jntuhID: facultyID, // Using facultyID as jntuhID for simplicity
-          department: "Not Specified",
-          designation: "Assistant Professor"
         });
       })
     );
-
     res.status(201).json({
       success: true,
       message: `Successfully added ${createdFaculties.length} faculty members`,
@@ -55,7 +43,7 @@ export const listAllFaculty = async (req, res) => {
     // Determine which fields to select based on whether basic view is requested
     // By default, return all details except sensitive information
     const projection = basic === 'true' ? 
-      'facultyID jntuhID name department designation status email phoneNumber' : // Basic fields
+      'facultyID facultyID name department designation status email phoneNumber' : // Basic fields
       '-password -__v'; // Include all fields except password and version
     
     const faculties = await Faculty.find(filter)
@@ -114,7 +102,7 @@ export const updateFaculty = async (req, res) => {
     const updates = req.body;
     
     // Fields that cannot be updated
-    const restrictedFields = ['password', 'facultyID', 'jntuhID', 'softDeleted', 'deletedAt'];
+    const restrictedFields = ['password', 'facultyID', 'facultyID', 'softDeleted', 'deletedAt'];
     
     // Remove restricted fields from updates
     restrictedFields.forEach(field => {
@@ -252,11 +240,12 @@ export const listDeletedFaculty = async (req, res) => {
     // Format the response
     const formattedFaculty = deletedFaculty.map(faculty => ({
       facultyID: faculty.facultyID,
-      jntuhID: faculty.jntuhID,
       name: faculty.name,
       department: faculty.department,
       designation: faculty.designation,
-      deletedAt: faculty.deletedAt
+      deletedAt: faculty.deletedAt,
+      status: faculty.status,
+      softDeleted: faculty.softDeleted
     }));
     
     res.status(200).json({

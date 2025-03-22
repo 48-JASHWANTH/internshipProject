@@ -9,14 +9,6 @@ import Account from "./Account";
 const Profile = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("academic");
-  const [profileData, setProfileData] = useState({
-    name: "Sriram Chowdary",
-    regNumber: "22071A3254",
-    email: "tadapanenisriram333@gmail.com",
-    phone: "+91 7674843849",
-    gender: "Male",
-    dob: "2004-09-01",
-  });
 
   const handleChangePassword = () => {
     navigate("/StudentChangePassword");
@@ -32,7 +24,7 @@ const Profile = () => {
       <div className="flex flex-col lg:flex-row p-4 md:p-6 gap-6">
         {/* Profile Card - Full width on mobile, 1/4 on desktop */}
         <div className="w-full lg:w-1/4">
-          <ProfileCard profileData={profileData} setProfileData={setProfileData} />
+          <ProfileCard  />
         </div>
 
         {/* Main Content - Full width on mobile, 3/4 on desktop */}

@@ -2,10 +2,10 @@ import React, { useState, useRef, useEffect } from "react";
 import { FaUserCircle, FaBars, FaTimes } from "react-icons/fa"; 
 import { useNavigate } from "react-router-dom";  
 import vnrlogo from '../images/vnrvjiet.png';
-import useFacultyProfileStore from '../../store/useFacultyProfileStore';
+import { useStore } from "@/store/useStore";
 
 const Navbar = ({ isMobileMenuOpen, setIsMobileMenuOpen }) => {
-  const { profileData, clearProfileData } = useFacultyProfileStore();
+  const { profileData, clearProfileData } = useStore();
   const [showProfile, setShowProfile] = useState(false);
   const navigate = useNavigate(); 
 

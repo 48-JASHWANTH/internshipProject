@@ -1,16 +1,17 @@
 import React, { useState } from 'react';
-import useProjectForumStore from '../../store/projectForumStore';
+import { useStore } from '@/store/useStore';
 import ProjectCard from '../../components/ProjectCard';
 import { FaSearch, FaFilter } from 'react-icons/fa';
 
 const ProjectForum = () => {
-  const { forumProjects, expressInterest } = useProjectForumStore();
+  const forumProjects = useStore(state => state.forumProjects);
+  const expressInterest = useStore(state => state.expressInterest);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
 
   const categories = ['all', 'web', 'mobile', 'ai/ml', 'iot'];
 
-  const filteredProjects = forumProjects.filter(project => {
+  const filteredProjects = (forumProjects || []).filter(project => {
     const matchesSearch = project.title.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = selectedCategory === 'all' || project.category === selectedCategory;
     return matchesSearch && matchesCategory;

@@ -1,3 +1,5 @@
+import React from 'react';
+import {useStore} from '@/store/useStore';
 import { FaLock, FaGithub, FaLinkedin } from "react-icons/fa";
 
 const Account = ({ handleChangePassword }) => {

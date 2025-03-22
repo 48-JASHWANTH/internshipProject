@@ -1,15 +1,16 @@
+import React from 'react';
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import ProfileCard from "./ProfileCard";
 import BasicInfo from "./BasicInfo";
 import AdditionalInfo from "./AdditionalInfo";
 import Account from "./Account";
-import useFacultyProfileStore from "../../../store/useFacultyProfileStore";
+import { useStore } from "@/store/useStore";
 
 const FacultyProfile = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("basic");
-  const { profileData, setProfileData } = useFacultyProfileStore();
+  const { profileData, setProfileData } = useStore();
 
   // Optional: Load initial data if needed
   useEffect(() => {

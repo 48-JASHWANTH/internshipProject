@@ -101,35 +101,6 @@ export const restoreStudent = async (req, res) => {
   }
 };
 
-export const listDeletedStudents = async (req, res) => {
-  try {
-    // Use the native MongoDB driver to bypass Mongoose middleware completely
-    const deletedStudents = await Student.collection.find(
-      { isActive: false }
-    ).toArray();
-    
-    // Format the response
-    const formattedStudents = deletedStudents.map(student => ({
-      studentID: student.studentID,
-      name: student.name,
-      mail: student.mail,
-      deletedAt: student.deletedAt
-    }));
-    
-    res.status(200).json({
-      success: true,
-      count: formattedStudents.length,
-      students: formattedStudents
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Error fetching deleted students",
-      error: error.message
-    });
-  }
-};
-
 export const updateStudent = async (req, res) => {
   try {
     const { studentID } = req.params;
@@ -180,7 +151,6 @@ export const updateStudent = async (req, res) => {
 export const listAllStudents = async (req, res) => {
   try {
     const students = await Student.find({})
-      .select('studentID name mail batch dept degree')
       .sort({ studentID: 1 });
     
     res.status(200).json({
@@ -219,6 +189,44 @@ export const getStudentDetails = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Error fetching student details",
+      error: error.message
+    });
+  }
+};
+
+// Get inactive students
+export const getInactiveStudents = async (req, res) => {
+  try {
+    // Use find().where() to explicitly set conditions
+    const inactiveStudents = await Student.find()
+      .where('isActive').equals(false)
+      .select('studentID name department batch isActive')
+      .lean();
+
+    console.log('Found inactive students:', inactiveStudents);
+
+    if (!inactiveStudents || inactiveStudents.length === 0) {
+      return res.status(200).json({
+        success: true,
+        students: []
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      students: inactiveStudents.map(student => ({
+        studentID: student.studentID,
+        name: student.name,
+        department: student.department,
+        batch: student.batch,
+        status: 'Inactive'
+      }))
+    });
+  } catch (error) {
+    console.error('Error fetching inactive students:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching inactive students',
       error: error.message
     });
   }

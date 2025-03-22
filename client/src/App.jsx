@@ -21,20 +21,25 @@ import Incharge from "./modules/Faculty/ActiveWorks/Incharge/InchargeActiveWorks
 import Student from "./modules/Student/StudentLayout";
 import FacultyProfile from "./modules/Faculty/Profile/FacultyProfile";
 import { Navigate, Outlet } from "react-router-dom";
-import useAuthStore from "@/store/authStore";
 import AdminDashboard from './modules/Admin/Dashboard';
 import AdminProfile from './modules/Admin/Profile';
 import AdminFacultyManagement from './modules/Admin/AdminFacultyManagement';
 import AdminStudentManagement from './modules/Admin/AdminStudentManagement';
 import AddStudent from './modules/Admin/AddStudent';
 import AddFaculty from './modules/Admin/AddFaculty';
+import StudentView from './modules/Admin/StudentView';
+import ViewFaculty from './modules/Admin/ViewFaculty';
+import { useStore } from "./store/useStore";
+
+
+
 import Notifications from './modules/Faculty/Notifications';
 import ArchivedProjectDetails from './modules/Faculty/ArchivedProjects/ArchivedProjectDetails';
 import StudentNotifications from "./modules/Student/StudentNotifications";
 
 function App() {
   const PrivateRoute = ({ allowedRoles }) => {
-    const { user, isAuthenticated } = useAuthStore();
+    const { user, isAuthenticated } = useStore();
   
     if (!isAuthenticated || !allowedRoles.includes(user?.role)) {
       return <Navigate to="/" />;
@@ -75,7 +80,9 @@ function App() {
             <Route path="Profile" element={<AdminProfile />} />
             <Route path="CampusProjects" element={<CampusProjects />} />
             <Route path="Faculty" element={<AdminFacultyManagement />} />
+            <Route path="Faculty/:facultyId" element={<ViewFaculty />} />
             <Route path="Students" element={<AdminStudentManagement />} />
+            <Route path="Students/:studentId" element={<StudentView />} />
             <Route path="AddStudent" element={<AddStudent />} />
             <Route path="AddFaculty" element={<AddFaculty />} />
           </Route>
@@ -116,4 +123,5 @@ function App() {
     </>
   );
 }
+
 export default App;
