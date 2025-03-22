@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { FaChevronRight, FaHome, FaArchive, FaForumbee, FaBriefcase, FaGraduationCap, FaUserCircle } from "react-icons/fa";
+import { FaChevronRight, FaHome, FaArchive, FaForumbee, FaBriefcase, FaGraduationCap, FaUserCircle, FaBell } from "react-icons/fa";
 import useProfileStore from '../../store/useProfileStore';
 
 const Sidemenu = ({ isProfilePage, isMobileMenuOpen, setIsMobileMenuOpen }) => {
@@ -15,6 +15,12 @@ const Sidemenu = ({ isProfilePage, isMobileMenuOpen, setIsMobileMenuOpen }) => {
     { text: "Campus Projects", icon: <FaGraduationCap size={20} />, path: "/Student/CampusProjects" },
     { text: "Project Forum", icon: <FaForumbee size={20} />, path: "/Student/ProjectForum" },
   ];
+
+  const notificationsItem = { 
+    text: "Notifications", 
+    icon: <FaBell size={20} />, 
+    path: "/Student/Notifications" 
+  };
 
   const handleClick = (item) => {
     navigate(item.path);
@@ -56,7 +62,7 @@ const Sidemenu = ({ isProfilePage, isMobileMenuOpen, setIsMobileMenuOpen }) => {
         </div>
 
         {/* Menu Items */}
-        <div className="mt-2">
+        <div className="mt-2 flex-grow overflow-y-auto">
           {menuItems.map((item) => (
             <div 
               key={item.path} 
@@ -82,6 +88,29 @@ const Sidemenu = ({ isProfilePage, isMobileMenuOpen, setIsMobileMenuOpen }) => {
             </div>
           ))}
         </div>
+
+        {/* Add notifications before bottom */}
+        <div className="mt-auto border-t border-[#9b1a31]">
+          <div 
+            className={`flex items-center justify-between py-4 hover:bg-[#9b1a31] cursor-pointer transition-all duration-200 ease-in-out ${
+              location.pathname === notificationsItem.path ? 'bg-[#9b1a31]' : ''
+            }`}
+            onClick={() => handleClick(notificationsItem)}
+          >
+            <div className="flex items-center gap-4 pl-6">
+              <span className={`text-white ${
+                location.pathname === notificationsItem.path ? 'text-yellow-400' : ''
+              }`}>{notificationsItem.icon}</span>
+              <span className={`font-medium text-lg tracking-wide text-white ${
+                location.pathname === notificationsItem.path ? 'text-yellow-400' : ''
+              }`}>{notificationsItem.text}</span>
+            </div>
+            <FaChevronRight 
+              size={14} 
+              className={`mr-4 ${location.pathname === notificationsItem.path ? 'text-yellow-400' : 'text-white'}`}
+            />
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -91,7 +120,7 @@ const Sidemenu = ({ isProfilePage, isMobileMenuOpen, setIsMobileMenuOpen }) => {
     <div className={`hidden md:flex flex-col text-white ${
       isProfilePage ? "w-16" : "w-60"
     } bg-[#82001A]`}>
-      <div className="flex flex-col pt-4">
+      <div className="flex flex-col pt-4 flex-grow">
         {menuItems.map((item) => (
           <div 
             key={item.path} 
@@ -120,6 +149,33 @@ const Sidemenu = ({ isProfilePage, isMobileMenuOpen, setIsMobileMenuOpen }) => {
             </div>
           </div>
         ))}
+      </div>
+
+      {/* Add notifications before bottom */}
+      <div className="mt-auto border-t border-[#9b1a31]">
+        <div 
+          className={`flex items-center justify-between py-[16px] hover:bg-[#9b1a31] cursor-pointer transition-all duration-200 ease-in-out ${
+            location.pathname === notificationsItem.path ? 'bg-[#9b1a31]' : ''
+          }`}
+          onClick={() => handleClick(notificationsItem)}
+        >
+          <div className="flex items-center gap-4 pl-6">
+            <span className={`text-white ${
+              location.pathname === notificationsItem.path ? 'text-yellow-400' : ''
+            }`}>{notificationsItem.icon}</span>
+            {!isProfilePage && (
+              <span className={`font-medium text-sm tracking-wide ${
+                location.pathname === notificationsItem.path ? 'text-yellow-400' : ''
+              }`}>{notificationsItem.text}</span>
+            )}
+          </div>
+          {!isProfilePage && (
+            <FaChevronRight 
+              size={14} 
+              className={`mr-4 ${location.pathname === notificationsItem.path ? 'text-yellow-400' : 'text-yellow-400'}`}
+            />
+          )}
+        </div>
       </div>
     </div>
   );

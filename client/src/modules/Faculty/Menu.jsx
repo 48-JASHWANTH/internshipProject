@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { FaChevronRight, FaHome, FaArchive, FaForumbee, FaBriefcase, FaGraduationCap, FaUserCircle, FaPlus } from "react-icons/fa";
+import { FaChevronRight, FaHome, FaArchive, FaForumbee, FaBriefcase, FaGraduationCap, FaUserCircle, FaPlus, FaBell } from "react-icons/fa";
 import useFacultyProfileStore from '../../store/useFacultyProfileStore';
 
 const Menu = ({ isProfilePage, isMobileMenuOpen, setIsMobileMenuOpen }) => {
@@ -24,6 +24,12 @@ const Menu = ({ isProfilePage, isMobileMenuOpen, setIsMobileMenuOpen }) => {
     { text: "Campus Projects", icon: <FaGraduationCap size={20} />, path: "/Faculty/CampusProjects" },
     { text: "Project Forum", icon: <FaForumbee size={20} />, path: "/Faculty/ProjectForum" },
   ];
+
+  const notificationsItem = { 
+    text: "Notifications", 
+    icon: <FaBell size={20} />, 
+    path: "/Faculty/Notifications" 
+  };
 
   const handleClick = (item) => {
     if (item.subItems) {
@@ -142,16 +148,39 @@ const Menu = ({ isProfilePage, isMobileMenuOpen, setIsMobileMenuOpen }) => {
           ))}
         </div>
 
-        {/* Create Button at Bottom */}
-        <div className="px-4 py-5 mt-auto border-t border-[#9b1a31]">
-          <button
-            onClick={handleCreateClick}
-            className="flex items-center justify-center w-full gap-2 bg-yellow-400 hover:bg-yellow-500 text-[#82001A] font-medium py-3 px-4 rounded-md transition-colors duration-200"
-            aria-label="Create new project"
+        {/* Add notifications before create button */}
+        <div className="mt-auto border-t border-[#9b1a31]">
+          <div 
+            className={`flex items-center justify-between py-4 hover:bg-[#9b1a31] cursor-pointer transition-all duration-200 ease-in-out ${
+              location.pathname === notificationsItem.path ? 'bg-[#9b1a31]' : ''
+            }`}
+            onClick={() => handleClick(notificationsItem)}
           >
-            <FaPlus size={16} />
-            <span>Create </span>
-          </button>
+            <div className="flex items-center gap-4 pl-6">
+              <span className={`text-white ${
+                location.pathname === notificationsItem.path ? 'text-yellow-400' : ''
+              }`}>{notificationsItem.icon}</span>
+              <span className={`font-medium text-lg tracking-wide text-white ${
+                location.pathname === notificationsItem.path ? 'text-yellow-400' : ''
+              }`}>{notificationsItem.text}</span>
+            </div>
+            <FaChevronRight 
+              size={14} 
+              className={`mr-4 ${location.pathname === notificationsItem.path ? 'text-yellow-400' : 'text-white'}`}
+            />
+          </div>
+          
+          {/* Existing create button */}
+          <div className="px-4 py-5 border-t border-[#9b1a31]">
+            <button
+              onClick={handleCreateClick}
+              className="flex items-center justify-center w-full gap-2 bg-yellow-400 hover:bg-yellow-500 text-[#82001A] font-medium py-3 px-4 rounded-md transition-colors duration-200"
+              aria-label="Create new project"
+            >
+              <FaPlus size={16} />
+              <span>Create </span>
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -159,9 +188,9 @@ const Menu = ({ isProfilePage, isMobileMenuOpen, setIsMobileMenuOpen }) => {
 
   // Desktop Menu
   const DesktopMenu = () => (
-    <div className={`hidden md:flex flex-col text-white h-full 
+    <div className={`hidden md:flex flex-col text-white h-full overflow-hidden
       ${isProfilePage ? "w-16" : "w-60"} 
-      bg-[#82001A] transition-all duration-300 ease-in-out`}>
+      bg-[#82001A] transition-[width] duration-300 ease-in-out will-change-auto`}>
       <div className="flex flex-col pt-4 flex-grow overflow-y-auto">
         {menuItems.map((item) => (
           <div key={item.path} className="flex flex-col border-b border-[#9b1a31]">
@@ -226,19 +255,46 @@ const Menu = ({ isProfilePage, isMobileMenuOpen, setIsMobileMenuOpen }) => {
         ))}
       </div>
       
-      {/* Create Button at Bottom */}
-      <div className={`px-4 py-5 mt-auto border-t border-[#9b1a31] ${isProfilePage ? "flex justify-center" : ""}`}>
-        <button
-          onClick={handleCreateClick}
-          className={`flex items-center justify-center gap-2 bg-yellow-400 hover:bg-yellow-500 text-[#82001A] font-medium py-2 rounded-md transition-colors duration-200 ${
-            isProfilePage ? "w-10 h-10 p-0" : "w-full px-4"
+      {/* Add notifications before create button */}
+      <div className="mt-auto border-t border-[#9b1a31]">
+        <div 
+          className={`flex items-center justify-between py-[16px] hover:bg-[#9b1a31] cursor-pointer transition-all duration-200 ease-in-out ${
+            location.pathname === notificationsItem.path ? 'bg-[#9b1a31]' : ''
           }`}
-          aria-label="Create new project"
-          tabIndex="0"
+          onClick={() => handleClick(notificationsItem)}
         >
-          <FaPlus size={16} />
-          {!isProfilePage && <span className="transition-opacity duration-300 ease-in-out">Create Project</span>}
-        </button>
+          <div className="flex items-center gap-4 pl-6">
+            <span className={`text-white ${
+              location.pathname === notificationsItem.path ? 'text-yellow-400' : ''
+            }`}>{notificationsItem.icon}</span>
+            {!isProfilePage && (
+              <span className={`font-medium text-sm tracking-wide ${
+                location.pathname === notificationsItem.path ? 'text-yellow-400' : ''
+              }`}>{notificationsItem.text}</span>
+            )}
+          </div>
+          {!isProfilePage && (
+            <FaChevronRight 
+              size={14} 
+              className={`mr-4 ${location.pathname === notificationsItem.path ? 'text-yellow-400' : 'text-yellow-400'}`}
+            />
+          )}
+        </div>
+        
+        {/* Existing create button */}
+        <div className={`px-4 py-5 border-t border-[#9b1a31] ${isProfilePage ? "flex justify-center" : ""}`}>
+          <button
+            onClick={handleCreateClick}
+            className={`flex items-center justify-center gap-2 bg-yellow-400 hover:bg-yellow-500 text-[#82001A] font-medium py-2 rounded-md transition-colors duration-200 ${
+              isProfilePage ? "w-10 h-10 p-0" : "w-full px-4"
+            }`}
+            aria-label="Create new project"
+            tabIndex="0"
+          >
+            <FaPlus size={16} />
+            {!isProfilePage && <span className="transition-opacity duration-300 ease-in-out">Create Project</span>}
+          </button>
+        </div>
       </div>
     </div>
   );
