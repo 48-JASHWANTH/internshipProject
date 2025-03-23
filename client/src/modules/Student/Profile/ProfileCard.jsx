@@ -22,7 +22,7 @@ const ProfileCard = () => {
   // const [error, setError] = useState(null);
 
   // Get student ID from localStorage or context
-  const authData = localStorage.getItem('auth-storage');
+  const authData = localStorage.getItem('app-storage');
   const studentID = JSON.parse(authData).state.user.studentID; // Fallback for testing
   const { studentData, loading, error, fetchStudentData ,setLoading} = useStore();
   
