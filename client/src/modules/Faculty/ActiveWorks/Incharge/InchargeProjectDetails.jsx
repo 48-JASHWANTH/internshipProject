@@ -8,11 +8,11 @@ import {
   Github,
   File,
 } from 'lucide-react';
-import GuideWorkboard from './GuideWorkboard';
-import GuideReviews from './GuideReviews';
+import InchargeWorkboard from './InchargeWorkboard';
+import InchargeReviews from './InchargeReviews';
 
-const GuideProjectDetails = () => {
-  const { projectId } = useParams();
+const InchargeProjectDetails = () => {
+  const { projectId, classSection } = useParams();
   const navigate = useNavigate();
   const [activeView, setActiveView] = useState('details');
 
@@ -44,7 +44,7 @@ const GuideProjectDetails = () => {
       <div className="flex flex-col items-center justify-center min-h-[60vh]">
         <h2 className="text-xl font-semibold text-gray-800">Project not found</h2>
         <button
-          onClick={() => navigate('/Faculty/ActiveWorks/Guide')}
+          onClick={() => navigate('/Faculty/ActiveWorks/Incharge')}
           className="mt-4 flex items-center gap-2 text-[#9b1a31] hover:underline"
           tabIndex={0}
         >
@@ -60,7 +60,7 @@ const GuideProjectDetails = () => {
       {/* Breadcrumb */}
       <nav className="flex items-center gap-2 text-sm text-gray-600">
         <button
-          onClick={() => navigate('/Faculty/ActiveWorks/Guide')}
+          onClick={() => navigate(`/Faculty/ActiveWorks/Incharge/${classSection}`)}
           className="hover:text-[#9b1a31] transition-colors flex items-center gap-1"
         >
           <ArrowLeft className="w-4 h-4" />
@@ -209,38 +209,57 @@ const GuideProjectDetails = () => {
             </div>
         </div>
 
-          {/* Team & Guide */}
+          {/* Updated Team & Guide Section */}
           <div className="bg-white rounded-xl shadow-sm">
-            <h2 className="text-xl font-semibold p-6 border-b">Team Members</h2>
-            <div className="p-6 space-y-4">
-              {project.teamMembers?.map(member => (
-                <div 
-                  key={member.id} 
-                  className="flex items-center gap-3 bg-gray-50 rounded-lg p-3"
+            <h2 className="text-xl font-semibold p-6 border-b">Team & Guide</h2>
+            <div className="p-6 space-y-8">
+              {/* Faculty Guide Section */}
+              <div className="bg-gray-50 rounded-lg p-4">
+                <h3 className="text-base font-semibold mb-2">Faculty Guide</h3>
+                <p className="text-gray-900">{project.facultyGuide}</p>
+                <a 
+                  href={`mailto:${project.facultyEmail}`}
+                  className="text-[#9b1a31] text-sm hover:underline inline-flex items-center gap-1"
                 >
-                  <div className="w-10 h-10 rounded-full bg-[#9b1a31] text-white flex items-center justify-center font-medium text-base">
-                    {member.name.charAt(0)}
-                  </div>
+                  <Mail className="w-4 h-4" />
+                  Contact Guide
+                </a>
+              </div>
+              
+              {/* Team Members Section */}
               <div>
-                    <p className="text-gray-900 font-medium">{member.name}</p>
-                    <p className="text-gray-600 text-sm">{member.role}</p>
+                <h3 className="text-base font-semibold mb-4">Team Members</h3>
+                <div className="space-y-3">
+                  {project.teamMembers?.map(member => (
+                    <div 
+                      key={member.id} 
+                      className="flex items-center gap-3 bg-gray-50 rounded-lg p-3"
+                    >
+                      <div className="w-10 h-10 rounded-full bg-[#9b1a31] text-white flex items-center justify-center font-medium text-base">
+                        {member.name.charAt(0)}
+                      </div>
+                      <div>
+                        <p className="text-gray-900 font-medium">{member.name}</p>
+                        <p className="text-gray-600 text-sm">{member.role}</p>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
-            ))}
             </div>
+          </div>
         </div>
-      </div>
       ) : activeView === 'workboard' ? (
         <div className="bg-white rounded-xl shadow-sm p-6">
-          <GuideWorkboard projectId={projectId} />
+          <InchargeWorkboard projectId={projectId} />
         </div>
       ) : activeView === 'reviews' ? (
         <div className="bg-white rounded-xl shadow-sm p-6">
-          <GuideReviews projectId={projectId} />
+          <InchargeReviews projectId={projectId} />
         </div>
       ) : null}
     </div>
   );
 };
 
-export default GuideProjectDetails; 
+export default InchargeProjectDetails; 

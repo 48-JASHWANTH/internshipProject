@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { 
   CheckCircle, 
   Plus,
+  X,
   Calendar
 } from 'lucide-react';
 import AddReviewModal from './components/AddReviewModal';
@@ -10,22 +11,22 @@ import AddReviewModal from './components/AddReviewModal';
 const reviewsData = [
     {
       id: 1,
-      reviewName: "Abstract Review",
-      dueDate: "2024-04-01",
-      satisfactionLevel: "Excellent",
-      remarks: "Well structured abstract",
-      feedback: "The team has demonstrated excellent understanding of the project scope. The abstract clearly outlines the problem statement, methodology, and expected outcomes.",
-      status: "reviewed"
+    reviewName: "Abstract Review",
+    dueDate: "2024-04-01",
+    satisfactionLevel: "Good",
+    remarks: "Well structured abstract",
+    feedback: "The team has demonstrated excellent understanding of the project scope. The abstract clearly outlines the problem statement, methodology, and expected outcomes.",
+    status: "reviewed"
     },
     {
       id: 2,
-      reviewName: "Literature Review",
-      dueDate: "2024-04-15",
-      satisfactionLevel: "Very Good",
-      remarks: "Comprehensive coverage of existing solutions",
-      feedback: "Good analysis of existing solutions. The team has covered most of the relevant papers and technologies. Some recent papers could be added to strengthen the review.",
-      status: "reviewed"
-    }
+    reviewName: "Literature Review",
+    dueDate: "2024-04-15",
+    satisfactionLevel: "Very Good",
+    remarks: "Comprehensive coverage of existing solutions",
+    feedback: "Good analysis of existing solutions. The team has covered most of the relevant papers and technologies. Some recent papers could be added to strengthen the review.",
+    status: "reviewed"
+  }
 ];
 
 const ReviewCard = ({ review }) => {
@@ -77,7 +78,7 @@ const ReviewCard = ({ review }) => {
   );
 };
 
-const GuideReviews = () => {
+const InchargeReviews = () => {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
   return (
@@ -109,4 +110,4 @@ const GuideReviews = () => {
   );
 };
 
-export default GuideReviews; 
+export default InchargeReviews; 

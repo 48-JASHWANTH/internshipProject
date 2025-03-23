@@ -8,7 +8,12 @@ import ChangePassword from "./modules/Student/ChangePassword";
 import Profile from "./modules/Student/Profile/Profile";
 import FacultyDashboard from './modules/Faculty/Dashboard'
 import FacultyArchivedProjects from './modules/Faculty/ArchivedProjects/ArchivedProjects'
+import FacultyProjectForum from './modules/Faculty/ProjectForum/FacultyProjectForum';
+import InchargeActiveWorks from './modules/Faculty/ActiveWorks/Incharge/InchargeActiveWorks';
+import InchargeClassTeams from './modules/Faculty/ActiveWorks/Incharge/InchargeClassTeams';
+import InchargeProjectDetails from './modules/Faculty/ActiveWorks/Incharge/InchargeProjectDetails';
 import CreateProjectForm from './modules/Faculty/CreateProject/CreateProjectForm';
+import ForumProjectDetails from './modules/Faculty/ProjectForum/ForumProjectDetails';
 import ProjectForum from './modules/Student/ProjectForum';
 import ActiveWorks from './modules/Student/ActiveWorks/ActiveWorks';
 import CampusProjects from './modules/Student/CampusProjects';
@@ -17,7 +22,6 @@ import ProjectDetails from './modules/Student/ActiveWorks/ProjectDetails';
 import CampusProject from './modules/Faculty/CampusProjects';
 import { Toaster } from 'react-hot-toast';
 import GuideActiveWorks from "./modules/Faculty/ActiveWorks/Guide/GuideActiveWorks";
-import Incharge from "./modules/Faculty/ActiveWorks/Incharge/InchargeActiveWorks";
 import Student from "./modules/Student/StudentLayout";
 import FacultyProfile from "./modules/Faculty/Profile/FacultyProfile";
 import { Navigate, Outlet } from "react-router-dom";
@@ -36,7 +40,6 @@ import { useStore } from "./store/useStore";
 import Notifications from './modules/Faculty/Notifications';
 import ArchivedProjectDetails from './modules/Faculty/ArchivedProjects/ArchivedProjectDetails';
 import StudentNotifications from "./modules/Student/StudentNotifications";
-
 function App() {
   const PrivateRoute = ({ allowedRoles }) => {
     const { user, isAuthenticated } = useStore();
@@ -74,7 +77,7 @@ function App() {
         <Route path="/" element={<Login />} />
 
         {/* Admin Routes */}
-        <Route element={<PrivateRoute allowedRoles={["admin"]} />}>
+        {/* <Route element={<PrivateRoute allowedRoles={["admin"]} />}> */}
           <Route path="/Admin" element={<AdminLayout />}>
             <Route path="Dashboard" element={<AdminDashboard />} />
             <Route path="Profile" element={<AdminProfile />} />
@@ -86,26 +89,29 @@ function App() {
             <Route path="AddStudent" element={<AddStudent />} />
             <Route path="AddFaculty" element={<AddFaculty />} />
           </Route>
-        </Route>
+        {/* </Route> */}
 
         {/* Faculty Routes */}
-        <Route element={<PrivateRoute allowedRoles={["faculty"]} />}>
+        {/* <Route element={<PrivateRoute allowedRoles={["faculty"]} />}> */}
           <Route path="/Faculty" element={<FacultyLayout />}>
             <Route path="Dashboard" element={<FacultyDashboard />} />
             <Route path="ActiveWorks/guide" element={<GuideActiveWorks />} />
             <Route path="ActiveWorks/guide/:projectId" element={<GuideProjectDetails />} />
-            <Route path="ActiveWorks/Incharge" element={<Incharge />} />
+            <Route path="ActiveWorks/Incharge" element={<InchargeActiveWorks />} />
+            <Route path="ActiveWorks/Incharge/:classSection" element={<InchargeClassTeams />} />
+            <Route path="ActiveWorks/Incharge/:classSection/:projectId" element={<InchargeProjectDetails />} />
             <Route path="ArchivedProjects" element={<FacultyArchivedProjects />} />
             <Route path="ArchivedProjects/:projectId" element={<ArchivedProjectDetails />} />
             <Route path="CampusProjects" element={<CampusProject />} />
-            <Route path="ProjectForum" element={<ProjectForum />} />
+            <Route path="ProjectForum" element={<FacultyProjectForum />} />
+            <Route path="ProjectForum/:projectId" element={<ForumProjectDetails />} />
             <Route path="Create" element={<CreateProjectForm />} />
             <Route path="FacultyProfile" element={<FacultyProfile />} />
             <Route path="Notifications" element={<Notifications />} />
           </Route>
-        </Route>
+        {/* </Route> */}
         {/* Student Routes */}
-        <Route element={<PrivateRoute allowedRoles={["student"]} />}>
+        {/* <Route element={<PrivateRoute allowedRoles={["student"]} />}> */}
           <Route path="/student" element={<Student />}>
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="archivedprojects" element={<ArchivedProjects />} />
@@ -117,7 +123,7 @@ function App() {
             <Route path="campusprojects" element={<CampusProjects />} />
             <Route path="notifications" element={<StudentNotifications />} /> 
           </Route>
-        </Route>
+            {/* </Route> */}
       </Routes>
     </Router>
     </>
