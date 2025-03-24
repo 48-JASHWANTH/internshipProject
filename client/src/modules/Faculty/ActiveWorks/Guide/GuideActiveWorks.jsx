@@ -41,7 +41,7 @@ const GuideActiveWorks = () => {
   return (
     <div className="flex justify-center p-6">
       <div className="w-full max-w-6xl">
-        <h1 className="text-3xl font-bold text-gray-800 mb-6">
+        <h1 className="text-3xl font-bold text-gray-800 mb-6 text-center">
           ActiveWorks - Guide
         </h1>
         

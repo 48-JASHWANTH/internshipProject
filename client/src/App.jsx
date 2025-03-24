@@ -7,7 +7,11 @@ import ArchivedProjects from "./modules/Student/ArchivedProjects";
 import ChangePassword from "./modules/Student/ChangePassword";
 import Profile from "./modules/Student/Profile/Profile";
 import FacultyDashboard from './modules/Faculty/Dashboard'
-import FacultyArchivedProjects from './modules/Faculty/ArchivedProjects/ArchivedProjects'
+import GuideArchivedProjects from './modules/Faculty/ArchivedProjects/Guide/GuideArchivedProjects'
+import GuideArchivedProjectDetails from './modules/Faculty/ArchivedProjects/Guide/GuideArchivedProjectDetails'
+import InchargeArchivedProjects from './modules/Faculty/ArchivedProjects/Incharge/InchargeArchivedProjects'
+import InchargeClass from './modules/Faculty/ArchivedProjects/Incharge/InchargeClass'
+import InchargeArchivedProjectDetails from './modules/Faculty/ArchivedProjects/Incharge/InchargeArchivedProjectDetails'
 import FacultyProjectForum from './modules/Faculty/ProjectForum/FacultyProjectForum';
 import InchargeActiveWorks from './modules/Faculty/ActiveWorks/Incharge/InchargeActiveWorks';
 import InchargeClassTeams from './modules/Faculty/ActiveWorks/Incharge/InchargeClassTeams';
@@ -38,7 +42,6 @@ import { useStore } from "./store/useStore";
 
 
 import Notifications from './modules/Faculty/Notifications';
-import ArchivedProjectDetails from './modules/Faculty/ArchivedProjects/ArchivedProjectDetails';
 import StudentNotifications from "./modules/Student/StudentNotifications";
 function App() {
   const PrivateRoute = ({ allowedRoles }) => {
@@ -100,8 +103,11 @@ function App() {
             <Route path="ActiveWorks/Incharge" element={<InchargeActiveWorks />} />
             <Route path="ActiveWorks/Incharge/:classSection" element={<InchargeClassTeams />} />
             <Route path="ActiveWorks/Incharge/:classSection/:projectId" element={<InchargeProjectDetails />} />
-            <Route path="ArchivedProjects" element={<FacultyArchivedProjects />} />
-            <Route path="ArchivedProjects/:projectId" element={<ArchivedProjectDetails />} />
+            <Route path="ArchivedProjects/Guide" element={<GuideArchivedProjects />} />
+            <Route path="ArchivedProjects/Guide/:projectId" element={<GuideArchivedProjectDetails />} />
+            <Route path="ArchivedProjects/Incharge" element={<InchargeArchivedProjects />} />
+            <Route path="ArchivedProjects/Incharge/:classSection" element={<InchargeClass />} />
+            <Route path="ArchivedProjects/Incharge/:classSection/:projectId" element={<InchargeArchivedProjectDetails />} />
             <Route path="CampusProjects" element={<CampusProject />} />
             <Route path="ProjectForum" element={<FacultyProjectForum />} />
             <Route path="ProjectForum/:projectId" element={<ForumProjectDetails />} />

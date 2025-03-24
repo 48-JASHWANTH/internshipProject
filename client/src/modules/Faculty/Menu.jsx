@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { FaChevronRight, FaHome, FaArchive, FaForumbee, FaBriefcase, FaGraduationCap, FaUserCircle, FaPlus, FaBell } from "react-icons/fa";
+import { FaChevronRight, FaHome, FaArchive, FaForumbee, FaBriefcase, FaGraduationCap, FaUserCircle, FaPlus, FaBell, FaUserTie, FaUserGraduate } from "react-icons/fa";
 import { useStore } from "@/store/useStore";
 
 const Menu = ({ isProfilePage, isMobileMenuOpen, setIsMobileMenuOpen }) => {
@@ -16,11 +16,35 @@ const Menu = ({ isProfilePage, isMobileMenuOpen, setIsMobileMenuOpen }) => {
       icon: <FaBriefcase size={20} />, 
       path: "/Faculty/ActiveWorks",
       subItems: [
-        { text: "Incharge", path: "/Faculty/ActiveWorks/Incharge" },
-        { text: "Guide", path: "/Faculty/ActiveWorks/Guide" }
+        { 
+          text: "Incharge", 
+          path: "/Faculty/ActiveWorks/Incharge",
+          icon: <FaUserTie size={16} />
+        },
+        { 
+          text: "Guide", 
+          path: "/Faculty/ActiveWorks/Guide",
+          icon: <FaUserGraduate size={16} />
+        }
       ]
     },
-    { text: "Archived", icon: <FaArchive size={20} />, path: "/Faculty/ArchivedProjects" },
+    { 
+      text: "Archived", 
+      icon: <FaArchive size={20} />, 
+      path: "/Faculty/ArchivedProjects",
+      subItems: [
+        { 
+          text: "Incharge", 
+          path: "/Faculty/ArchivedProjects/Incharge",
+          icon: <FaUserTie size={16} />
+        },
+        { 
+          text: "Guide", 
+          path: "/Faculty/ArchivedProjects/Guide",
+          icon: <FaUserGraduate size={16} />
+        }
+      ]
+    },
     { text: "Campus Projects", icon: <FaGraduationCap size={20} />, path: "/Faculty/CampusProjects" },
     { text: "Project Forum", icon: <FaForumbee size={20} />, path: "/Faculty/ProjectForum" },
   ];
@@ -135,6 +159,9 @@ const Menu = ({ isProfilePage, isMobileMenuOpen, setIsMobileMenuOpen }) => {
                       }`}
                       onClick={() => handleSubItemClick(subItem.path)}
                     >
+                      <span className="text-white mr-3">
+                        {subItem.icon}
+                      </span>
                       <span className={`text-sm font-medium ${
                         location.pathname === subItem.path ? 'text-yellow-400' : 'text-white'
                       }`}>
@@ -242,6 +269,9 @@ const Menu = ({ isProfilePage, isMobileMenuOpen, setIsMobileMenuOpen }) => {
                     }`}
                     onClick={() => handleSubItemClick(subItem.path)}
                   >
+                    <span className="text-white mr-3">
+                      {subItem.icon}
+                    </span>
                     <span className={`text-sm font-medium ${
                       location.pathname === subItem.path ? 'text-yellow-400' : 'text-white'
                     }`}>

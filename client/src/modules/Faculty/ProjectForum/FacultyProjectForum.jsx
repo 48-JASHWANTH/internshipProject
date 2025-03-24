@@ -9,7 +9,7 @@ const PROJECT_STATUS = ["Open", "Closed"];
 const PROJECTS = [
   {
     id: 1,
-    title: "AI-Powered Healthcare System",
+    title: "AI-Powered Health Monitoring System",
     description: "Developing an intelligent system for early disease detection using machine learning algorithms.",
     domain: "AI/ML",
     techStack: ["Python", "TensorFlow", "React", "Node.js"],

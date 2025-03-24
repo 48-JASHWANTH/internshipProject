@@ -13,7 +13,7 @@ const reviewsData = [
       id: 1,
     reviewName: "Abstract Review",
     dueDate: "2024-04-01",
-    satisfactionLevel: "Good",
+    satisfactionLevel: "Excellent",
     remarks: "Well structured abstract",
     feedback: "The team has demonstrated excellent understanding of the project scope. The abstract clearly outlines the problem statement, methodology, and expected outcomes.",
     status: "reviewed"

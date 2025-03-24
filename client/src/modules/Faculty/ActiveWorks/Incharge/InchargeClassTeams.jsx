@@ -14,12 +14,13 @@ const InchargeClassTeams = () => {
       teamNo: "01", // Added team number
       teamName: "Team Alpha",
       projectTitle: "AI-Powered Healthcare System",
-      category: "Major",
+      category: "CBP",
       status: "In Progress",
       startDate: "2024-01-15",
       teamSize: 4,
       guide: "Dr. Sarah Johnson",
-      section: "CSE-A"
+      section: "CSE-A",
+      progress: 75  // Add progress
     },
     {
       id: 2,
@@ -31,7 +32,8 @@ const InchargeClassTeams = () => {
       startDate: "2024-01-20",
       teamSize: 3,
       guide: "Dr. Michael Brown",
-      section: "CSE-A"
+      section: "CSE-A",
+      progress: 60  // Add progress
     },
     // Add more teams as needed
   ];
@@ -94,11 +96,8 @@ const InchargeClassTeams = () => {
               <div className="p-6">
                 <div className="flex flex-col gap-2">
                   <h3 className="text-lg font-semibold text-gray-900 line-clamp-2">
-                    {team.teamNo} - {team.teamName}
+                    {team.teamNo} - {team.projectTitle}
                   </h3>
-                  <p className="text-sm text-gray-600 line-clamp-2">
-                    {team.projectTitle}
-                  </p>
                   
                   <div className="flex items-center gap-2">
                     <span className="px-2.5 py-0.5 text-xs font-medium bg-purple-50 text-purple-700 rounded-full">
@@ -117,6 +116,19 @@ const InchargeClassTeams = () => {
                   <div className="flex items-center gap-2 text-sm text-gray-600">
                     <Calendar className="w-4 h-4" />
                     <span>Started: {team.startDate}</span>
+                  </div>
+
+                  <div className="mt-2">
+                    <div className="flex justify-between items-center mb-1">
+                      <span className="text-sm font-medium text-gray-700">Progress</span>
+                      <span className="text-sm font-medium text-[#9b1a31]">{team.progress}%</span>
+                    </div>
+                    <div className="w-full bg-gray-100 rounded-full h-2">
+                      <div
+                        className="bg-[#9b1a31] rounded-full h-2 transition-all duration-300"
+                        style={{ width: `${team.progress}%` }}
+                      />
+                    </div>
                   </div>
 
                   <div className="mt-2 pt-2 border-t">
