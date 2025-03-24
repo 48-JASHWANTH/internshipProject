@@ -224,11 +224,18 @@ export const adminLogin = async (req, res) => {
         }
 
         // Create JWT token
-        const token = jwt.sign(
-            { id: admin._id, role: "admin" },
-            process.env.JWT_SECRET,
-            { expiresIn: "1d" }
-        );
+        // const token = jwt.sign(
+        //     { id: admin._id, role: "admin" },
+        //     process.env.JWT_SECRET,
+        //     { expiresIn: "1d" }
+        // );
+
+        res.cookie("jwt", generateToken({
+            _id: admin._id,
+            role: 'admin',
+        }),{
+            maxAge,secure:true,sameSite:"None"
+        });
 
         // Log successful login
         await new ActivityLog({
@@ -244,7 +251,6 @@ export const adminLogin = async (req, res) => {
         res.status(200).json({
             success: true,
             message: "Login successful",
-            token,
             user: {
                 adminID: admin.adminID,
                 name: admin.name,

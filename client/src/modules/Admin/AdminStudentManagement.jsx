@@ -26,18 +26,8 @@ const AdminStudentManagement = () => {
     try {
       // Fetch both active and deleted students in parallel
       const [activeResponse, deletedResponse] = await Promise.all([
-        apiClient.get('/admin/students', {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('auth-storage') ? 
-              JSON.parse(localStorage.getItem('auth-storage')).state.token : ''}`
-          }
-        }),
-        apiClient.get('/admin/students/deleted', {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('auth-storage') ? 
-              JSON.parse(localStorage.getItem('auth-storage')).state.token : ''}`
-          }
-        })
+        apiClient.get('/admin/students', {withCredentials: true}),
+        apiClient.get('/admin/students/deleted', {withCredentials: true})
       ]);
 
       console.log(activeResponse);
@@ -78,12 +68,7 @@ const AdminStudentManagement = () => {
     if (!deleteConfirm.studentId) return;
 
     try {
-      const response = await apiClient.delete(`/admin/students/${deleteConfirm.studentId}`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('auth-storage') ? 
-            JSON.parse(localStorage.getItem('auth-storage')).state.token : ''}`
-        }
-      });
+      const response = await apiClient.delete(`/admin/students/${deleteConfirm.studentId}`,{withCredentials: true});
 
       if (response.data.success) {
         // Remove student from active list
@@ -108,12 +93,7 @@ const AdminStudentManagement = () => {
   // Handle student restoration
   const handleRestoreStudent = async (studentId) => {
     try {
-      const response = await apiClient.post(`/admin/students/${studentId}/restore`, {}, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('auth-storage') ? 
-            JSON.parse(localStorage.getItem('auth-storage')).state.token : ''}`
-        }
-      });
+      const response = await apiClient.post(`/admin/students/${studentId}/restore`,{withCredentials: true});
 
       if (response.data.success) {
         // Remove student from deleted list and add to active list

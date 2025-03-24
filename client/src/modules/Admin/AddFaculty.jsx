@@ -8,9 +8,6 @@ import { useStore } from '@/store/useStore';
 
 const AddFaculty = () => {
   const navigate = useNavigate();
-  const { user } = useStore(state => ({
-    user: state.user
-  }));
   const [method, setMethod] = useState(''); // 'manual' or 'excel'
   const [formData, setFormData] = useState({
     facultyID: '',
@@ -77,12 +74,7 @@ const AddFaculty = () => {
             mobile: formData.mobile
           }
         }
-      }, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('auth-storage') ? 
-            JSON.parse(localStorage.getItem('auth-storage')).state.token : ''}`
-        }
-      });
+      }, {withCredentials: true});
 
       if (response.data.success) {
         toast.success('Faculty added successfully');
@@ -136,12 +128,7 @@ const AddFaculty = () => {
           const response = await apiClient.post('/admin/add-faculty', {
             faculty,
             details
-          }, {
-            headers: {
-              'Authorization': `Bearer ${localStorage.getItem('auth-storage') ? 
-                JSON.parse(localStorage.getItem('auth-storage')).state.token : ''}`
-            }
-          });
+          }, {withCredentials: true});
 
           if (response.data.success) {
             toast.success(`${Object.keys(faculty).length} faculty members added successfully`);

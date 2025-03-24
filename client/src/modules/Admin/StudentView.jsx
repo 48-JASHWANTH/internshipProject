@@ -14,12 +14,7 @@ const StudentView = () => {
   useEffect(() => {
     const fetchStudentDetails = async () => {
       try {
-        const response = await apiClient.get(`/admin/students/${studentId}`, {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('auth-storage') ? 
-              JSON.parse(localStorage.getItem('auth-storage')).state.token : ''}`
-          }
-        });
+        const response = await apiClient.get(`/admin/students/${studentId}`, {withCredentials: true});
 
         if (response.data.success) {
           setStudent(response.data.student);

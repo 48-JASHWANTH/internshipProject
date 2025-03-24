@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Plus, Calendar, User, CheckCircle, Clock, XCircle } from 'lucide-react';
 import { format } from 'date-fns';
-import AddTaskModal from './Components/AddTaskModal';
+import AddTaskModal from './components/AddTaskModal';
 
 const initialTasks = [
   {
@@ -128,7 +128,7 @@ const TaskCard = ({ task, onStatusChange, onApprove }) => {
   );
 };
 
-const GuideWorkboard = () => {
+const InchargeWorkboard = () => {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [tasks, setTasks] = useState(initialTasks);
 
@@ -178,4 +178,4 @@ const GuideWorkboard = () => {
   );
 };
 
-export default GuideWorkboard; 
+export default InchargeWorkboard; 

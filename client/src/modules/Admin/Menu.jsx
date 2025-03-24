@@ -6,8 +6,9 @@ import { useStore } from "@/store/useStore";
 const Menu = ({ isProfilePage, isMobileMenuOpen, setIsMobileMenuOpen }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const profileData = useStore(state => state.profileData);
-
+  const { profileData } = useStore(state => ({
+    profileData: state.profileData
+  }));
 
   const menuItems = [
     { text: "Dashboard", icon: <FaHome size={20} />, path: "/Admin/Dashboard" },
