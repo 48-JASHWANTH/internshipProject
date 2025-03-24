@@ -26,18 +26,8 @@ const AdminFacultyManagement = () => {
     try {
       // Fetch both active and deleted faculty in parallel
       const [activeResponse, deletedResponse] = await Promise.all([
-        apiClient.get('/admin/faculty', {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('auth-storage') ? 
-              JSON.parse(localStorage.getItem('auth-storage')).state.token : ''}`
-          }
-        }),
-        apiClient.get('/admin/faculty/deleted', {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('auth-storage') ? 
-              JSON.parse(localStorage.getItem('auth-storage')).state.token : ''}`
-          }
-        })
+        apiClient.get('/admin/faculty',{withCredentials: true} ),
+        apiClient.get('/admin/faculty/deleted', {withCredentials: true})
       ]);
 
       if (activeResponse.data.success && deletedResponse.data.success) {
@@ -78,12 +68,7 @@ const AdminFacultyManagement = () => {
     if (!deleteConfirm.facultyId) return;
 
     try {
-      const response = await apiClient.delete(`/admin/faculty/${deleteConfirm.facultyId}`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('auth-storage') ? 
-            JSON.parse(localStorage.getItem('auth-storage')).state.token : ''}`
-        }
-      });
+      const response = await apiClient.delete(`/admin/faculty/${deleteConfirm.facultyId}`, {withCredentials: true});
 
       if (response.data.success) {
         // Remove faculty from active list and add to deleted list
@@ -108,12 +93,7 @@ const AdminFacultyManagement = () => {
   // Handle faculty restoration
   const handleRestoreFaculty = async (facultyId) => {
     try {
-      const response = await apiClient.post(`/admin/faculty/${facultyId}/restore`, {}, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('auth-storage') ? 
-            JSON.parse(localStorage.getItem('auth-storage')).state.token : ''}`
-        }
-      });
+      const response = await apiClient.post(`/admin/faculty/${facultyId}/restore`);
 
       if (response.data.success) {
         // Remove faculty from deleted list and add to active list

@@ -11,7 +11,7 @@ Content-Type: application/json
 ### Update Student Academic Data
 PUT http://localhost:1544/student/academic/22071A3255
 Content-Type: application/json
-Cookie: jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZGE5Nzc1NzdjNjI3ZWU3OWExZDU0MyIsInJvbGUiOiJzdHVkZW50IiwiZW1haWwiOiIyMjA3MUEzMjU1QHZucnZqaWV0LmluIiwiaWF0IjoxNzQyNTc0MzgxLCJleHAiOjIwMDE3NzQzODF9.Qz7a3JQ_H1VHu4LZKTyunu2G66twCd4nQ2_jxqUAuj0
+Cookie: jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZGE5Nzc1NzdjNjI3ZWU3OWExZDU0MyIsInJvbGUiOiJzdHVkZW50IiwiZW1haWwiOiJiaGFyZ2F2dHR5bEBnbWFpbC5jb20iLCJpYXQiOjE3NDI4MTA5MDAsImV4cCI6MjAwMjAxMDkwMH0.vmUq30PZgZCuDJt0rs_46XORbQxibTdGRw5EmiRvZnU
 
 {
   "campus": "VNR VJIET",
