@@ -36,7 +36,7 @@ Cookie: jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZGE5Nzc1NzdjNjI3ZWU
 ### List all active students
 GET http://localhost:1544/admin/students
 Content-Type: application/json
-Cookie: jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZGE5Nzc1NzdjNjI3ZWU3OWExZDU0MyIsInJvbGUiOiJzdHVkZW50IiwiZW1haWwiOiIyMjA3MUEzMjU1QHZucnZqaWV0LmluIiwiaWF0IjoxNzQyMzkwNzQwLCJleHAiOjQzMzQzOTA3NDB9.PRSVzvhkLQmY4drCDjVcBCDqPmdPi6_MbpSMpxcTOqg
+Cookie: jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZDdkNGE1ZDQ0Y2FkNWUxZTQyODI0YSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc0MjgxMDY3OCwiZXhwIjoyMDAyMDEwNjc4fQ.BZTNt6kLN2EadrATZE6ZX-i_GAvwomWcMVn2UiHDRYQ
 
 ### Get a specific student's details
 GET http://localhost:1544/admin/students/22071A3262
@@ -73,7 +73,7 @@ Cookie: jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZGE5Nzc1NzdjNjI3ZWU
 
 {
   "faculties": {
-    "FAC596415": "Mark"
+    "FAC596w35": "Mark"
   }
 }
 

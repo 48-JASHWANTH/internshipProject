@@ -8,9 +8,6 @@ import { useStore } from '@/store/useStore';
 
 const AddStudent = () => {
   const navigate = useNavigate();
-  const { user } = useStore(state => ({
-    user: state.user
-  }));
   const [method, setMethod] = useState('');
   const [formData, setFormData] = useState({
     studentID: '',
@@ -98,13 +95,7 @@ const AddStudent = () => {
         }
       };
       
-      const response = await apiClient.post('/admin/add-students', payload, {
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('auth-storage') ? 
-            JSON.parse(localStorage.getItem('auth-storage')).state.token : ''}`
-        }
-      });
+      const response = await apiClient.post('/admin/add-students', payload, {withCredentials: true});
       
       if (response.data.success) {
         toast.success('Student added successfully');

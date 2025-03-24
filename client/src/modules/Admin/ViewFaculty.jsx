@@ -14,12 +14,7 @@ const ViewFaculty = () => {
   useEffect(() => {
     const fetchFacultyDetails = async () => {
       try {
-        const response = await apiClient.get(`/admin/faculty/${facultyId}`, {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('auth-storage') ? 
-              JSON.parse(localStorage.getItem('auth-storage')).state.token : ''}`
-          }
-        });
+        const response = await apiClient.get(`/admin/faculty/${facultyId}`, {withCredentials: true});
 
         if (response.data.success) {
           setFaculty(response.data.faculty);
