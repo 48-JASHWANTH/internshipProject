@@ -5,10 +5,8 @@ import vnrlogo from "../images/vnrvjiet.png";
 import { useStore } from "@/store/useStore";
 
 const Navbar = ({ isMobileMenuOpen, setIsMobileMenuOpen }) => {
-  const { profileData, logout } = useStore(state => ({
-    profileData: state.profileData,
-    logout: state.logout
-  }));
+  const profileData = useStore(state => state.profileData)
+  const logout = useStore(state =>state.logout);
   const [showProfile, setShowProfile] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const navigate = useNavigate(); 
