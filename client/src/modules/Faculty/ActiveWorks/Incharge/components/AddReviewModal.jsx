@@ -1,22 +1,73 @@
 import React, { useState } from 'react';
 import { X } from 'lucide-react';
 
-const AddReviewModal = ({ onClose }) => {
+// Add this constant for review names based on project type
+const REVIEW_NAMES = {
+  CBP: [
+    '0th Review',
+    'Abstract',
+    'Literature',
+    'Design',
+    'Final '
+  ],
+  Mini: [
+    '0th Review',
+    'Abstract',
+    'Literature',
+    'Design',
+    'Final '
+  ],
+  FP: [
+    '0th Review',
+    'Abstract',
+    'Literature',
+    'Design',
+    'Final'
+  ],
+  Major: [
+    '0th Review',
+    'Abstract',
+    'Literature',
+    'Design',
+    'Implementation',
+    'Project Expo',
+    'External (Final)'
+  ]
+};
+
+// Update the component to accept projectType as a prop
+const AddReviewModal = ({ onClose, projectType }) => {
   const [formData, setFormData] = useState({
     reviewName: '',
-    dueDate: '',
+    Date: '',
     satisfactionLevel: '',
     remarks: '',
     feedback: '',
     status: 'reviewed'
   });
+  const [isCustomReview, setIsCustomReview] = useState(false);
   const [errors, setErrors] = useState({});
+
+  // Get the appropriate review names and add "Other" option
+  const reviewOptions = [...(REVIEW_NAMES[projectType] || REVIEW_NAMES.CBP), 'Other'];
+
+  const handleReviewNameChange = (e) => {
+    const value = e.target.value;
+    if (value === 'Other') {
+      setIsCustomReview(true);
+      setFormData({ ...formData, reviewName: '' });
+    } else {
+      setIsCustomReview(false);
+      setFormData({ ...formData, reviewName: value });
+    }
+    setErrors({ ...errors, reviewName: '' });
+  };
 
   const handleSubmit = () => {
     // Validate all fields
     const newErrors = {};
     if (!formData.reviewName.trim()) newErrors.reviewName = 'Review name is required';
-    if (!formData.dueDate) newErrors.dueDate = 'Due date is required';
+    if (!formData.Date) newErrors.Date = 'Date is required';
     if (!formData.satisfactionLevel) newErrors.satisfactionLevel = 'Satisfaction level is required';
     if (!formData.remarks.trim()) newErrors.remarks = 'Remarks are required';
     if (!formData.feedback.trim()) newErrors.feedback = 'Feedback is required';
@@ -26,16 +77,15 @@ const AddReviewModal = ({ onClose }) => {
       return;
     }
 
-    // Added Type: Incharge to the console log
     console.log('New Review Data:', {
       ...formData,
       id: Date.now(),
       timestamp: new Date().toISOString(),
-      type: 'Incharge' // Added type identifier
+      type: 'Incharge',
+      projectType
     });
     onClose();
   };
-
 
   const renderField = (name, label, type = 'text', options = null, className = '') => (
     <div className={className}>
@@ -105,10 +155,42 @@ const AddReviewModal = ({ onClose }) => {
         </div>
 
         <div className="p-6 space-y-4">
-          {renderField('reviewName', 'Review Name')}
+          {/* Review Name field */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Review Name <span className="text-red-500">*</span>
+            </label>
+            {!isCustomReview ? (
+              <select
+                value={formData.reviewName || ''}
+                onChange={handleReviewNameChange}
+                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#9b1a31] focus:border-[#9b1a31] outline-none ${
+                  errors.reviewName ? 'border-red-500' : ''
+                }`}
+              >
+                <option value="">Select Review Name</option>
+                {reviewOptions.map(opt => (
+                  <option key={opt} value={opt}>{opt}</option>
+                ))}
+              </select>
+            ) : (
+              <input
+                type="text"
+                value={formData.reviewName}
+                onChange={(e) => setFormData({ ...formData, reviewName: e.target.value })}
+                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#9b1a31] focus:border-[#9b1a31] outline-none ${
+                  errors.reviewName ? 'border-red-500' : ''
+                }`}
+                placeholder="Select Review Name"
+              />
+            )}
+            {errors.reviewName && (
+              <p className="mt-1 text-sm text-red-500">{errors.reviewName}</p>
+            )}
+          </div>
           
           <div className="grid grid-cols-2 gap-4">
-            {renderField('dueDate', 'Due Date', 'date', null, 'col-span-1')}
+            {renderField('Date', 'Date', 'date', null, 'col-span-1')}
             {renderField('satisfactionLevel', 'Satisfaction Level', 'select', [
               'Poor',
               'Fair',

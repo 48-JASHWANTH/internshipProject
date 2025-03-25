@@ -53,7 +53,7 @@ const AddTaskModal = ({ onClose }) => {
         .join(', '),
       status: 'todo',
       assignedBy: {
-        type: 'Guide',
+        type: 'Incharge',
         name: 'Dr. Smith'
       },
       id: Date.now().toString()
