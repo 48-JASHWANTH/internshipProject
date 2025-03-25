@@ -1,6 +1,16 @@
 import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { FaGithub, FaGoogleDrive, FaUsers, FaClipboardCheck, FaArrowLeft } from 'react-icons/fa';
+import { Calendar, CheckCircle } from 'lucide-react';
+
+// Add this at the top with other constants
+const satisfactionColors = {
+  'Excellent': 'bg-purple-100 text-purple-800',
+  'Very Good': 'bg-blue-100 text-blue-800', 
+  'Good': 'bg-yellow-100 text-yellow-800',
+  'Fair': 'bg-orange-100 text-orange-800',
+  'Poor': 'bg-red-100 text-red-800'
+};
 
 // Assuming you have the staticProjects array available here
 const staticProjects = [
@@ -41,34 +51,40 @@ const staticProjects = [
     reviews: [
       {
         id: 1,
+        reviewName: "Abstract Review",
         date: "2024-01-15",
         phase: "Review 1",
-        score: 92,
-        feedback: "Excellent progress on core functionality",
-        suggestions: "Consider adding more error handling"
+        satisfactionLevel: "Excellent",
+        remarks: "Well structured abstract",
+        feedback: "Excellent progress on core functionality. The team has demonstrated excellent understanding of the project scope. The abstract clearly outlines the problem statement, methodology, and expected outcomes.",
+        status: "reviewed"
       },
       {
         id: 2,
+        reviewName: "Design Review",
         date: "2024-02-15",
         phase: "Review 2",
-        score: 95,
-        feedback: "Great improvements in UI/UX",
-        suggestions: "Add more test cases"
+        satisfactionLevel: "Very Good",
+        remarks: "Well designed architecture",
+        feedback: "Great improvements in UI/UX. The design patterns are well thought out and implementation is clean.",
+        status: "reviewed"
       },
       {
         id: 3,
+        reviewName: "Final Review",
         date: "2024-03-15",
         phase: "Final Review",
-        score: 98,
-        feedback: "Outstanding final implementation",
-        suggestions: "Ready for deployment"
+        satisfactionLevel: "Good",
+        remarks: "Project completed successfully",
+        feedback: "Outstanding final implementation. All requirements met and code is well documented.",
+        status: "reviewed"
       }
     ]
   },
   // Add other projects here...
 ];
 
-const ArchivedProjectDetails = () => {
+const GuideArchivedProjectDetails = () => {
   const { projectId } = useParams();
   
   // Find the project details based on projectId
@@ -95,7 +111,7 @@ const ArchivedProjectDetails = () => {
         {/* Header with Back Button */}
         <div className="flex items-center gap-4 mb-8">
           <Link
-            to="/Faculty/ArchivedProjects"
+            to="/Faculty/ArchivedProjects/Guide"
             className="flex items-center gap-2 text-gray-600 hover:text-[#9b1a31]"
           >
             <FaArrowLeft />
@@ -229,34 +245,47 @@ const ArchivedProjectDetails = () => {
           {activeTab === 'reviews' && (
             <div>
               <h3 className="text-lg font-semibold mb-6">Review History</h3>
-              <div className="space-y-6">
+              <div className="space-y-4">
                 {projectDetails.reviews.map((review) => (
                   <div
                     key={review.id}
-                    className="border border-gray-100 rounded-lg p-4"
+                    className="bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-all border border-gray-100"
                   >
                     <div className="flex justify-between items-start mb-4">
+                      <h3 className="text-lg font-semibold text-gray-900">
+                        {review.reviewName}
+                      </h3>
+                      <span className={`px-3 py-1 rounded-full text-sm font-medium ${satisfactionColors[review.satisfactionLevel]}`}>
+                        {review.satisfactionLevel}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-2 mb-4">
+                      <Calendar className="w-4 h-4 text-gray-400" />
+                      <span className="text-sm text-gray-600">
+                        {new Date(review.date).toLocaleDateString('en-US', {
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric'
+                        })}
+                      </span>
+                    </div>
+
+                    <div className="space-y-4">
                       <div>
-                        <h4 className="font-semibold text-gray-800">
-                          {review.phase}
-                        </h4>
-                        <p className="text-sm text-gray-500">{review.date}</p>
+                        <h4 className="text-sm font-medium text-gray-700">Remarks</h4>
+                        <p className="mt-1 text-sm text-gray-600">{review.remarks}</p>
                       </div>
-                      <div className="text-right">
-                        <span className="text-2xl font-bold text-green-600">
-                          {review.score}%
-                        </span>
+
+                      <div>
+                        <h4 className="text-sm font-medium text-gray-700">Detailed Feedback</h4>
+                        <p className="mt-1 text-sm text-gray-600">{review.feedback}</p>
                       </div>
                     </div>
-                    <div className="space-y-2">
-                      <p className="text-gray-600">
-                        <span className="font-medium">Feedback:</span>{" "}
-                        {review.feedback}
-                      </p>
-                      <p className="text-gray-600">
-                        <span className="font-medium">Suggestions:</span>{" "}
-                        {review.suggestions}
-                      </p>
+
+                    <div className="mt-4 pt-4 border-t flex items-center gap-2 text-green-600">
+                      <CheckCircle className="w-4 h-4" />
+                      <span className="text-sm font-medium">Reviewed</span>
                     </div>
                   </div>
                 ))}
@@ -288,4 +317,4 @@ const ArchivedProjectDetails = () => {
   );
 };
 
-export default ArchivedProjectDetails; 
+export default GuideArchivedProjectDetails; 

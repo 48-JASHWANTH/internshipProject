@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { FaSearch, FaFilter, FaGithub, FaGoogleDrive, FaEye, FaUsers, FaClipboardCheck } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 
-const ArchivedProjects = () => {
+const GuideArchivedProjects = () => {
   // Static projects data with updated format
   const staticProjects = [
     {
@@ -65,7 +65,7 @@ const ArchivedProjects = () => {
     {
       id: 4,
       title: "Cybersecurity Analysis Tool",
-      type: "Field Project",
+      type: "FP",
       department: "CyS",
       section: "C",
       batch: "2022-2026",
@@ -104,6 +104,7 @@ const ArchivedProjects = () => {
   ];
 
   const [searchTerm, setSearchTerm] = useState('');
+  const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState({
     batch: 'all',
     department: 'all',
@@ -211,30 +212,39 @@ const ArchivedProjects = () => {
     <div className="min-h-screen bg-gray-100 p-6">
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-800">Archived Projects</h1>
-          <div className="text-sm text-gray-500">
-            Total Projects: <span className="font-bold">{staticProjects.length}</span>
+          <div className="w-full">
+            <h1 className="text-3xl font-bold text-gray-800 text-center">
+              Archived Projects - Guide
+            </h1>
           </div>
         </div>
 
-        {/* Enhanced Search and Filters */}
+        {/* Search and Filter Section */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-8">
           <div className="flex flex-col gap-6">
-            {/* Search Bar */}
-            <div className="relative">
-              <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search by project name, team members..."
-                className="w-full pl-12 pr-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#9b1a31] focus:border-transparent"
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
+            {/* Search Bar and Filter Toggle */}
+            <div className="flex gap-4">
+              <div className="relative flex-1">
+                <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search by project name, team members..."
+                  className="w-full pl-12 pr-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#9b1a31] focus:border-transparent"
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+              <button
+                onClick={() => setShowFilters(!showFilters)}
+                className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg flex items-center gap-2 transition-colors"
+              >
+                <FaFilter className="text-gray-600" />
+                <span className="text-gray-600">Filters</span>
+              </button>
             </div>
 
-            {/* Filter Section */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div className="flex items-center gap-2">
-                <FaFilter className="text-gray-400" />
+            {/* Collapsible Filters */}
+            {showFilters && (
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 pt-4 border-t border-gray-100">
                 <select
                   className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#9b1a31] focus:border-transparent"
                   onChange={(e) => setFilters(prev => ({ ...prev, batch: e.target.value }))}
@@ -244,9 +254,7 @@ const ArchivedProjects = () => {
                     <option key={year} value={year}>{year}</option>
                   ))}
                 </select>
-              </div>
 
-              <div>
                 <select
                   className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#9b1a31] focus:border-transparent"
                   onChange={(e) => setFilters(prev => ({ ...prev, department: e.target.value }))}
@@ -256,9 +264,7 @@ const ArchivedProjects = () => {
                     <option key={dept} value={dept}>{dept}</option>
                   ))}
                 </select>
-              </div>
 
-              <div>
                 <select
                   className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#9b1a31] focus:border-transparent"
                   onChange={(e) => setFilters(prev => ({ ...prev, section: e.target.value }))}
@@ -268,9 +274,7 @@ const ArchivedProjects = () => {
                     <option key={section} value={section}>Section {section}</option>
                   ))}
                 </select>
-              </div>
 
-              <div>
                 <select
                   className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#9b1a31] focus:border-transparent"
                   onChange={(e) => setFilters(prev => ({ ...prev, type: e.target.value }))}
@@ -281,11 +285,11 @@ const ArchivedProjects = () => {
                   ))}
                 </select>
               </div>
-            </div>
+            )}
           </div>
         </div>
 
-        {/* Project Grid - Updated to 3 columns for desktop */}
+        {/* Project Cards Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {currentProjects.map(project => (
             <div 
@@ -293,14 +297,12 @@ const ArchivedProjects = () => {
               className="bg-white rounded-lg shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300"
             >
               <div className="p-5">
-                {/* Project Title */}
-                <h3 className="text-xl font-semibold text-gray-800 mb-3">
-                  {project.title}
-                </h3>
-
-                {/* Project Type Badge */}
-                <div className="mb-4">
-                  <span className="px-3 py-1 bg-yellow-500 text-white rounded-full text-sm font-medium">
+                {/* Project Header with Title and Type */}
+                <div className="flex justify-between items-start mb-4">
+                  <h3 className="text-xl font-semibold text-gray-800 pr-4">
+                    {project.title}
+                  </h3>
+                  <span className="px-3 py-1 bg-yellow-500 text-white rounded-full text-sm font-medium whitespace-nowrap">
                     {project.type}
                   </span>
                 </div>
@@ -332,7 +334,7 @@ const ArchivedProjects = () => {
                 {/* Action Buttons */}
                 <div className="flex items-center justify-center gap-2 pt-3 border-t border-gray-200">
                   <Link
-                    to={`/Faculty/ArchivedProjects/${project.id}`}
+                    to={`/Faculty/ArchivedProjects/Guide/${project.id}`}
                     className="w-40 flex items-center justify-center gap-1 px-2 py-1.5 bg-[#9b1a31] text-white rounded hover:bg-[#82001A] transition-colors text-s"
                   >
                     <FaEye size={15} />
@@ -398,4 +400,4 @@ const ArchivedProjects = () => {
   );
 };
 
-export default ArchivedProjects;
+export default GuideArchivedProjects;

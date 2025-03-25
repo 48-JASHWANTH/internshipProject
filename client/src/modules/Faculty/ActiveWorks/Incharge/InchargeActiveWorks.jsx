@@ -73,7 +73,11 @@ const InchargeActiveWorks = () => {
   return (
     <div className="p-6 max-w-7xl mx-auto">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">ActiveWorks - Incharge</h1>
+        <div className="w-full">
+          <h1 className="text-3xl font-bold text-center">
+            ActiveWorks - Incharge
+          </h1>
+        </div>
       </div>
 
       <div className="relative mb-6">
