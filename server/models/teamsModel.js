@@ -1,12 +1,46 @@
 import mongoose from "mongoose";
 
+// Enhanced review schema based on InchargeReviews.jsx mock data
 const reviewSchema = new mongoose.Schema({
   reviewNo: { type: Number },
+  reviewName: { type: String, required: true },
   dateOfReview: { type: Date, default: Date.now },
+  dueDate: { type: Date },
+  satisfactionLevel: { 
+    type: String, 
+    enum: ['Excellent', 'Very Good', 'Good', 'Fair', 'Poor'] 
+  },
+  remarks: { type: String },
+  feedback: { type: String },
   progress: { type: String },
   changesToBeMade: { type: String },
   presentees: { type: [String] },
-  reviewStatus:{type: Boolean,default: false}
+  reviewStatus: { type: String, enum: ['pending', 'reviewed'], default: 'pending' },
+  assignedBy: {
+    name: { type: String },
+    type: { type: String, enum: ['Guide', 'Incharge', 'Admin'] },
+    facultyID: { type: String }
+  }
+});
+
+// New workboard schema based on InchargeWorkboard.jsx mock data
+const taskSchema = new mongoose.Schema({
+  title: { type: String, required: true },
+  description: { type: String },
+  dueDate: { type: Date, required: true },
+  priority: { type: String, enum: ['Low', 'Medium', 'High'], default: 'Medium' },
+  status: { 
+    type: String, 
+    enum: ['todo', 'in_progress', 'done', 'approved'], 
+    default: 'todo' 
+  },
+  assignedTo: { type: String },
+  assignedBy: {
+    name: { type: String },
+    type: { type: String, enum: ['Guide', 'Incharge', 'Admin'] },
+    facultyID: { type: String }
+  },
+  createdAt: { type: Date, default: Date.now }
 });
 
 const TeamSchema = new mongoose.Schema({
@@ -31,8 +65,24 @@ const TeamSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  projectOverview: {
+    type: String,
+    default: ""
+  },
+  googleDriveLink: {
+    type: String,
+    default: ""
+  },
+  techStack: {
+    type: [String],
+    default: []
+  },
   reviews: {
     type: [reviewSchema],
+    default: []
+  },
+  tasks: {
+    type: [taskSchema],
     default: []
   },
   projectType: {

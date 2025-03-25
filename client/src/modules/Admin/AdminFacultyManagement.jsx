@@ -93,8 +93,8 @@ const AdminFacultyManagement = () => {
   // Handle faculty restoration
   const handleRestoreFaculty = async (facultyId) => {
     try {
-      const response = await apiClient.post(`/admin/faculty/${facultyId}/restore`);
-
+      const response = await apiClient.post(`/admin/faculty/${facultyId}/restore`, {}, {withCredentials: true});
+      
       if (response.data.success) {
         // Remove faculty from deleted list and add to active list
         const restoredMember = deletedFaculty.find(f => f.facultyID === facultyId);
@@ -298,19 +298,81 @@ const AdminFacultyManagement = () => {
                   <FaChevronLeft className="h-5 w-5" aria-hidden="true" />
                 </button>
                 
-                {[...Array(totalPages).keys()].map(number => (
-                  <button
-                    key={number + 1}
-                    onClick={() => paginate(number + 1)}
-                    className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold ${
-                      currentPage === number + 1
-                        ? 'z-10 bg-[#9b1a31] text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#9b1a31]'
-                        : 'text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0'
-                    }`}
-                  >
-                    {number + 1}
-                  </button>
-                ))}
+                {(() => {
+                  const pageNumbers = [];
+                  const maxVisiblePages = 5; // Show at most 5 page numbers
+                  
+                  let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+                  let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+                  
+                  // Adjust if we're near the end
+                  if (endPage - startPage + 1 < maxVisiblePages) {
+                    startPage = Math.max(1, endPage - maxVisiblePages + 1);
+                  }
+                  
+                  // First page
+                  if (startPage > 1) {
+                    pageNumbers.push(
+                      <button
+                        key={1}
+                        onClick={() => paginate(1)}
+                        className="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0"
+                      >
+                        1
+                      </button>
+                    );
+                    
+                    // Ellipsis if needed
+                    if (startPage > 2) {
+                      pageNumbers.push(
+                        <span key="ellipsis1" className="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-700">
+                          ...
+                        </span>
+                      );
+                    }
+                  }
+                  
+                  // Page numbers
+                  for (let i = startPage; i <= endPage; i++) {
+                    pageNumbers.push(
+                      <button
+                        key={i}
+                        onClick={() => paginate(i)}
+                        className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold ${
+                          currentPage === i
+                            ? 'z-10 bg-[#9b1a31] text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#9b1a31]'
+                            : 'text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0'
+                        }`}
+                      >
+                        {i}
+                      </button>
+                    );
+                  }
+                  
+                  // Last page
+                  if (endPage < totalPages) {
+                    // Ellipsis if needed
+                    if (endPage < totalPages - 1) {
+                      pageNumbers.push(
+                        <span key="ellipsis2" className="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-700">
+                          ...
+                        </span>
+                      );
+                    }
+                    
+                    pageNumbers.push(
+                      <button
+                        key={totalPages}
+                        onClick={() => paginate(totalPages)}
+                        className="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0"
+                      >
+                        {totalPages}
+                      </button>
+                    );
+                  }
+                  
+                  return pageNumbers;
+                })()}
                 
                 <button
                   onClick={() => paginate(currentPage + 1)}

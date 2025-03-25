@@ -6,7 +6,6 @@ import { useStore } from "@/store/useStore";
 
 const Navbar = ({ isMobileMenuOpen, setIsMobileMenuOpen }) => {
   const profileData = useStore(state => state.profileData);
-  const user = useStore(state => state.user);
   const logout = useStore(state => state.logout);
   const [showProfile, setShowProfile] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);

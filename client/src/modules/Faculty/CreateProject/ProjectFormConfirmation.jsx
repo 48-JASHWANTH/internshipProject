@@ -3,11 +3,11 @@ import { FaEdit, FaSave } from "react-icons/fa";
 import SearchableDropdown from "../../common/SearchableDropdown";
 
 const facultyList = [
-  { id: "FAC001", name: "Dr. Sarah Johnson" },
-  { id: "FAC002", name: "Dr. Michael Chen" },
-  { id: "FAC003", name: "Dr. Emily White" },
-  { id: "FAC004", name: "Prof. David Brown" },
-  { id: "FAC005", name: "Dr. Lisa Anderson" },
+  { facultyID: "00ITD012", name: "Dr. Gali Suresh Reddy" },
+  { facultyID: "01EIE008", name: "Dr. Mulam Harikrishna" },
+  { facultyID: "00CSE010", name: "Dr. Pasupuleti Venkata Siva Kumar" },
+  { facultyID: "01EEE006", name: "Dr. Poonam Upadhyay" },
+  { facultyID: "02HSS012", name: "Dr. Bandla Prathyusha" },
 ];
 
 const branches = [
@@ -66,7 +66,7 @@ const ProjectFormConfirmation = ({
               ...team,
               [field]: value,
               ...(field === "guide" && {
-                facultyId: facultyList.find((f) => f.name === value)?.id,
+                facultyId: facultyList.find((f) => f.name === value)?.facultyID,
               }),
             }
           : team

@@ -5,7 +5,7 @@ export const addFaculty = async (req, res) => {
   try {
     //console.log(req.body);
     const { faculties } = req.body; // Object with facultyID: name pairs
-    //console.log(faculties);
+    // console.log(faculties);
     const createdFaculties = await Promise.all(
       Object.entries(faculties).map(async ([facultyID, name]) => {
         console.log(facultyID, name);

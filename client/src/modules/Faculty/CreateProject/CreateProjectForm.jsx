@@ -5,6 +5,7 @@ import ProjectFormConfirmation from "./ProjectFormConfirmation";
 import ConfirmationDialog from "../../common/ConfirmationDialog";
 import { CREATE_TEAMS_ROUTE } from "@/utils/constants";
 import { apiClient } from "@/lib/api-client";
+
 const CreateProjectForm = () => {
   const navigate = useNavigate();
   const [phase, setPhase] = useState(1);
@@ -34,7 +35,7 @@ const CreateProjectForm = () => {
   };
 
   const handleFinalSubmit = async() => {
-    const facultyID = "FAC12345";
+    const facultyID = "00CSE007";
     const classID = Date.now().toString();
     
     // Build teams, projectTitles and guides objects in one pass

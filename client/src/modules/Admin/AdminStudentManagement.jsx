@@ -93,7 +93,7 @@ const AdminStudentManagement = () => {
   // Handle student restoration
   const handleRestoreStudent = async (studentId) => {
     try {
-      const response = await apiClient.post(`/admin/students/${studentId}/restore`,{withCredentials: true});
+      const response = await apiClient.post(`/admin/students/${studentId}/restore`,{}, {withCredentials: true});
 
       if (response.data.success) {
         // Remove student from deleted list and add to active list

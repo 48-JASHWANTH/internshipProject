@@ -3,7 +3,7 @@ POST http://localhost:1544/faculty/login
 Content-Type: application/json
 
 {
-    "facultyID": "FAC12346",
+    "facultyID": "00CSE007",
     "password": "Welcome@123"
 }
 
@@ -45,3 +45,71 @@ Content-Type: application/json
         "1696612345678_5": "G12349"
     }
 }
+
+### Get all faculty (minimal info)
+GET http://localhost:1544/faculty/all
+Content-Type: application/json
+Cookie: jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZTE3MDcxMmEyZDk0MTFkODkyNzU3MCIsInJvbGUiOiJmYWN1bHR5IiwiZW1haWwiOiIiLCJpYXQiOjE3NDI4MzE0MTEsImV4cCI6MjAwMjAzMTQxMX0.cwajFoiMU-eM_LXeI2hFnEfZv4AFXSKezY_2SlVptF4
+
+### Get leaded projects for a specific faculty
+GET http://localhost:1544/faculty/00CSE007/leaded-projects
+Content-Type: application/json
+Cookie: jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZTE3MDcxMmEyZDk0MTFkODkyNzU3MCIsInJvbGUiOiJmYWN1bHR5IiwiZW1haWwiOiIiLCJpYXQiOjE3NDI4MzE0MTEsImV4cCI6MjAwMjAzMTQxMX0.cwajFoiMU-eM_LXeI2hFnEfZv4AFXSKezY_2SlVptF4
+
+### Add a new task to a team's workboard
+POST http://localhost:1544/faculty/team/1742849503479_1/task
+Content-Type: application/json
+Cookie: jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZTE3MDcxMmEyZDk0MTFkODkyNzU3MCIsInJvbGUiOiJmYWN1bHR5IiwiZW1haWwiOiIiLCJpYXQiOjE3NDI4MzE0MTEsImV4cCI6MjAwMjAzMTQxMX0.cwajFoiMU-eM_LXeI2hFnEfZv4AFXSKezY_2SlVptF4
+
+{
+  "title": "Literature Review",
+  "description": "Complete comprehensive literature survey for the project",
+  "dueDate": "2024-04-01",
+  "priority": "High",
+  "assignedTo": "John Doe, Jane Smith",
+  "assignedBy": {
+    "name": "Dr. Smith",
+    "type": "Incharge",
+    "facultyID": "00CSE007"
+  }
+}
+
+### Add a new review to a team
+POST http://localhost:1544/faculty/team/1742849503479_1/review
+Content-Type: application/json
+Cookie: jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZTE3MDcxMmEyZDk0MTFkODkyNzU3MCIsInJvbGUiOiJmYWN1bHR5IiwiZW1haWwiOiIiLCJpYXQiOjE3NDI4MzE0MTEsImV4cCI6MjAwMjAzMTQxMX0.cwajFoiMU-eM_LXeI2hFnEfZv4AFXSKezY_2SlVptF4
+
+{
+  "reviewNo": 1,
+  "reviewName": "Abstract Review",
+  "dateOfReview": "2024-03-28",
+  "dueDate": "2024-04-01",
+  "satisfactionLevel": "Good",
+  "remarks": "Well structured abstract",
+  "feedback": "The team has demonstrated excellent understanding of the project scope. The abstract clearly outlines the problem statement, methodology, and expected outcomes.",
+  "progress": "25%",
+  "changesToBeMade": "Add more details about the implementation approach",
+  "presentees": ["22071A3237", "22071A3248", "22071A3258"],
+  "assignedBy": {
+    "name": "Dr. Johnson",
+    "type": "Incharge",
+    "facultyID": "00CSE007"
+  }
+}
+
+### Get all tasks for a team
+GET http://localhost:1544/faculty/team/1742849503479_1/tasks
+Content-Type: application/json
+Cookie: jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZTE3MDcxMmEyZDk0MTFkODkyNzU3MCIsInJvbGUiOiJmYWN1bHR5IiwiZW1haWwiOiIiLCJpYXQiOjE3NDI4MzE0MTEsImV4cCI6MjAwMjAzMTQxMX0.cwajFoiMU-eM_LXeI2hFnEfZv4AFXSKezY_2SlVptF4
+
+### Get all reviews for a team
+GET http://localhost:1544/faculty/team/1742849503479_1/reviews
+Content-Type: application/json
+Cookie: jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZTE3MDcxMmEyZDk0MTFkODkyNzU3MCIsInJvbGUiOiJmYWN1bHR5IiwiZW1haWwiOiIiLCJpYXQiOjE3NDI4MzE0MTEsImV4cCI6MjAwMjAzMTQxMX0.cwajFoiMU-eM_LXeI2hFnEfZv4AFXSKezY_2SlVptF4
+
+### Get guided projects for a specific faculty
+GET http://localhost:1544/faculty/00ITD012/guided-projects
+Content-Type: application/json
+Cookie: jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZTE3MDcxMmEyZDk0MTFkODkyNzU3MCIsInJvbGUiOiJmYWN1bHR5IiwiZW1haWwiOiIiLCJpYXQiOjE3NDI4MzE0MTEsImV4cCI6MjAwMjAzMTQxMX0.cwajFoiMU-eM_LXeI2hFnEfZv4AFXSKezY_2SlVptF4
+
+
