@@ -9,11 +9,11 @@ const ActiveWorks = () => {
 
   const getTypeColor = (type) => {
     switch (type) {
-      case "Major": return "bg-purple-100 text-purple-700";
-      case "Mini": return "bg-indigo-100 text-indigo-700";
-      case "FP": return "bg-blue-100 text-blue-700";
-      case "CBP": return "bg-teal-100 text-teal-700";
-      default: return "bg-gray-50 text-gray-700";
+      case "Major": return "bg-purple-100 text-purple-800";
+      case "Mini": return "bg-indigo-100 text-indigo-800";
+      case "FP": return "bg-blue-100 text-blue-800";
+      case "CBP": return "bg-teal-100 text-teal-800";
+      default: return "bg-gray-100 text-gray-800";
     }
   };
 
@@ -51,8 +51,6 @@ const ActiveWorks = () => {
       (selectedCategory === 'all' || work.category === selectedCategory) &&
       (work.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
        work.guide.toLowerCase().includes(searchQuery.toLowerCase()))
-      
-       work.facultyGuide.toLowerCase().includes(searchQuery.toLowerCase()))
     );
   }, [activeWorks, selectedCategory, searchQuery]);
 
