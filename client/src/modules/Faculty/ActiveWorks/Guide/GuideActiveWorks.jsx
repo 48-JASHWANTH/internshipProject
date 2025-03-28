@@ -31,6 +31,16 @@ const GuideActiveWorks = () => {
     loadGuidedProjects();
   }, [user, fetchGuidedProjects]);
 
+  const getTypeColor = (type) => {
+    switch (type) {
+      case "Major": return "bg-purple-100 text-purple-700";
+      case "Mini": return "bg-indigo-100 text-indigo-700";
+      case "FP": return "bg-blue-100 text-blue-700";
+      case "CBP": return "bg-teal-100 text-teal-700";
+      default: return "bg-gray-100 text-gray-700";
+    }
+  };
+
   const categories = ['all', 'Mini Project', 'Major Project', 'FP', 'CBP'];
 
   const formattedProjects = useMemo(() => {
@@ -170,7 +180,7 @@ const GuideActiveWorks = () => {
                     </h3>
                     
                     <div className="flex items-center gap-2">
-                      <span className="px-2.5 py-0.5 text-xs font-medium bg-purple-50 text-purple-700 rounded-full">
+                      <span className={`px-2.5 py-0.5 text-xs font-medium ${getTypeColor(project.category)} rounded-full`}>
                         {project.category}
                       </span>
                       <span className={`px-2.5 py-0.5 text-xs font-medium rounded-full ${
@@ -184,7 +194,7 @@ const GuideActiveWorks = () => {
 
                     <div className="flex items-center gap-2 text-sm text-gray-600 mt-1">
                       <User className="w-4 h-4" />
-                      <span>Section: {project.section} ({project.teamSize} members)</span>
+                      <span>Section: {project.section} </span>
                     </div>
 
                     <div className="flex items-center gap-2 text-sm text-gray-600">
@@ -208,10 +218,10 @@ const GuideActiveWorks = () => {
                     <div className="mt-2 pt-2 border-t">
                       <div className="flex justify-between items-center">
                         <span className="text-sm text-gray-600">
-                          Reviews: {project.reviewsCompleted}/{project.totalReviews}
+                          Batch: {project.batch}
                         </span>
-                        <span className="text-sm font-medium text-yellow-600">
-                          Next Review: {project.nextReview}
+                        <span className="text-sm font-medium text-[#9b1a31]">
+                        {project.teamSize} Members
                         </span>
                       </div>
                     </div>

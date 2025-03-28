@@ -84,15 +84,13 @@ const InchargeActiveWorks = () => {
   };
 
   const getTypeColor = (type) => {
-    if (!type) return "bg-gray-50 text-gray-700";
-    
-    if (type.includes("CBP") || type.includes("Course")) 
-      return "bg-blue-50 text-blue-700";
-    if (type.includes("Mini")) 
-      return "bg-green-50 text-green-700";
-    if (type.includes("Major")) 
-      return "bg-purple-50 text-purple-700";
-    return "bg-gray-50 text-gray-700";
+    switch (type) {
+      case "Major": return "bg-purple-100 text-purple-700";
+      case "Mini": return "bg-indigo-100 text-indigo-700";
+      case "FP": return "bg-blue-100 text-blue-700";
+      case "CBP": return "bg-teal-100 text-teal-700";
+      default: return "bg-gray-100 text-gray-700";
+    }
   };
 
   // Format date or provide a default

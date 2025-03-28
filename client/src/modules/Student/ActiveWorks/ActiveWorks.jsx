@@ -44,6 +44,7 @@ const ActiveWorks = () => {
     return activeWorksFiltered.filter(work => 
       (selectedCategory === 'all' || work.category === selectedCategory) &&
       (work.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      
        work.facultyGuide.toLowerCase().includes(searchQuery.toLowerCase()))
     );
   }, [activeWorksFiltered, selectedCategory, searchQuery]);
