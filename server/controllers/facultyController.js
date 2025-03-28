@@ -27,11 +27,32 @@ export const createTeams = asynchandler(async (req, res) => {
 
         await sectionTeam.save();
 
+        // Collect all student IDs from all teams
+        const allStudentIds = createdTeams.flatMap(team => team.listOfStudents);
+        
+        // Fetch student names for all student IDs in a single query
+        const students = await Student.find(
+            { studentID: { $in: allStudentIds } },
+            { studentID: 1, name: 1, _id: 0 }
+        ).lean();
+        
+        // Create a map of studentID to student name for quick lookup
+        const studentMap = {};
+        students.forEach(student => {
+            studentMap[student.studentID] = student.name;
+        });
+
         const teamPromises = createdTeams.map(team => {
+            // Transform listOfStudents to include both ID and name
+            const enhancedStudentList = team.listOfStudents.map(studentId => ({
+                id: studentId,
+                name: studentMap[studentId] || 'Unknown Student'
+            }));
+            
             return Team.findOneAndUpdate(
                 { teamId: team.teamId },
                 {
-                    listOfStudents: team.listOfStudents,
+                    listOfStudents: enhancedStudentList,
                     projectTitle: team.projectTitle,
                     projectType: team.projectType,
                     subject: team.subject,
@@ -53,8 +74,6 @@ export const createTeams = asynchandler(async (req, res) => {
             { $addToSet: { leadedProjects: newSectionTeam.classID } }, // No $each needed
             { new: true }
         );
-        
-
 
         // Update guided projects for faculty guiding specific teams
         const facultyUpdatePromises = createdTeams.map(({ guideFacultyId, teamId }) =>
@@ -69,18 +88,19 @@ export const createTeams = asynchandler(async (req, res) => {
         console.log("Faculty projects updated successfully.");
         
         const studentUpdatePromises = createdTeams.flatMap(team =>
-            team.listOfStudents.map(studentId =>
-                Student.findOneAndUpdate(
-                    { studentID: studentId },
+            team.listOfStudents.map(studentId => {
+                // If studentId is now an object with id and name, extract just the id
+                const id = typeof studentId === 'object' ? studentId.id : studentId;
+                return Student.findOneAndUpdate(
+                    { studentID: id },
                     { $addToSet: { projects: team.teamId } }, 
                     { new: true }
-                )
-            )
+                );
+            })
         );
         
         await Promise.all(studentUpdatePromises);
         
-
         res.status(201).json({ message: 'Section team, teams, and student project counts updated successfully' });
     } catch (error) {
         res.status(500).json({ message: 'Error saving section team, teams, or updating student projects', error: error.message });
@@ -194,7 +214,7 @@ export const getGuidedProjects = async (req, res) => {
     
     // If there are no guided projects, return an empty array
     if (guidedProjects.length === 0) {
-      return res.status(200).json({
+        return res.status(200).json({
         success: true,
         guidedProjects: [],
         teams: []
@@ -398,7 +418,7 @@ export const getTeamTasks = async (req, res) => {
       projectTitle: team.projectTitle,
       tasks: team.tasks || []
     });
-  } catch (error) {
+    } catch (error) {
     console.error('Error fetching team tasks:', error);
     res.status(500).json({
       success: false,
@@ -435,6 +455,36 @@ export const getTeamReviews = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Error fetching team reviews'
+    });
+  }
+};
+
+// Get faculty information by facultyID
+export const getFacultyInfo = async (req, res) => {
+  try {
+    const { facultyID } = req.params;
+    
+    // Find the faculty by facultyID
+    const faculty = await Faculty.findOne({ facultyID })
+      .select('-password') // Exclude password from the response
+      .lean();
+    
+    if (!faculty) {
+      return res.status(404).json({
+        success: false,
+        message: 'Faculty not found'
+      });
+    }
+    
+    res.status(200).json({
+      success: true,
+      faculty
+    });
+  } catch (error) {
+    console.error('Error fetching faculty information:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching faculty information'
     });
   }
 };

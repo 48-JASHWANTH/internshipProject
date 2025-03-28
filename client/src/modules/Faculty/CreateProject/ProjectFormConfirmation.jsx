@@ -1,14 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FaEdit, FaSave } from "react-icons/fa";
 import SearchableDropdown from "../../common/SearchableDropdown";
-
-const facultyList = [
-  { facultyID: "00ITD012", name: "Dr. Gali Suresh Reddy" },
-  { facultyID: "01EIE008", name: "Dr. Mulam Harikrishna" },
-  { facultyID: "00CSE010", name: "Dr. Pasupuleti Venkata Siva Kumar" },
-  { facultyID: "01EEE006", name: "Dr. Poonam Upadhyay" },
-  { facultyID: "02HSS012", name: "Dr. Bandla Prathyusha" },
-];
+import { apiClient } from "@/lib/api-client";
+import toast from "react-hot-toast";
 
 const branches = [
   "Computer Science & Engineering(CSE)",
@@ -39,8 +33,31 @@ const ProjectFormConfirmation = ({
   const [hasChanges, setHasChanges] = useState(false);
   const [validationErrors, setValidationErrors] = useState({});
   const [focusedInput, setFocusedInput] = useState(null);
+  const [facultyList, setFacultyList] = useState([]);
 
   const isEditing = isEditingBasic || isEditingExcel;
+
+  useEffect(() => {
+    const fetchFacultyList = async () => {
+      try {
+        const response = await apiClient.get('/faculty/all', { withCredentials: true });
+        if (response.data.success) {
+          const formattedFacultyList = response.data.faculty.map(faculty => ({
+            facultyID: faculty.facultyID,
+            name: faculty.name
+          }));
+          setFacultyList(formattedFacultyList);
+        } else {
+          toast.error('Failed to fetch faculty list');
+        }
+      } catch (error) {
+        console.error('Error fetching faculty list:', error);
+        toast.error('Error loading faculty data');
+      }
+    };
+
+    fetchFacultyList();
+  }, []);
 
   const handleEditBasicDetails = () => {
     setIsEditingBasic(true);
@@ -76,9 +93,6 @@ const ProjectFormConfirmation = ({
   };
 
   const handleStudentEdit = (teamNo, studentIndex, field, value) => {
-    // Keep track of the currently focused element
-    const activeElement = document.activeElement;
-    
     setExcelData((prevData) =>
       prevData.map((team) => {
         if (team.teamNo === teamNo) {
@@ -86,29 +100,16 @@ const ProjectFormConfirmation = ({
           newStudents[studentIndex] = {
             ...newStudents[studentIndex],
             [field]: value,
-            errors: {
-              ...newStudents[studentIndex].errors,
-              [field]: value.trim() === '' ? 'Required' : null
-            }
           };
-          return { ...team, students: newStudents };
+          return {
+            ...team,
+            students: newStudents,
+          };
         }
         return team;
       })
     );
     setHasChanges(true);
-    
-    // Restore focus to the active element after state update
-    if (activeElement) {
-      setTimeout(() => {
-        activeElement.focus();
-        // Optionally move cursor to end of input
-        if (activeElement.tagName === 'INPUT') {
-          const len = activeElement.value.length;
-          activeElement.setSelectionRange(len, len);
-        }
-      }, 0);
-    }
   };
 
   const handleAddStudent = (teamNo) => {
@@ -196,7 +197,6 @@ const ProjectFormConfirmation = ({
 
     setExcelData(updatedData);
 
-    // If there's an error, scroll to and focus the first error field
     if (firstError) {
       const element = document.querySelector(`[data-team="${firstError.teamNo}"][data-student="${firstError.studentIndex}"][data-field="${firstError.field}"]`);
       if (element) {

@@ -1,144 +1,249 @@
 import React, { useState, useEffect } from 'react';
-import { FaUsers, FaChalkboardTeacher, FaProjectDiagram, FaExclamationTriangle, FaCalendarCheck, FaUserGraduate, FaChartLine } from 'react-icons/fa';
+import { FaUsers, FaChalkboardTeacher, FaProjectDiagram, FaExclamationTriangle } from 'react-icons/fa';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line } from 'recharts';
 import { apiClient } from '@/lib/api-client';
+import toast from 'react-hot-toast';
+import { format, formatDistanceToNow, subDays, isWithinInterval } from 'date-fns';
+import Activity from './components/Activity';
 
 const Dashboard = () => {
+  // Initialize with zeros instead of static data
   const [stats, setStats] = useState({
-    students: 1245,
-    faculty: 87,
-    projects: 156,
-    activeProjects: 98,
-    completedProjects: 58,
-    pendingApprovals: 12,
-    suspiciousActivities: 3,
-    newUsersToday: 8,
-    activeUsers: 432
+    students: 0,
+    faculty: 0,
+    projects: 0,
+    activeProjects: 0,
+    completedProjects: 0,
+    pendingApprovals: 0,
+    suspiciousActivities: 0,
+    newUsersToday: 0
   });
 
-  const [activityData, setActivityData] = useState([
-    { name: 'Login', count: 450, student: 380, faculty: 65, admin: 5 },
-    { name: 'Project Creation', count: 78, student: 15, faculty: 63, admin: 0 },
-    { name: 'Profile Update', count: 120, student: 95, faculty: 22, admin: 3 },
-    { name: 'Password Reset', count: 45, student: 38, faculty: 6, admin: 1 },
-    { name: 'Document Upload', count: 95, student: 80, faculty: 15, admin: 0 },
-    { name: 'Project Submission', count: 62, student: 62, faculty: 0, admin: 0 },
-    { name: 'Review', count: 43, student: 0, faculty: 43, admin: 0 }
-  ]);
+  const [activityData, setActivityData] = useState([]);
+  const [timelineData, setTimelineData] = useState([]);
+  const [recentActivities, setRecentActivities] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [viewingAllActivities, setViewingAllActivities] = useState(false);
 
-  const [timelineData, setTimelineData] = useState([
-    { date: 'Mon', logins: 120, activities: 250, projects: 12 },
-    { date: 'Tue', logins: 150, activities: 300, projects: 15 },
-    { date: 'Wed', logins: 180, activities: 320, projects: 18 },
-    { date: 'Thu', logins: 170, activities: 280, projects: 14 },
-    { date: 'Fri', logins: 200, activities: 350, projects: 20 },
-    { date: 'Sat', logins: 50, activities: 90, projects: 5 },
-    { date: 'Sun', logins: 30, activities: 50, projects: 2 }
-  ]);
+  // Toggle between dashboard and all activities view
+  const toggleViewAll = () => {
+    setViewingAllActivities(!viewingAllActivities);
+  };
 
-  const [recentActivities, setRecentActivities] = useState([
-    {
-      id: 1,
-      user: { name: 'John Smith', id: '22071A3262', type: 'student', initials: 'JS' },
-      activity: 'Submitted project report',
-      time: '10 minutes ago',
-      status: 'Completed'
-    },
-    {
-      id: 2,
-      user: { name: 'Jane Doe', id: 'FAC12346', type: 'faculty', initials: 'JD' },
-      activity: 'Created new project',
-      time: '25 minutes ago',
-      status: 'Pending Approval'
-    },
-    {
-      id: 3,
-      user: { name: 'Robert Johnson', id: '22071A3264', type: 'student', initials: 'RJ' },
-      activity: 'Multiple failed login attempts',
-      time: '1 hour ago',
-      status: 'Suspicious'
-    },
-    {
-      id: 4,
-      user: { name: 'Sarah Williams', id: 'FAC12348', type: 'faculty', initials: 'SW' },
-      activity: 'Updated project deadline',
-      time: '2 hours ago',
-      status: 'Completed'
-    },
-    {
-      id: 5,
-      user: { name: 'Michael Brown', id: '22071A3265', type: 'student', initials: 'MB' },
-      activity: 'Requested password reset',
-      time: '3 hours ago',
-      status: 'Completed'
-    }
-  ]);
+  if (viewingAllActivities) {
+    return (
+      <div className="p-6 bg-gray-50 min-h-screen">
+        <h1 className="text-3xl font-bold text-gray-900 mb-8">Admin Dashboard</h1>
+        <Activity onBack={toggleViewAll} />
+      </div>
+    );
+  }
 
   // Fetch data from API
   useEffect(() => {
     const fetchDashboardData = async () => {
+      setIsLoading(true);
       try {
-        // Get user statistics
-        const statsResponse = await apiClient.get('/admin/activity/user-statistics', {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('auth-storage')}`
-          }
-        });
+        // Get dashboard statistics from the API
+        const statsResponse = await apiClient.get('/admin/dashboard-stats', {withCredentials: true});
         
         if (statsResponse.data.success) {
-          // Update stats with real data
+          // Update stats with real data from the API
           setStats(prevStats => ({
             ...prevStats,
-            activeUsers: statsResponse.data.statistics.activeUsers || prevStats.activeUsers,
-            // Map other stats as they become available from the API
+            ...statsResponse.data.stats,
+            // Keep suspiciousActivities if not provided by the API
+            suspiciousActivities: statsResponse.data.stats.suspiciousActivities || prevStats.suspiciousActivities
           }));
         }
 
         // Get activity logs
-        const activityResponse = await apiClient.get('/admin/activity/user-activity', {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('auth-storage')}`
-          }
-        });
+        const activityResponse = await apiClient.get('/admin/activity/user-activity', {withCredentials: true});
         
         if (activityResponse.data.success && activityResponse.data.logs) {
-          // Process logs to create activity data
-          // This would need to be adapted based on your actual API response structure
           const logs = activityResponse.data.logs;
           
-          // Example processing:
-          const processedActivities = logs.slice(0, 5).map(log => ({
+          // Process logs for recent activities
+          const processedActivities = logs.map(log => {
+            // Use userId if userName is not available
+            const hasUserName = log.userName && log.userName !== log.userId;
+            const name = hasUserName ? log.userName : log.userId;
+            
+            // Create initials from name or userId
+            const initials = name.split(' ')
+              .map(part => part.charAt(0))
+              .join('')
+              .toUpperCase();
+            
+            // Determine status based on action
+            let status = 'Completed';
+            if (log.action.toLowerCase().includes('failed')) {
+              status = 'Suspicious';
+            } else if (log.action.toLowerCase().includes('pending') || log.action.toLowerCase().includes('request')) {
+              status = 'Pending Approval';
+            }
+            
+            // Format relative time
+            const timeAgo = formatDistanceToNow(new Date(log.timestamp), { addSuffix: true });
+            
+            return {
             id: log._id,
             user: { 
-              name: log.userName || 'Unknown User', 
+                name: name,
               id: log.userId, 
               type: log.userType,
-              initials: (log.userName || 'UN').split(' ').map(n => n[0]).join('')
+                initials: initials,
+                showIdSeparately: hasUserName
             },
             activity: log.action,
-            time: new Date(log.timestamp).toRelative(), // You might need a utility for this
-            status: log.action.includes('Failed') ? 'Suspicious' : 'Completed'
+              details: log.details,
+              time: timeAgo,
+              timestamp: new Date(log.timestamp),
+              status: status
+            };
+          });
+          
+          // Sort activities by timestamp (newest first)
+          processedActivities.sort((a, b) => b.timestamp - a.timestamp);
+          
+          // Only keep the 5 most recent activities for the dashboard
+          setRecentActivities(processedActivities.slice(0, 5));
+          
+          // Count suspicious activities from logs
+          const suspiciousCount = logs.filter(log => 
+            log.action.toLowerCase().includes('failed')
+          ).length;
+          
+          // Update suspiciousActivities in stats
+          setStats(prevStats => ({
+            ...prevStats,
+            suspiciousActivities: suspiciousCount
           }));
           
-          setRecentActivities(processedActivities);
+          // CHART 1: Process logs for activity distribution chart
+          // Group activities by action type and count by user type
+          const activityTypes = {};
+          
+          logs.forEach(log => {
+            // Extract the main action type (first word or up to first space)
+            const actionType = log.action.split(' ')[0];
+            
+            if (!activityTypes[actionType]) {
+              activityTypes[actionType] = { 
+                name: actionType, 
+                count: 0, 
+                student: 0, 
+                faculty: 0, 
+                admin: 0 
+              };
+            }
+            
+            activityTypes[actionType].count += 1;
+            
+            if (log.userType === 'student') {
+              activityTypes[actionType].student += 1;
+            } else if (log.userType === 'faculty') {
+              activityTypes[actionType].faculty += 1;
+            } else if (log.userType === 'admin') {
+              activityTypes[actionType].admin += 1;
+            }
+          });
+          
+          // Convert to array and sort by count (highest first)
+          const chartData = Object.values(activityTypes)
+            .sort((a, b) => b.count - a.count)
+            .slice(0, 7); // Take top 7 activities for better visualization
+          
+          if (chartData.length > 0) {
+            setActivityData(chartData);
+          }
+          
+          // CHART 2: Process logs for weekly activity timeline
+          const today = new Date();
+          const last7Days = {};
+          
+          // Initialize the last 7 days with proper date objects
+          for (let i = 6; i >= 0; i--) {
+            const date = subDays(today, i);
+            const dayName = format(date, 'EEE');
+            last7Days[dayName] = { 
+              date: dayName, 
+              fullDate: date,
+              logins: 0, 
+              activities: 0, 
+              projects: 0 
+            };
+          }
+          
+          // Fill in the data for each day
+          logs.forEach(log => {
+            const logDate = new Date(log.timestamp);
+            
+            // Check if log is within the last 7 days
+            const dayKey = Object.keys(last7Days).find(key => {
+              const dayDate = last7Days[key].fullDate;
+              return logDate.getDate() === dayDate.getDate() && 
+                     logDate.getMonth() === dayDate.getMonth() && 
+                     logDate.getFullYear() === dayDate.getFullYear();
+            });
+            
+            if (dayKey) {
+              last7Days[dayKey].activities += 1;
+              
+              if (log.action.toLowerCase().includes('login')) {
+                last7Days[dayKey].logins += 1;
+              }
+              
+              if (log.action.toLowerCase().includes('project')) {
+                last7Days[dayKey].projects += 1;
+              }
+            }
+          });
+          
+          // Convert to array format for the chart
+          const timelineChartData = Object.values(last7Days).map(day => ({
+            date: day.date,
+            logins: day.logins,
+            activities: day.activities,
+            projects: day.projects
+          }));
+          
+          if (timelineChartData.length > 0) {
+            setTimelineData(timelineChartData);
+          }
+        }
+        
+        // Get suspicious activities for the dashboard
+        try {
+          const suspiciousResponse = await apiClient.get('/admin/activity/suspicious-activities', {withCredentials: true});
+          if (suspiciousResponse.data && suspiciousResponse.data.success && Array.isArray(suspiciousResponse.data.activities)) {
+            setStats(prevStats => ({
+              ...prevStats,
+              suspiciousActivities: suspiciousResponse.data.activities.length
+            }));
+          }
+        } catch (error) {
+          console.error('Error fetching suspicious activities:', error);
+          // Just log the error but don't update the state
         }
         
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
-        // Keep using mock data if API fails
+        toast.error('Failed to load dashboard data');
+      } finally {
+        setIsLoading(false);
       }
     };
     
-    // Uncomment to enable API fetching
-    // fetchDashboardData();
+    fetchDashboardData();
   }, []);
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold text-gray-800 mb-6">Admin Dashboard</h1>
+    <div className="p-6 bg-gray-50 min-h-screen">
+      <h1 className="text-3xl font-bold text-gray-900 mb-8">Admin Dashboard</h1>
       
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <div className="bg-white rounded-lg shadow-md p-6 flex items-center">
           <div className="rounded-full bg-blue-100 p-3 mr-4">
             <FaUsers className="text-blue-600 text-xl" />
@@ -146,7 +251,7 @@ const Dashboard = () => {
           <div>
             <p className="text-sm text-gray-500">Total Students</p>
             <p className="text-2xl font-bold">{stats.students}</p>
-            <p className="text-xs text-green-500">+{stats.newUsersToday} today</p>
+            <p className="text-xs text-green-500 mt-1">+{stats.newUsersToday} today</p>
           </div>
         </div>
         
@@ -155,8 +260,9 @@ const Dashboard = () => {
             <FaChalkboardTeacher className="text-green-600 text-xl" />
           </div>
           <div>
-            <p className="text-sm text-gray-500">Total Faculty</p>
+            <p className="text-sm text-gray-500">Faculty Members</p>
             <p className="text-2xl font-bold">{stats.faculty}</p>
+            <p className="text-xs text-red-500 mt-1">{stats.pendingApprovals} pending approvals</p>
           </div>
         </div>
         
@@ -173,24 +279,21 @@ const Dashboard = () => {
             </div>
           </div>
         </div>
-        
-        <div className="bg-white rounded-lg shadow-md p-6 flex items-center">
-          <div className="rounded-full bg-yellow-100 p-3 mr-4">
-            <FaChartLine className="text-yellow-600 text-xl" />
-          </div>
-    <div>
-            <p className="text-sm text-gray-500">Active Users</p>
-            <p className="text-2xl font-bold">{stats.activeUsers}</p>
-            <p className="text-xs text-red-500 mt-1">{stats.suspiciousActivities} suspicious activities</p>
-          </div>
-        </div>
       </div>
       
-      {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         {/* Enhanced Activity Types Chart */}
         <div className="bg-white rounded-lg shadow-md p-6">
           <h2 className="text-lg font-semibold mb-4">Activity Distribution by User Type</h2>
+          {isLoading ? (
+            <div className="h-80 flex items-center justify-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#9b1a31]"></div>
+            </div>
+          ) : activityData.length === 0 ? (
+            <div className="h-80 flex items-center justify-center text-gray-500">
+              <p>No activity data available</p>
+            </div>
+          ) : (
           <div className="h-80">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
@@ -208,11 +311,21 @@ const Dashboard = () => {
               </BarChart>
             </ResponsiveContainer>
           </div>
+          )}
         </div>
         
         {/* Weekly Activity Timeline */}
         <div className="bg-white rounded-lg shadow-md p-6">
           <h2 className="text-lg font-semibold mb-4">Weekly Activity</h2>
+          {isLoading ? (
+            <div className="h-80 flex items-center justify-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#9b1a31]"></div>
+            </div>
+          ) : timelineData.length === 0 ? (
+            <div className="h-80 flex items-center justify-center text-gray-500">
+              <p>No timeline data available</p>
+            </div>
+          ) : (
           <div className="h-80">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart
@@ -230,6 +343,7 @@ const Dashboard = () => {
               </LineChart>
             </ResponsiveContainer>
           </div>
+          )}
         </div>
       </div>
       
@@ -237,8 +351,23 @@ const Dashboard = () => {
       <div className="bg-white rounded-lg shadow-md p-6">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-lg font-semibold">Recent Activities</h2>
-          <button className="text-blue-600 hover:text-blue-800 text-sm">View All</button>
+          <button 
+            onClick={toggleViewAll}
+            className="text-blue-600 hover:text-blue-800 text-sm"
+          >
+            View All
+          </button>
         </div>
+        {isLoading ? (
+          <div className="py-12 flex items-center justify-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#9b1a31]"></div>
+          </div>
+        ) : recentActivities.length === 0 ? (
+          <div className="py-12 text-center text-gray-500">
+            <FaExclamationTriangle className="mx-auto mb-4 text-4xl text-gray-400" />
+            <p>No activities found</p>
+          </div>
+        ) : (
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
@@ -259,12 +388,17 @@ const Dashboard = () => {
                       </div>
                       <div className="ml-4">
                         <div className="text-sm font-medium text-gray-900">{activity.user.name}</div>
+                          {activity.user.showIdSeparately && (
                         <div className="text-sm text-gray-500">{activity.user.id}</div>
-                      </div>
+                          )}
+                        </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {activity.activity}
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">{activity.activity}</div>
+                      {activity.details && (
+                        <div className="text-xs text-gray-500">{activity.details}</div>
+                      )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {activity.time}
@@ -283,6 +417,7 @@ const Dashboard = () => {
             </tbody>
           </table>
         </div>
+        )}
       </div>
     </div>
   );

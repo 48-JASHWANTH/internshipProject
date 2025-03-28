@@ -65,6 +65,10 @@ function Login() {
     { name: "admin", icon: <FaUserShield /> },
   ];
 
+  const handleForgotPassword = () => {
+    navigate('/reset-password');
+  };
+
   return (
     <div className="w-full h-screen">
       <VideoComponent />
@@ -102,6 +106,15 @@ function Login() {
                   onClick={() => setShowPassword(!showPassword)}
                 >
                   {showPassword ? <FaEyeSlash /> : <FaEye />}
+                </button>
+              </div>
+              <div className="mt-1 text-left">
+                <button
+                  type="button"
+                  onClick={handleForgotPassword}
+                  className="text-sm text-white hover:text-red-300 transition-colors"
+                >
+                  Forgot your password?
                 </button>
               </div>
             </div>

@@ -6,7 +6,8 @@ import {
   updateStudent,
   listAllStudents,
   getStudentDetails,
-  getInactiveStudents
+  getInactiveStudents,
+  getDashboardStats
 } from "../controllers/adminController.js";
 
 import {
@@ -49,5 +50,8 @@ protectedRoutes.get('/faculty/:facultyID', getFacultyDetails);
 protectedRoutes.put('/faculty/:facultyID', updateFaculty);
 protectedRoutes.delete('/faculty/:facultyID', softDeleteFaculty);
 protectedRoutes.post('/faculty/:facultyID/restore', restoreFaculty);
+
+// New route for dashboard stats
+protectedRoutes.get('/dashboard-stats', getDashboardStats);
 
 export default adminRoutes;

@@ -1,46 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Plus, Calendar, User, CheckCircle, Clock, XCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import AddTaskModal from './components/AddTaskModal';
-
-const initialTasks = [
-  {
-    id: '1',
-    title: 'Literature Review',
-    description: 'Complete comprehensive literature survey for the project',
-    dueDate: '2024-04-01',
-    priority: 'High',
-    status: 'todo',
-    assignedTo: 'John Doe, Jane Smith, '
-  },
-  {
-    id: '2',
-    title: 'Technical Review',
-    description: 'Review code implementation',
-    dueDate: '2024-04-15',
-    priority: 'Medium',
-    status: 'in_progress',
-    assignedTo: 'John Doe'
-  },
-  {
-    id: '3',
-    title: 'Database Design',
-    description: 'Design and implement database schema',
-    dueDate: '2024-03-25',
-    priority: 'Medium',
-    status: 'done',
-    assignedTo: 'John Doe'
-  },
-  {
-    id: '4',
-    title: 'Project Setup',
-    description: 'Initial project configuration and setup',
-    dueDate: '2024-03-15',
-    priority: 'Low',
-    status: 'approved',
-    assignedTo: 'John Doe'
-  }
-];
+import { useStore } from '@/store/useStore';
+import { apiClient } from '@/lib/api-client';
+import toast from 'react-hot-toast';
 
 const TaskCard = ({ task, onStatusChange, onApprove }) => {
   const priorityColors = {
@@ -72,7 +36,19 @@ const TaskCard = ({ task, onStatusChange, onApprove }) => {
     }
   };
 
-  const StatusIcon = statusConfig[task.status].icon;
+  const StatusIcon = statusConfig[task.status]?.icon || XCircle;
+  const statusLabel = statusConfig[task.status]?.label || 'Unknown';
+  const statusColor = statusConfig[task.status]?.color || 'text-gray-500';
+
+  // Format date or provide a default
+  const formatDate = (dateString) => {
+    if (!dateString) return "N/A";
+    try {
+      return format(new Date(dateString), 'MMM dd, yyyy');
+    } catch (e) {
+      return dateString;
+    }
+  };
 
   return (
     <div className="bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-all border border-gray-100 mb-4">
@@ -82,41 +58,41 @@ const TaskCard = ({ task, onStatusChange, onApprove }) => {
           <p className="text-sm text-gray-600 line-clamp-2">{task.description}</p>
         </div>
         <div className="flex items-center gap-2">
-          <span className={`px-3 py-1.5 rounded-full text-sm font-medium flex items-center gap-2 ${statusConfig[task.status].color}`}>
+          <span className={`px-3 py-1.5 rounded-full text-sm font-medium flex items-center gap-2 ${statusColor}`}>
             <StatusIcon className="w-4 h-4" />
-            {statusConfig[task.status].label}
+            {statusLabel}
           </span>
         </div>
       </div>
 
       <div className="flex flex-wrap gap-3 items-center mb-4">
-        <span className={`text-xs px-2 py-1 rounded-full border ${priorityColors[task.priority]}`}>
-          {task.priority}
+        <span className={`text-xs px-2 py-1 rounded-full border ${priorityColors[task.priority] || 'bg-gray-100 text-gray-800 border-gray-200'}`}>
+          {task.priority || 'Medium'}
         </span>
         <span className="text-xs flex items-center gap-1 text-gray-500">
           <Calendar className="w-3 h-3" />
-          {format(new Date(task.dueDate), 'MMM dd, yyyy')}
+          {formatDate(task.dueDate)}
         </span>
         <span className="text-xs flex items-center gap-1 text-gray-500">
           <User className="w-3 h-3" />
-          Assigned to: {task.assignedTo}
+          Assigned to: {task.assignedTo || 'Team'}
         </span>
       </div>
 
-      <div className="flex items-center justify-between pt-4 border-t">
-        <select
+      <div>
+        {/* <select
           className="text-sm border rounded-lg px-3 py-1.5 bg-white focus:ring-2 focus:ring-[#9b1a31] focus:border-[#9b1a31] outline-none"
           value={task.status}
-          onChange={(e) => onStatusChange(task.id, e.target.value)}
+          onChange={(e) => onStatusChange(task._id, e.target.value)}
         >
           <option value="todo">To Do</option>
           <option value="in_progress">In Progress</option>
           <option value="done">Done</option>
-        </select>
+        </select> */}
 
         {task.status === 'done' && (
           <button
-            onClick={() => onApprove(task.id)}
+            onClick={() => onApprove(task._id)}
             className="px-4 py-1.5 bg-[#9b1a31] text-white rounded-lg hover:bg-[#82001A] transition-colors text-sm flex items-center gap-2"
           >
             <CheckCircle className="w-4 h-4" />
@@ -128,21 +104,145 @@ const TaskCard = ({ task, onStatusChange, onApprove }) => {
   );
 };
 
-const InchargeWorkboard = () => {
+const InchargeWorkboard = ({ projectId }) => {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [tasks, setTasks] = useState(initialTasks);
-
-  const handleStatusChange = (taskId, newStatus) => {
-    setTasks(tasks.map(task => 
-      task.id === taskId ? { ...task, status: newStatus } : task
-    ));
+  const [tasks, setTasks] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const { activeProjects, user } = useStore();
+  
+  // Find the team data
+  const team = useMemo(() => {
+    if (!activeProjects?.teams) return null;
+    return activeProjects.teams.find(t => t.teamId === projectId);
+  }, [activeProjects, projectId]);
+  
+  // Fetch tasks for this team
+  useEffect(() => {
+    const fetchTasks = async () => {
+      if (!projectId) return;
+      
+      try {
+        setIsLoading(true);
+        const response = await apiClient.get(`/faculty/team/${projectId}/tasks`, {
+          withCredentials: true
+        });
+        
+        if (response.data.success) {
+          setTasks(response.data.tasks || []);
+        } else {
+          toast.error('Failed to fetch tasks');
+        }
+      } catch (error) {
+        console.error('Error fetching tasks:', error);
+        toast.error('Error loading tasks');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchTasks();
+  }, [projectId]);
+  
+  const handleStatusChange = async (taskId, newStatus) => {
+    try {
+      // Optimistically update UI
+      setTasks(tasks.map(task => 
+        task._id === taskId ? { ...task, status: newStatus } : task
+      ));
+      
+      // Update on server
+      await apiClient.put(`/faculty/team/${projectId}/task/${taskId}`, {
+        status: newStatus
+      }, { withCredentials: true });
+      
+      toast.success('Task status updated');
+    } catch (error) {
+      console.error('Error updating task status:', error);
+      toast.error('Failed to update task status');
+      
+      // Revert optimistic update on failure
+      const response = await apiClient.get(`/faculty/team/${projectId}/tasks`, {
+        withCredentials: true
+      });
+      
+      if (response.data.success) {
+        setTasks(response.data.tasks || []);
+      }
+    }
+  };
+  
+  const handleApprove = async (taskId) => {
+    try {
+      // Optimistically update UI
+      setTasks(tasks.map(task =>
+        task._id === taskId ? { ...task, status: 'approved' } : task
+      ));
+      
+      // Update on server
+      await apiClient.put(`/faculty/team/${projectId}/task/${taskId}`, {
+        status: 'approved'
+      }, { withCredentials: true });
+      
+      toast.success('Task approved');
+    } catch (error) {
+      console.error('Error approving task:', error);
+      toast.error('Failed to approve task');
+      
+      // Revert optimistic update on failure
+      const response = await apiClient.get(`/faculty/team/${projectId}/tasks`, {
+        withCredentials: true
+      });
+      
+      if (response.data.success) {
+        setTasks(response.data.tasks || []);
+      }
+    }
+  };
+  
+  const handleAddTask = async (newTask) => {
+    try {
+      const taskData = {
+        ...newTask,
+        assignedBy: {
+          name: user?.name || 'Faculty',
+          type: 'Incharge',
+          facultyID: user?.facultyID
+        }
+      };
+      
+      const response = await apiClient.post(`/faculty/team/${projectId}/task`, 
+        taskData, 
+        { withCredentials: true }
+      );
+      
+      if (response.data.success) {
+        // Refresh tasks
+        const tasksResponse = await apiClient.get(`/faculty/team/${projectId}/tasks`, {
+          withCredentials: true
+        });
+        
+        if (tasksResponse.data.success) {
+          setTasks(tasksResponse.data.tasks || []);
+          toast.success('Task added successfully');
+        }
+      } else {
+        toast.error('Failed to add task');
+      }
+    } catch (error) {
+      console.error('Error adding task:', error);
+      toast.error('Error adding task');
+    } finally {
+      setIsAddModalOpen(false);
+    }
   };
 
-  const handleApprove = (taskId) => {
-    setTasks(tasks.map(task =>
-      task.id === taskId ? { ...task, status: 'approved' } : task
-    ));
-  };
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#9b1a31]"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
@@ -161,18 +261,34 @@ const InchargeWorkboard = () => {
       </div>
 
       <div className="max-w-3xl mx-auto">
-        {tasks.map(task => (
-          <TaskCard
-            key={task.id}
-            task={task}
-            onStatusChange={handleStatusChange}
-            onApprove={handleApprove}
-          />
-          ))}
-        </div>
+        {tasks.length === 0 ? (
+          <div className="text-center py-12 bg-white rounded-xl shadow-sm">
+            <p className="text-gray-500">No tasks have been assigned yet.</p>
+            <button 
+              onClick={() => setIsAddModalOpen(true)}
+              className="mt-4 text-[#9b1a31] hover:underline"
+            >
+              Add the first task
+            </button>
+          </div>
+        ) : (
+          tasks.map(task => (
+            <TaskCard
+              key={task._id}
+              task={task}
+              onStatusChange={handleStatusChange}
+              onApprove={handleApprove}
+            />
+          ))
+        )}
+      </div>
 
       {isAddModalOpen && (
-        <AddTaskModal onClose={() => setIsAddModalOpen(false)} />
+        <AddTaskModal 
+          onClose={() => setIsAddModalOpen(false)} 
+          onAddTask={handleAddTask}
+          teamMembers={team?.listOfStudents || []}
+        />
       )}
     </div>
   );

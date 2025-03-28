@@ -1,33 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
   CheckCircle, 
   Plus,
   X,
-  Calendar
+  Calendar,
+  AlertCircle
 } from 'lucide-react';
 import AddReviewModal from './components/AddReviewModal';
-
-// Mock Data
-const reviewsData = [
-    {
-      id: 1,
-    reviewName: "Abstract Review",
-    dueDate: "2024-04-01",
-    satisfactionLevel: "Excellent",
-    remarks: "Well structured abstract",
-    feedback: "The team has demonstrated excellent understanding of the project scope. The abstract clearly outlines the problem statement, methodology, and expected outcomes.",
-    status: "reviewed"
-    },
-    {
-      id: 2,
-    reviewName: "Literature Review",
-    dueDate: "2024-04-15",
-    satisfactionLevel: "Very Good",
-    remarks: "Comprehensive coverage of existing solutions",
-    feedback: "Good analysis of existing solutions. The team has covered most of the relevant papers and technologies. Some recent papers could be added to strengthen the review.",
-    status: "reviewed"
-  }
-];
+import { useStore } from '@/store/useStore';
+import { apiClient } from '@/lib/api-client';
+import toast from 'react-hot-toast';
+import { format } from 'date-fns';
 
 const ReviewCard = ({ review }) => {
   const satisfactionColors = {
@@ -38,6 +21,16 @@ const ReviewCard = ({ review }) => {
     'Poor': 'bg-red-100 text-red-800'
   };
 
+  // Format date or provide a default
+  const formatDate = (dateString) => {
+    if (!dateString) return "N/A";
+    try {
+      return format(new Date(dateString), 'MMMM dd, yyyy');
+    } catch (e) {
+      return dateString;
+    }
+  };
+
   return (
     <div className="bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-all border border-gray-100">
       <h3 className="text-lg font-semibold text-gray-900 mb-4">{review.reviewName}</h3>
@@ -46,28 +39,38 @@ const ReviewCard = ({ review }) => {
         <div className="flex items-center gap-2">
           <Calendar className="w-4 h-4 text-gray-400" />
           <span className="text-sm text-gray-600">
-            {new Date(review.dueDate).toLocaleDateString('en-US', {
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric'
-            })}
+            {formatDate(review.dateOfReview || review.dueDate)}
           </span>
         </div>
-        <span className={`px-3 py-1 rounded-full text-sm font-medium ${satisfactionColors[review.satisfactionLevel]}`}>
-          {review.satisfactionLevel}
+        <span className={`px-3 py-1 rounded-full text-sm font-medium ${satisfactionColors[review.satisfactionLevel] || 'bg-gray-100 text-gray-800'}`}>
+          {review.satisfactionLevel || 'Not Rated'}
         </span>
       </div>
 
       <div className="space-y-4">
         <div>
           <h4 className="text-sm font-medium text-gray-700">Remarks</h4>
-          <p className="mt-1 text-sm text-gray-600">{review.remarks}</p>
+          <p className="mt-1 text-sm text-gray-600">{review.remarks || 'No remarks provided'}</p>
         </div>
 
         <div>
           <h4 className="text-sm font-medium text-gray-700">Detailed Feedback</h4>
-          <p className="mt-1 text-sm text-gray-600">{review.feedback}</p>
+          <p className="mt-1 text-sm text-gray-600">{review.feedback || 'No feedback provided'}</p>
         </div>
+        
+        {review.changesToBeMade && (
+          <div>
+            <h4 className="text-sm font-medium text-gray-700">Changes To Be Made</h4>
+            <p className="mt-1 text-sm text-gray-600">{review.changesToBeMade}</p>
+          </div>
+        )}
+        
+        {review.presentees && review.presentees.length > 0 && (
+          <div>
+            <h4 className="text-sm font-medium text-gray-700">Presentees</h4>
+            <p className="mt-1 text-sm text-gray-600">{review.presentees.join(', ')}</p>
+          </div>
+        )}
       </div>
 
       <div className="mt-4 pt-4 border-t flex items-center gap-2 text-green-600">
@@ -78,8 +81,89 @@ const ReviewCard = ({ review }) => {
   );
 };
 
-const InchargeReviews = () => {
+const InchargeReviews = ({ projectId }) => {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [reviews, setReviews] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const { activeProjects, user } = useStore();
+  
+  // Find the team data
+  const team = useMemo(() => {
+    if (!activeProjects?.teams) return null;
+    return activeProjects.teams.find(t => t.teamId === projectId);
+  }, [activeProjects, projectId]);
+  
+  // Fetch reviews for this team
+  useEffect(() => {
+    const fetchReviews = async () => {
+      if (!projectId) return;
+      
+      try {
+        setIsLoading(true);
+        const response = await apiClient.get(`/faculty/team/${projectId}/reviews`, {
+          withCredentials: true
+        });
+        
+        if (response.data.success) {
+          setReviews(response.data.reviews || []);
+        } else {
+          toast.error('Failed to fetch reviews');
+        }
+      } catch (error) {
+        console.error('Error fetching reviews:', error);
+        toast.error('Error loading reviews');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchReviews();
+  }, [projectId]);
+  
+  const handleAddReview = async (newReview) => {
+    try {
+      const reviewData = {
+        ...newReview,
+        assignedBy: {
+          name: user?.name || 'Faculty',
+          type: 'Incharge',
+          facultyID: user?.facultyID
+        }
+      };
+      
+      const response = await apiClient.post(`/faculty/team/${projectId}/review`, 
+        reviewData, 
+        { withCredentials: true }
+      );
+      
+      if (response.data.success) {
+        // Refresh reviews
+        const reviewsResponse = await apiClient.get(`/faculty/team/${projectId}/reviews`, {
+          withCredentials: true
+        });
+        
+        if (reviewsResponse.data.success) {
+          setReviews(reviewsResponse.data.reviews || []);
+          toast.success('Review added successfully');
+        }
+      } else {
+        toast.error('Failed to add review');
+      }
+    } catch (error) {
+      console.error('Error adding review:', error);
+      toast.error('Error adding review');
+    } finally {
+      setIsAddModalOpen(false);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#9b1a31]"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
@@ -98,13 +182,30 @@ const InchargeReviews = () => {
       </div>
 
       <div className="max-w-3xl mx-auto space-y-4">
-        {reviewsData.map(review => (
-          <ReviewCard key={review.id} review={review} />
-        ))}
+        {reviews.length === 0 ? (
+          <div className="text-center py-12 bg-white rounded-xl shadow-sm">
+            <AlertCircle className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+            <p className="text-gray-500">No reviews have been conducted yet.</p>
+            <button 
+              onClick={() => setIsAddModalOpen(true)}
+              className="mt-4 text-[#9b1a31] hover:underline"
+            >
+              Schedule the first review
+            </button>
+          </div>
+        ) : (
+          reviews.map(review => (
+            <ReviewCard key={review._id} review={review} />
+          ))
+        )}
       </div>
 
       {isAddModalOpen && (
-        <AddReviewModal onClose={() => setIsAddModalOpen(false)} />
+        <AddReviewModal 
+          onClose={() => setIsAddModalOpen(false)} 
+          onAddReview={handleAddReview}
+          teamMembers={team?.listOfStudents || []}
+        />
       )}
     </div>
   );

@@ -2,10 +2,8 @@ import mongoose from "mongoose";
 
 // Enhanced review schema based on InchargeReviews.jsx mock data
 const reviewSchema = new mongoose.Schema({
-  reviewNo: { type: Number },
   reviewName: { type: String, required: true },
   dateOfReview: { type: Date, default: Date.now },
-  dueDate: { type: Date },
   satisfactionLevel: { 
     type: String, 
     enum: ['Excellent', 'Very Good', 'Good', 'Fair', 'Poor'] 
@@ -43,6 +41,12 @@ const taskSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now }
 });
 
+// Student schema for listOfStudents
+const studentSchema = new mongoose.Schema({
+  id: { type: String, required: true },
+  name: { type: String, required: true }
+}, { _id: false });
+
 const TeamSchema = new mongoose.Schema({
   teamId: {
     type: String,
@@ -50,7 +54,7 @@ const TeamSchema = new mongoose.Schema({
     unique: true
   },
   listOfStudents: {
-    type: [String],
+    type: [studentSchema],
     required: true
   },
   status: {

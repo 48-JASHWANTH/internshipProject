@@ -1,23 +1,21 @@
 import React, { useState } from 'react';
 import { X, Calendar, Check } from 'lucide-react';
+import { apiClient } from '@/lib/api-client';
+import { useStore } from '@/store/useStore';
+import toast from 'react-hot-toast';
 
-// Mock student data (replace with actual data later)
-const students = [
-  { id: '1', name: 'John Doe' },
-  { id: '2', name: 'Jane Smith' },
-  { id: '3', name: 'Mike Johnson' },
-];
-
-const AddTaskModal = ({ onClose }) => {
+const AddTaskModal = ({ onClose, onAddTask, teamMembers = [] }) => {
+  const { user } = useStore();
   const [formData, setFormData] = useState({
     title: '',
     description: '',
     dueDate: '',
-    priority: 'medium'
+    priority: 'Medium'
   });
-  const [selectedStudents, setSelectedStudents] = useState(students.map(s => s.id));
+  const [selectedStudents, setSelectedStudents] = useState([]);
   const [showSuccess, setShowSuccess] = useState(false);
   const [errors, setErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -32,7 +30,7 @@ const AddTaskModal = ({ onClose }) => {
     }));
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     // Validate all fields
     const newErrors = {};
     if (!formData.title.trim()) newErrors.title = 'Task title is required';
@@ -45,22 +43,46 @@ const AddTaskModal = ({ onClose }) => {
       return;
     }
 
-    const taskData = {
-      ...formData,
-      assignedTo: students
-        .filter(student => selectedStudents.includes(student.id))
-        .map(student => student.name)
-        .join(', '),
-      status: 'todo',
-      assignedBy: {
-        type: 'Incharge',
-        name: 'Dr. Smith'
-      },
-      id: Date.now().toString()
-    };
+    try {
+      setIsSubmitting(true);
+      
+      // Create a comma-separated string of student names
+      const assignedToString = selectedStudents
+        .map(studentId => {
+          // Find the student object by ID
+          const student = teamMembers.find(s => s.id === studentId);
+          return student ? student.name : studentId;
+        })
+        .join(', ');
+      
+      // Prepare task data according to the API structure in zfaculty.http
+      const taskData = {
+        title: formData.title,
+        description: formData.description,
+        dueDate: formData.dueDate,
+        priority: formData.priority,
+        assignedTo: assignedToString,
+        assignedBy: {
+          name: user?.name || 'Faculty',
+          type: 'Incharge',
+          facultyID: user?.facultyID
+        }
+      };
 
-    console.log('New Task Data:', taskData);
-    setShowSuccess(true);
+      // Call the onAddTask function with the task data
+      // This will be handled by the parent component (InchargeWorkboard)
+      if (onAddTask) {
+        await onAddTask(taskData);
+        setShowSuccess(true);
+      } else {
+        toast.error('Error: Task submission handler not provided');
+      }
+    } catch (error) {
+      console.error('Error submitting task:', error);
+      toast.error('Failed to add task');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const toggleStudent = (studentId) => {
@@ -69,6 +91,8 @@ const AddTaskModal = ({ onClose }) => {
         ? prev.filter(id => id !== studentId)
         : [...prev, studentId]
     );
+    // Clear error when selection changes
+    setErrors(prev => ({ ...prev, students: '' }));
   };
 
   const renderField = (name, label, type = 'text', options = null) => (
@@ -86,7 +110,7 @@ const AddTaskModal = ({ onClose }) => {
           }`}
         >
           {options.map(opt => (
-            <option key={opt} value={opt.toLowerCase()}>{opt}</option>
+            <option key={opt} value={opt}>{opt}</option>
           ))}
         </select>
       ) : type === 'textarea' ? (
@@ -173,7 +197,8 @@ const AddTaskModal = ({ onClose }) => {
                 <button
                   type="button"
                   onClick={() => {
-                    setSelectedStudents(students.map(s => s.id));
+                    // Select all student IDs
+                    setSelectedStudents(teamMembers.map(student => student.id));
                     setErrors(prev => ({ ...prev, students: '' }));
                   }}
                   className="text-xs text-gray-600 hover:text-gray-900"
@@ -192,23 +217,26 @@ const AddTaskModal = ({ onClose }) => {
             <div className={`border rounded-lg p-2 max-h-40 overflow-y-auto space-y-1 ${
               errors.students ? 'border-red-500' : ''
             }`}>
-              {students.map(student => (
-                <label
-                  key={student.id}
-                  className="flex items-center p-2 hover:bg-gray-50 rounded cursor-pointer"
-                >
-                  <input
-                    type="checkbox"
-                    checked={selectedStudents.includes(student.id)}
-                    onChange={() => {
-                      toggleStudent(student.id);
-                      setErrors(prev => ({ ...prev, students: '' }));
-                    }}
-                    className="rounded border-gray-300 text-[#9b1a31] focus:ring-[#9b1a31]"
-                  />
-                  <span className="ml-2 text-sm text-gray-700">{student.name}</span>
-                </label>
-              ))}
+              {teamMembers.length === 0 ? (
+                <p className="text-sm text-gray-500 p-2">No team members available</p>
+              ) : (
+                teamMembers.map(student => (
+                  <label
+                    key={student.id}
+                    className="flex items-center p-2 hover:bg-gray-50 rounded cursor-pointer"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={selectedStudents.includes(student.id)}
+                      onChange={() => toggleStudent(student.id)}
+                      className="rounded border-gray-300 text-[#9b1a31] focus:ring-[#9b1a31]"
+                    />
+                    <span className="ml-2 text-sm text-gray-700">
+                      {student.name} ({student.id})
+                    </span>
+                  </label>
+                ))
+              )}
             </div>
             {errors.students && (
               <p className="mt-1 text-sm text-red-500">{errors.students}</p>
@@ -227,9 +255,12 @@ const AddTaskModal = ({ onClose }) => {
           <button
             type="button"
             onClick={handleSubmit}
-            className="px-4 py-2 bg-[#9b1a31] text-white rounded-lg hover:bg-[#82001A] transition-colors"
+            disabled={isSubmitting}
+            className={`px-4 py-2 bg-[#9b1a31] text-white rounded-lg hover:bg-[#82001A] transition-colors ${
+              isSubmitting ? 'opacity-70 cursor-not-allowed' : ''
+            }`}
           >
-            Assign Task
+            {isSubmitting ? 'Assigning...' : 'Assign Task'}
           </button>
         </div>
       </div>
