@@ -92,7 +92,7 @@ const Sidemenu = ({ isProfilePage, isMobileMenuOpen, setIsMobileMenuOpen }) => {
         {/* Add notifications before bottom */}
         <div className="mt-auto border-t border-[#9b1a31]">
           <div 
-            className={`flex items-center justify-between py-4 hover:bg-[#9b1a31] cursor-pointer transition-all duration-200 ease-in-out ${
+            className={`flex items-center justify-between p-4 pb-8 hover:bg-[#9b1a31] cursor-pointer transition-all duration-200 ease-in-out ${
               location.pathname === notificationsItem.path ? 'bg-[#9b1a31]' : ''
             }`}
             onClick={() => handleClick(notificationsItem)}
@@ -152,9 +152,9 @@ const Sidemenu = ({ isProfilePage, isMobileMenuOpen, setIsMobileMenuOpen }) => {
       </div>
 
       {/* Add notifications before bottom */}
-      <div className="mt-auto border-t border-[#9b1a31]">
+      <div className="mt-auto border-t border-[#9b1a31] py-4">
         <div 
-          className={`flex items-center justify-between py-[16px] hover:bg-[#9b1a31] cursor-pointer transition-all duration-200 ease-in-out ${
+          className={`flex items-center justify-between p-4 hover:bg-[#9b1a31] cursor-pointer transition-all duration-200 ease-in-out ${
             location.pathname === notificationsItem.path ? 'bg-[#9b1a31]' : ''
           }`}
           onClick={() => handleClick(notificationsItem)}

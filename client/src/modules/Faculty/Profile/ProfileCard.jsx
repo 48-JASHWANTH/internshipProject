@@ -17,7 +17,7 @@ const ProfileCard = () => {
   });
   const [editedData, setEditedData] = useState({});
   const [selectedFile, setSelectedFile] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
   const updateProfileData = useStore(state => state.updateProfileData);
@@ -27,40 +27,40 @@ const ProfileCard = () => {
   const facultyID = user?.facultyID;
 
   // Fetch profile data on component mount
-  useEffect(() => {
-    const fetchProfileData = async () => {
-      if (!facultyID) return;
+  // useEffect(() => {
+  //   const fetchProfileData = async () => {
+  //     if (!facultyID) return;
 
-      try {
-        setLoading(true);
-        const response = await axios.get(`http://localhost:1544/faculty/personal/${facultyID}`);
+  //     try {
+  //       setLoading(true);
+  //       const response = await axios.get(`http://localhost:1544/faculty/personal/${facultyID}`);
         
-        // Map the response data to our component state
-        const data = {
-          name: response.data.name || '',
-          regNumber: response.data.facultyID || '',
-          email: response.data.mail || '',
-          phone: response.data.phone || '',
-          gender: response.data.gender || '',
-          dateOfBirth: response.data.dateOfBirth || '',
-          profilePic: response.data.profilePic || ''
-        };
+  //       // Map the response data to our component state
+  //       const data = {
+  //         name: response.data.name || '',
+  //         regNumber: response.data.facultyID || '',
+  //         email: response.data.mail || '',
+  //         phone: response.data.phone || '',
+  //         gender: response.data.gender || '',
+  //         dateOfBirth: response.data.dateOfBirth || '',
+  //         profilePic: response.data.profilePic || ''
+  //       };
         
-        setProfileInfo(data);
-        setEditedData(data);
-        updateProfileData(data);
-        setError(null);
-      } catch (err) {
-        console.error('Error fetching profile data:', err);
-        setError('Failed to load profile information. Please try again later.');
-        toast.error('Failed to load profile information');
-      } finally {
-        setLoading(false);
-      }
-    };
+  //       setProfileInfo(data);
+  //       setEditedData(data);
+  //       updateProfileData(data);
+  //       setError(null);
+  //     } catch (err) {
+  //       console.error('Error fetching profile data:', err);
+  //       setError('Failed to load profile information. Please try again later.');
+  //       toast.error('Failed to load profile information');
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
 
-    fetchProfileData();
-  }, [facultyID, updateProfileData]);
+  //   fetchProfileData();
+  // }, [facultyID, updateProfileData]);
 
   const handleSaveChanges = async () => {
     if (!facultyID) return;

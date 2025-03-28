@@ -3,7 +3,8 @@ import Login from "./modules/Login/Login";
 import AdminLayout from "./modules/Admin/AdminLayout";
 import FacultyLayout from "./modules/Faculty/FacultyLayout";
 import Dashboard from "./modules/Student/Dashboard";
-import ArchivedProjects from "./modules/Student/ArchivedProjects";
+import ArchivedProjects from "./modules/Student/ArchivedProjects/ArchivedProjects";
+import ArchivedProjectDetails from "./modules/Student/ArchivedProjects/ArchivedProjectDetails";
 import ChangePassword from "./modules/Student/ChangePassword";
 import Profile from "./modules/Student/Profile/Profile";
 import FacultyDashboard from './modules/Faculty/Dashboard'
@@ -18,7 +19,7 @@ import InchargeClassTeams from './modules/Faculty/ActiveWorks/Incharge/InchargeC
 import InchargeProjectDetails from './modules/Faculty/ActiveWorks/Incharge/InchargeProjectDetails';
 import CreateProjectForm from './modules/Faculty/CreateProject/CreateProjectForm';
 import ForumProjectDetails from './modules/Faculty/ProjectForum/ForumProjectDetails';
-import ProjectForum from './modules/Student/ProjectForum';
+import ProjectForum from './modules/Student/ProjectForum/ProjectForum';
 import ActiveWorks from './modules/Student/ActiveWorks/ActiveWorks';
 import CampusProjects from './modules/Student/CampusProjects';
 import GuideProjectDetails from './modules/Faculty/ActiveWorks/Guide/GuideProjectDetails';
@@ -38,6 +39,7 @@ import AddFaculty from './modules/Admin/AddFaculty';
 import StudentView from './modules/Admin/StudentView';
 import ViewFaculty from './modules/Admin/ViewFaculty';
 import { useStore } from "./store/useStore";
+import ProjectForumDetails from './modules/Student/ProjectForum/ProjectForumDetails';
 import Notifications from './modules/Faculty/Notifications';
 import StudentNotifications from "./modules/Student/StudentNotifications";
 import ResetPassword from './modules/common/ResetPassword';
@@ -121,9 +123,11 @@ function App() {
           <Route path="/student" element={<Student />}>
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="archivedprojects" element={<ArchivedProjects />} />
+            <Route path="archivedprojects/:projectId" element={<ArchivedProjectDetails />} />
             <Route path="profile" element={<Profile />} />
             <Route path="changepassword" element={<ChangePassword />} />
             <Route path="projectforum" element={<ProjectForum />} />
+            <Route path="projectforum/:projectId" element={<ProjectForumDetails />} />
             <Route path="activeworks" element={<ActiveWorks />} />
             <Route path="activeworks/:projectId" element={<ProjectDetails />} />
             <Route path="campusprojects" element={<CampusProjects />} />

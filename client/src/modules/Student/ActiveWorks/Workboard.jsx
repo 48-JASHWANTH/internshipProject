@@ -1,38 +1,56 @@
 import React, { useState } from 'react';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
-import { useStore } from '@/store/useStore';
 import { FaArrowRight, FaCheck } from 'react-icons/fa';
+import { Calendar, User } from 'lucide-react';
 
-const Workboard = ({ projectId }) => {
-  const { projects, updateProject } = useStore();
+// Static tasks data
+const initialTasks = [
+  {
+    id: '1743145152416',
+    title: 'Literature Review',
+    description: 'Complete comprehensive literature survey for the project',
+    dueDate: '2024-04-01',
+    priority: 'High',
+    status: 'To-Do',
+    assignedBy: { type: 'Incharge', name: 'Dr. Robert Smith' },
+    assignedTo: 'John Doe, Jane Smith, Mike Johnson'
+  },
+  {
+    id: '1743145152417',
+    title: 'Technical Review',
+    description: 'Review code implementation and architecture',
+    dueDate: '2024-04-15',
+    priority: 'Medium',
+    status: 'In Progress',
+    assignedBy: { type: 'Guide', name: 'Dr. Sarah Johnson' },
+    assignedTo: 'John Doe, Jane Smith'
+  },
+  {
+    id: '1743145152418',
+    title: 'Database Design',
+    description: 'Design and implement database schema',
+    dueDate: '2024-03-25',
+    priority: 'Medium',
+    status: 'Done',
+    assignedBy: { type: 'Incharge', name: 'Dr. Robert Smith' },
+    assignedTo: 'John Doe, Mike Johnson'
+  },
+  {
+    id: '1743145152419',
+    title: 'Project Setup',
+    description: 'Initial project configuration and setup',
+    dueDate: '2024-03-15',
+    priority: 'Low',
+    status: 'Done',
+    assignedBy: { type: 'Guide', name: 'Dr. Sarah Johnson' },
+    assignedTo: 'John Doe, Jane Smith, Mike Johnson'
+  }
+];
+
+const Workboard = () => {
   const [enabled, setEnabled] = useState(false);
   const [taskToComplete, setTaskToComplete] = useState(null);
-
-  // Get project from new store
-  const project = projects.find(work => work.id === projectId);
-  const tasks = project?.tasks || [];
-
-  // Replace activeWorks functions with new store functions
-  const updateProjectTask = (projectId, updatedTask) => {
-    const updatedTasks = tasks.map(task =>
-      task.id === updatedTask.id ? updatedTask : task
-    );
-    updateProject(projectId, { tasks: updatedTasks });
-  };
-
-  const moveProjectTaskForward = (projectId, taskId) => {
-    const updatedTasks = tasks.map(task => {
-      if (task.id === taskId) {
-        const newStatus = 
-          task.status === 'To-Do' ? 'In Progress' :
-          task.status === 'In Progress' ? 'Done' :
-          task.status;
-        return { ...task, status: newStatus };
-      }
-      return task;
-    });
-    updateProject(projectId, { tasks: updatedTasks });
-  };
+  const [tasks, setTasks] = useState(initialTasks);
 
   // Enable drag and drop after component mount to avoid hydration issues
   React.useEffect(() => {
@@ -68,23 +86,20 @@ const Workboard = ({ projectId }) => {
     const task = tasks.find(t => t.id.toString() === draggableId);
     
     if (task) {
-      const updatedTask = {
-        ...task,
-        status: destination.droppableId
-      };
-      
-      updateProjectTask(projectId, updatedTask);
+      const updatedTasks = tasks.map(t => {
+        if (t.id === task.id) {
+          return { ...t, status: destination.droppableId };
+        }
+        return t;
+      });
+      setTasks(updatedTasks);
     }
   };
 
-  const getAreaColor = (area) => {
-    const colors = {
-      'Performance Marketing': 'bg-green-50 text-green-700',
-      'Product Marketing': 'bg-blue-50 text-blue-700',
-      'Event Management': 'bg-yellow-50 text-yellow-700',
-      'Sales': 'bg-red-50 text-red-700'
-    };
-    return colors[area] || 'bg-gray-50 text-gray-700';
+  const priorityColors = {
+    Low: 'bg-green-100 text-green-800',
+    Medium: 'bg-yellow-100 text-yellow-800',
+    High: 'bg-red-100 text-red-800'
   };
 
   const handleMoveForward = (taskId) => {
@@ -92,13 +107,26 @@ const Workboard = ({ projectId }) => {
     if (task.status === 'In Progress') {
       setTaskToComplete(taskId);
     } else {
-      moveProjectTaskForward(projectId, taskId);
+      const updatedTasks = tasks.map(t => {
+        if (t.id === taskId) {
+          const newStatus = t.status === 'To-Do' ? 'In Progress' : t.status;
+          return { ...t, status: newStatus };
+        }
+        return t;
+      });
+      setTasks(updatedTasks);
     }
   };
 
   const handleConfirmComplete = () => {
     if (taskToComplete) {
-      moveProjectTaskForward(projectId, taskToComplete);
+      const updatedTasks = tasks.map(t => {
+        if (t.id === taskToComplete) {
+          return { ...t, status: 'Done' };
+        }
+        return t;
+      });
+      setTasks(updatedTasks);
       setTaskToComplete(null);
     }
   };
@@ -176,22 +204,27 @@ const Workboard = ({ projectId }) => {
                               
                               <div className="flex flex-col gap-2">
                                 <div className="flex items-center gap-2 text-xs">
-                                  <span className="font-medium text-gray-500">Deadline:</span>
-                                  <span className="px-2 py-1 bg-gray-100 rounded">
-                                    {task.deadline}
-                                  </span>
-                                </div>
-                                
-                                <div className="flex items-center gap-2">
-                                  <span className={`px-2 py-1 rounded text-xs ${getAreaColor(task.area)}`}>
-                                    {task.area}
-                                  </span>
+                                  <div className="flex items-center gap-2">
+                                    <Calendar className="w-3 h-3 text-gray-500" />
+                                    <span className="text-gray-500">Deadline:</span>
+                                    <span className="px-2 py-1 bg-gray-100 rounded">
+                                      {task.dueDate}
+                                    </span>
+                                  </div>
+                                  <div className="flex items-center gap-2 ml-2">
+                                    <span className={`px-2 py-1 rounded ${priorityColors[task.priority]}`}>
+                                      {task.priority} 
+                                    </span>
+                                  </div>
                                 </div>
                                 
                                 <div className="flex items-center gap-2 text-xs">
-                                  <span className="font-medium text-gray-500">Assigned:</span>
-                                  <span className="text-gray-600">{task.assignedFaculty}</span>
-                                </div>
+                                  <User className="w-3 h-3 text-gray-500" />
+                                  <span className="text-gray-500">Assigned by:</span>
+                                  <span className="text-gray-600">
+                                    {task.assignedBy.name} ({task.assignedBy.type})
+                                  </span>
+                                </div>  
                               </div>
                             </div>
                           )}
