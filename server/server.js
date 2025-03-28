@@ -8,6 +8,7 @@ import facultyRoutes from "./routes/facultyRoute.js";
 import studentRoutes from "./routes/studentRoutes.js";
 import activityLogRoutes from "./routes/activityLogRoutes.js";
 import passwordResetRoutes from "./routes/passwordResetRoutes.js";
+import fileRoutes from './routes/fileRoutes.js';
 console.log('Student routes:', studentRoutes);
 
 dotenv.config()
@@ -33,6 +34,7 @@ app.use('/faculty', facultyRoutes);
 app.use('/admin', adminRoutes);
 app.use('/admin/activity', activityLogRoutes);
 app.use('/api/auth', passwordResetRoutes);
+app.use('/files', fileRoutes);
 
 // Add a test route to verify Express is working
 app.get('/test', (req, res) => {

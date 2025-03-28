@@ -1,6 +1,6 @@
 import { apiClient } from '@/lib/api-client';
 
-const createAuthSlice = (set) => ({
+const createAuthSlice = (set, get) => ({
     user: null,
     isAuthenticated: false,
     error: null,
@@ -45,12 +45,26 @@ const createAuthSlice = (set) => ({
     },
 
     logout: () => {
+        // Clear auth state
         set({
             user: null,
             isAuthenticated: false,
             error: null
         });
+        
+        // Clear student data
+        if (get().clearStudentData) {
+            get().clearStudentData();
+        }
+        
+        // Clear auth header
         delete apiClient.defaults.headers.common['Authorization'];
+        
+        // Clear any stored data
+        localStorage.removeItem('app-storage');
+        
+        // Redirect to root URL (login page)
+        window.location.href = '/';
     },
 
     clearError: () => set({ error: null })

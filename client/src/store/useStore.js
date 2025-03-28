@@ -19,18 +19,18 @@ export const useStore = create(
             ...createLeadedWorksSlice(set, get),
             ...createGuidedWorksSlice(set, get),
         }),
-        {
-            name: 'app-storage',
-            partialize: (state) => ({
-                // Specify which parts of the state should be persisted
-                user: state.user,
-                isAuthenticated: state.isAuthenticated,
-                profileData: state.profileData,
-                projects: state.projects,
-                forumProjects: state.forumProjects,
-            }),
-            getStorage: () => localStorage,
-        }
+        // {
+        //     name: 'app-storage',
+        //     partialize: (state) => ({
+        //         // Specify which parts of the state should be persisted
+        //         user: state.user,
+        //         isAuthenticated: state.isAuthenticated,
+        //         profileData: state.profileData,
+        //         projects: state.projects,
+        //         forumProjects: state.forumProjects,
+        //     }),
+        //     getStorage: () => localStorage,
+        // }
     )
 );
 

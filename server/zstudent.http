@@ -75,3 +75,39 @@ Cookie: jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZGE5Nzc1NzdjNjI3ZWU
 ###
 GET http://localhost:1544/student/campusProjects
 Cookie: jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZGE5Nzc1NzdjNjI3ZWU3OWExZDU0MyIsInJvbGUiOiJzdHVkZW50IiwiZW1haWwiOiIyMjA3MUEzMjU1QHZucnZqaWV0LmluIiwiaWF0IjoxNzQyNTc0MzgxLCJleHAiOjIwMDE3NzQzODF9.Qz7a3JQ_H1VHu4LZKTyunu2G66twCd4nQ2_jxqUAuj0
+
+### File Upload
+POST http://localhost:1544/files/upload
+Cookie: jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZGE5Nzc1NzdjNjI3ZWU3OWExZDU0MyIsInJvbGUiOiJzdHVkZW50IiwiZW1haWwiOiIyMjA3MUEzMjU1QHZucnZqaWV0LmluIiwiaWF0IjoxNzQyNTc0MzgxLCJleHAiOjIwMDE3NzQzODF9.Qz7a3JQ_H1VHu4LZKTyunu2G66twCd4nQ2_jxqUAuj0
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="pdf"; filename="Bhargav_CV.pdf"
+Content-Type: application/pdf
+
+< "C:\Users\bharg\OneDrive\Desktop\Bhargav_CV Experienced.pdf"
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="studentID"
+
+22071A3255
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="projectID"
+
+PROJ123
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### Get File Metadata
+GET http://localhost:1544/files/metadata/67e4257c324009b3bcdee819
+Cookie: jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZGE5Nzc1NzdjNjI3ZWU3OWExZDU0MyIsInJvbGUiOiJzdHVkZW50IiwiZW1haWwiOiIyMjA3MUEzMjU1QHZucnZqaWV0LmluIiwiaWF0IjoxNzQyNTc0MzgxLCJleHAiOjIwMDE3NzQzODF9.Qz7a3JQ_H1VHu4LZKTyunu2G66twCd4nQ2_jxqUAuj0
+
+### Download File
+GET http://localhost:1544/files/download/22071A3262
+Cookie: jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZGE5Nzc1NzdjNjI3ZWU3OWExZDU0MyIsInJvbGUiOiJzdHVkZW50IiwiZW1haWwiOiIyMjA3MUEzMjU1QHZucnZqaWV0LmluIiwiaWF0IjoxNzQyNTc0MzgxLCJleHAiOjIwMDE3NzQzODF9.Qz7a3JQ_H1VHu4LZKTyunu2G66twCd4nQ2_jxqUAuj0
+
+### Delete File
+DELETE http://localhost:1544/files/67e41cfbe11806c243cff220
+Cookie: jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZGE5Nzc1NzdjNjI3ZWU3OWExZDU0MyIsInJvbGUiOiJzdHVkZW50IiwiZW1haWwiOiIyMjA3MUEzMjU1QHZucnZqaWV0LmluIiwiaWF0IjoxNzQyNTc0MzgxLCJleHAiOjIwMDE3NzQzODF9.Qz7a3JQ_H1VHu4LZKTyunu2G66twCd4nQ2_jxqUAuj0
+
+###
+GET http://localhost:1544/files/resume/22071A3262
+Cookie: jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZGE5Nzc1NzdjNjI3ZWU3OWExZDU0MyIsInJvbGUiOiJzdHVkZW50IiwiZW1haWwiOiIyMjA3MUEzMjU1QHZucnZqaWV0LmluIiwiaWF0IjoxNzQyNTc0MzgxLCJleHAiOjIwMDE3NzQzODF9.Qz7a3JQ_H1VHu4LZKTyunu2G66twCd4nQ2_jxqUAuj0

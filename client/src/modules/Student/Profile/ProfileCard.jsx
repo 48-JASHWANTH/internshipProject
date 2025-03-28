@@ -4,6 +4,7 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 import { useStore } from '@/store/useStore';
 import { apiClient } from '@/lib/api-client';
+import { useNavigate } from 'react-router-dom';
 
 const ProfileCard = () => {
   const [isEditing, setIsEditing] = useState(false);
@@ -18,31 +19,26 @@ const ProfileCard = () => {
   });
   const [editedData, setEditedData] = useState({});
   const [selectedFile, setSelectedFile] = useState(null);
-  // const [loading, setLoading] = useState(true);
-  // const [error, setError] = useState(null);
-
-  // Get student ID from localStorage or context
-  const authData = localStorage.getItem('app-storage');
-  const studentID = JSON.parse(authData).state.user.studentID; // Fallback for testing
-  const { studentData, loading, error, fetchStudentData ,setLoading} = useStore();
-  
-
+  const navigate = useNavigate();
+  const { user, studentData, loading, error, fetchStudentData, setLoading } = useStore();
 
   useEffect(() => {
-    if(!studentData){
-      console.log("from personal")
-      fetchStudentData(studentID);
+    if (!user) {
+      navigate('/');
+      return;
     }
-  }, [fetchStudentData,studentID]);
-  useEffect(()=>{
-    if(studentData){
+
+    if (!studentData) {
+      fetchStudentData(user.studentID);
+    }
+  }, [user, navigate, fetchStudentData]);
+
+  useEffect(() => {
+    if (studentData) {
       setProfileInfo(studentData.personal);
-      setEditedData(studentData.personal)
+      setEditedData(studentData.personal);
     }
-    
-  },[studentData])
-
-
+  }, [studentData]);
 
   const handleFileSelect = (e) => {
     const file = e.target.files[0];
@@ -72,7 +68,7 @@ const ProfileCard = () => {
       };
       
       const response = await apiClient.put(
-        `student/personal/${studentID}`, 
+        `student/personal/${user.studentID}`, 
         updateData,{withCredentials:true}
       );
       
@@ -89,8 +85,6 @@ const ProfileCard = () => {
           dateOfBirth: response.data.dateOfBirth || '',
           profilePic: selectedFile || profileInfo.profilePic
         });
-        
-        // TODO: Handle profile picture upload separately if needed
       }
     } catch (err) {
       console.error('Error updating profile data:', err);
@@ -102,6 +96,7 @@ const ProfileCard = () => {
     }
   };
 
+  // Render loading state
   if (loading && !profileInfo.name) {
     return (
       <div className="w-full bg-white rounded-lg shadow-lg p-6">
@@ -126,6 +121,7 @@ const ProfileCard = () => {
     );
   }
 
+  // Render error state
   if (error) {
     return (
       <div className="w-full bg-white rounded-lg shadow-lg p-6">
@@ -142,6 +138,7 @@ const ProfileCard = () => {
     );
   }
 
+  // Render main component
   return (
     <div className="w-full bg-white rounded-lg shadow-lg">
       <div className="p-4 md:p-6">
@@ -171,7 +168,7 @@ const ProfileCard = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4">
           {[
             { label: "Name", value: profileInfo.name },
-            { label: "Registration Number", value: studentID },
+            { label: "Registration Number", value: profileInfo.regNumber },
             { label: "Email", value: profileInfo.mail },
             { label: "Phone", value: profileInfo.phone },
             { label: "Gender", value: profileInfo.gender },
@@ -317,17 +314,6 @@ const ProfileCard = () => {
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400"
                     value={editedData.dateOfBirth}
                     onChange={(e) => setEditedData({ ...editedData, dateOfBirth: e.target.value })}
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs md:text-sm font-medium text-gray-700 mb-2">
-                    Registration Number <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 bg-gray-50 cursor-not-allowed"
-                    value={studentID}
-                    readOnly
                   />
                 </div>
               </div>
