@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
   ArrowLeft, 
@@ -10,41 +10,52 @@ import {
 } from 'lucide-react';
 import InchargeWorkboard from './InchargeWorkboard';
 import InchargeReviews from './InchargeReviews';
+import { useStore } from '@/store/useStore';
+import { format } from 'date-fns';
 
 const InchargeProjectDetails = () => {
   const { projectId, classSection } = useParams();
   const navigate = useNavigate();
   const [activeView, setActiveView] = useState('details');
-
-  // Mock project data - replace with actual data fetch
-  const project = {
-    id: projectId,
-    title: "AI-Powered Healthcare Diagnostic System",
-    category: "Major",
-    status: "In Progress",
-    startDate: "2024-01-15",
-    progress: 75,
-    Abstract: "A system that uses artificial intelligence to assist in medical diagnosis...",
-    facultyGuide: "Dr. Sarah Johnson",
-    facultyEmail: "sarah.johnson@example.com",
-    teamMembers: [
-      { id: 1, name: "John Doe", role: "Team Lead" },
-      { id: 2, name: "Jane Smith", role: "ML Engineer" },
-      { id: 3, name: "Mike Johnson", role: "Backend Developer" }
-    ],
-    resources: {
-      abstractPdf: null,
-      githubUrl: null,
-      documents: []
+  
+  // Get data from the store
+  const { activeProjects } = useStore();
+  
+  // Find the team and section data
+  const { team, sectionTeam, students } = useMemo(() => {
+    if (!activeProjects?.teams || !activeProjects?.sectionTeams) {
+      return { team: null, sectionTeam: null, students: [] };
+    }
+    
+    // Find the team
+    const team = activeProjects.teams.find(t => t.teamId === projectId);
+    
+    // Find the section team
+    const sectionTeam = activeProjects.sectionTeams.find(s => s.classID === classSection);
+    
+    // Get student information from the updated structure
+    // The listOfStudents now contains objects with id and name properties
+    const students = team?.listOfStudents || [];
+    
+    return { team, sectionTeam, students };
+  }, [activeProjects, projectId, classSection]);
+  
+  // Format date or provide a default
+  const formatDate = (dateString) => {
+    if (!dateString) return "N/A";
+    try {
+      return format(new Date(dateString), "yyyy-MM-dd");
+    } catch (e) {
+      return dateString;
     }
   };
 
-  if (!project) {
+  if (!team) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh]">
         <h2 className="text-xl font-semibold text-gray-800">Project not found</h2>
         <button
-          onClick={() => navigate('/Faculty/ActiveWorks/Incharge')}
+          onClick={() => navigate(`/Faculty/ActiveWorks/Incharge/${classSection}`)}
           className="mt-4 flex items-center gap-2 text-[#9b1a31] hover:underline"
           tabIndex={0}
         >
@@ -54,6 +65,9 @@ const InchargeProjectDetails = () => {
       </div>
     );
   }
+
+  // Calculate progress (placeholder)
+  const progress = 0; // You can implement a real calculation if needed
 
   return (
     <div className="max-w-7xl mx-auto p-6 space-y-6">
@@ -67,7 +81,7 @@ const InchargeProjectDetails = () => {
           Back 
         </button>
         <ChevronRight className="w-4 h-4" />
-        <span className="text-gray-900 font-medium">{project.title}</span>
+        <span className="text-gray-900 font-medium">{team.projectTitle || "Untitled Project"}</span>
       </nav>
 
       {/* Toggle Buttons */}
@@ -109,28 +123,28 @@ const InchargeProjectDetails = () => {
         <div className="bg-white rounded-xl shadow-sm p-6">
           <div className="flex justify-between items-start mb-4">
             <div className="space-y-2">
-              <h1 className="text-2xl font-bold text-gray-900">{project.title}</h1>
+              <h1 className="text-2xl font-bold text-gray-900">{team.projectTitle || "Untitled Project"}</h1>
               <div className="flex gap-3 items-center">
                 <span className="px-3 py-1 text-sm font-medium text-purple-700 bg-purple-50 rounded-full">
-                  {project.category}
+                  {sectionTeam?.projectType || "Unknown Type"}
                 </span>
                 <span className="text-green-600 text-sm font-medium flex items-center gap-1">
-                  {project.status}
+                  {team.status ? "Completed" : "In Progress"}
                 </span>
                 <span className="text-gray-500 text-sm flex items-center gap-1">
                   <Calendar className="w-4 h-4" />
-                  {project.startDate}
+                  {formatDate(team.createdAt)}
                 </span>
               </div>
           </div>
             <div className="flex flex-col items-end">
               <div className="text-lg font-bold text-gray-900 mb-1">
-                {project.progress}%
+                {progress}%
           </div>
               <div className="w-32 bg-gray-100 rounded-full h-2">
                 <div 
                   className="bg-[#9b1a31] rounded-full h-2 transition-all duration-300"
-                  style={{ width: `${project.progress}%` }}
+                  style={{ width: `${progress}%` }}
                 />
           </div>
           </div>
@@ -145,7 +159,7 @@ const InchargeProjectDetails = () => {
             <div className="bg-white rounded-xl shadow-sm p-6">
               <h2 className="text-lg font-semibold text-gray-900 mb-4">Project Overview</h2>
               <p className="text-gray-600 leading-relaxed">
-                {project.Abstract}
+                {team.projectOverview || "No project overview available."}
               </p>
       </div>
 
@@ -156,27 +170,15 @@ const InchargeProjectDetails = () => {
                 {/* Abstract PDF */}
                 <div className="p-4 bg-gray-50 rounded-lg">
                   <h3 className="font-medium text-gray-900 mb-2">Abstract PDF</h3>
-                  {project.resources?.abstractPdf ? (
-                    <a
-                      href={project.resources.abstractPdf.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-sm text-[#9b1a31] hover:underline flex items-center gap-2"
-                    >
-                      <File className="w-4 h-4" />
-                      View Abstract
-                    </a>
-                  ) : (
-                    <p className="text-sm text-gray-500">Not uploaded yet</p>
-                  )}
-      </div>
+                  <p className="text-sm text-gray-500">Not uploaded yet</p>
+                </div>
 
                 {/* GitHub Repository */}
                 <div className="p-4 bg-gray-50 rounded-lg">
                   <h3 className="font-medium text-gray-900 mb-2">GitHub Repository</h3>
-                  {project.resources?.githubUrl ? (
+                  {team.githubURL ? (
                     <a
-                      href={project.resources.githubUrl}
+                      href={team.githubURL}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-sm text-[#9b1a31] hover:underline flex items-center gap-2"
@@ -191,9 +193,9 @@ const InchargeProjectDetails = () => {
                 {/* Google Drive Link */}
                 <div className="p-4 bg-gray-50 rounded-lg">
                   <h3 className="font-medium text-gray-900 mb-2">Google Drive</h3>
-                  {project.resources?.driveUrl ? (
+                  {team.googleDriveLink ? (
                     <a
-                      href={project.resources.driveUrl}
+                      href={team.googleDriveLink}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-sm text-[#9b1a31] hover:underline flex items-center gap-2"
@@ -216,34 +218,40 @@ const InchargeProjectDetails = () => {
               {/* Faculty Guide Section */}
               <div className="bg-gray-50 rounded-lg p-4">
                 <h3 className="text-base font-semibold mb-2">Faculty Guide</h3>
-                <p className="text-gray-900">{project.facultyGuide}</p>
-                <a 
-                  href={`mailto:${project.facultyEmail}`}
-                  className="text-[#9b1a31] text-sm hover:underline inline-flex items-center gap-1"
-                >
-                  <Mail className="w-4 h-4" />
-                  Contact Guide
-                </a>
+                <p className="text-gray-900">{team.guideFacultyId || "Not Assigned"}</p>
+                {team.guideFacultyId && (
+                  <a 
+                    href={`mailto:guide@example.com`} // Replace with actual email if available
+                    className="text-[#9b1a31] text-sm hover:underline inline-flex items-center gap-1"
+                  >
+                    <Mail className="w-4 h-4" />
+                    Contact Guide
+                  </a>
+                )}
               </div>
               
               {/* Team Members Section */}
               <div>
                 <h3 className="text-base font-semibold mb-4">Team Members</h3>
                 <div className="space-y-3">
-                  {project.teamMembers?.map(member => (
-                    <div 
-                      key={member.id} 
-                      className="flex items-center gap-3 bg-gray-50 rounded-lg p-3"
-                    >
-                      <div className="w-10 h-10 rounded-full bg-[#9b1a31] text-white flex items-center justify-center font-medium text-base">
-                        {member.name.charAt(0)}
+                  {students.length > 0 ? (
+                    students.map(student => (
+                      <div 
+                        key={student.id} 
+                        className="flex items-center gap-3 bg-gray-50 rounded-lg p-3"
+                      >
+                        <div className="w-10 h-10 rounded-full bg-[#9b1a31] text-white flex items-center justify-center font-medium text-base">
+                          {student.name.charAt(0)}
+                        </div>
+                        <div>
+                          <p className="text-gray-900 font-medium">{student.name}</p>
+                          <p className="text-gray-600 text-sm">{student.id}</p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="text-gray-900 font-medium">{member.name}</p>
-                        <p className="text-gray-600 text-sm">{member.role}</p>
-                      </div>
-                    </div>
-                  ))}
+                    ))
+                  ) : (
+                    <p className="text-gray-500">No team members assigned</p>
+                  )}
                 </div>
               </div>
             </div>

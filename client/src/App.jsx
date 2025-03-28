@@ -40,11 +40,10 @@ import StudentView from './modules/Admin/StudentView';
 import ViewFaculty from './modules/Admin/ViewFaculty';
 import { useStore } from "./store/useStore";
 import ProjectForumDetails from './modules/Student/ProjectForum/ProjectForumDetails';
-
-
-
 import Notifications from './modules/Faculty/Notifications';
 import StudentNotifications from "./modules/Student/StudentNotifications";
+import ResetPassword from './modules/common/ResetPassword';
+
 function App() {
   const PrivateRoute = ({ allowedRoles }) => {
     const { user, isAuthenticated } = useStore();
@@ -80,6 +79,7 @@ function App() {
       <Router>
       <Routes>
         <Route path="/" element={<Login />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
 
         {/* Admin Routes */}
         {/* <Route element={<PrivateRoute allowedRoles={["admin"]} />}> */}

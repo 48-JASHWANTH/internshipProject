@@ -1,401 +1,244 @@
-import React, { useState, useMemo } from 'react';
-import { FaSearch, FaFilter, FaGithub, FaGoogleDrive, FaEye, FaUsers, FaClipboardCheck } from 'react-icons/fa';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import { Search, User, Calendar } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { useStore } from "@/store/useStore";
+import { format } from "date-fns";
 
 const GuideArchivedProjects = () => {
-  // Static projects data with updated format
-  const staticProjects = [
-    {
-      id: 1,
-      title: "AI-Powered Chat Assistant",
-      type: "CBP",
-      department: "CSBS",
-      section: "A",
-      batch: "2022-2026",
-      teamSize: 4,
-      reviewsConducted: 5,
-      status: "completed",
-      facultyGuide: "Dr. Sarah Johnson",
-      teamMembers: [
-        { id: 1, name: "John Smith", regNo: "22B81A5D01" },
-        { id: 2, name: "Emma Davis", regNo: "22B81A5D02" },
-        { id: 3, name: "Michael Brown", regNo: "22B81A5D03" },
-        { id: 4, name: "Sarah Wilson", regNo: "22B81A5D04" }
-      ],
-      githubLink: "https://github.com/project1",
-      driveLink: "https://drive.google.com/project1"
-    },
-    {
-      id: 2,
-      title: "Smart Healthcare System",
-      type: "Major",
-      department: "AIML",
-      section: "B",
-      batch: "2023-2027",
-      teamSize: 3,
-      reviewsConducted: 4,
-      status: "completed",
-      facultyGuide: "Dr. Sarah Johnson",
-      teamMembers: [
-        { id: 5, name: "Alex Johnson", regNo: "23B81A4201" },
-        { id: 6, name: "Emily White", regNo: "23B81A4202" },
-        { id: 7, name: "James Brown", regNo: "23B81A4203" }
-      ],
-      githubLink: "https://github.com/project2",
-      driveLink: "https://drive.google.com/project2"
-    },
-    {
-      id: 3,
-      title: "IoT Weather Station",
-      type: "Mini",
-      department: "IOT",
-      section: "A",
-      batch: "2024-2028",
-      teamSize: 2,
-      reviewsConducted: 3,
-      status: "completed",
-      facultyGuide: "Dr. Sarah Johnson",
-      teamMembers: [
-        { id: 8, name: "David Lee", regNo: "24B81A7301" },
-        { id: 9, name: "Sophie Chen", regNo: "24B81A7302" }
-      ],
-      githubLink: "https://github.com/project3",
-      driveLink: "https://drive.google.com/project3"
-    },
-    {
-      id: 4,
-      title: "Cybersecurity Analysis Tool",
-      type: "FP",
-      department: "CyS",
-      section: "C",
-      batch: "2022-2026",
-      teamSize: 3,
-      reviewsConducted: 4,
-      status: "completed",
-      facultyGuide: "Dr. Sarah Johnson",
-      teamMembers: [
-        { id: 10, name: "Ryan Park", regNo: "22B81A8401" },
-        { id: 11, name: "Maria Garcia", regNo: "22B81A8402" },
-        { id: 12, name: "Tom Wilson", regNo: "22B81A8403" }
-      ],
-      githubLink: "https://github.com/project4",
-      driveLink: "https://drive.google.com/project4"
-    },
-    {
-      id: 5,
-      title: "Data Analytics Dashboard",
-      type: "CBP",
-      department: "AIDS",
-      section: "A",
-      batch: "2023-2027",
-      teamSize: 4,
-      reviewsConducted: 5,
-      status: "completed",
-      facultyGuide: "Dr. Sarah Johnson",
-      teamMembers: [
-        { id: 13, name: "Chris Martin", regNo: "23B81A9501" },
-        { id: 14, name: "Anna Kim", regNo: "23B81A9502" },
-        { id: 15, name: "Peter Zhang", regNo: "23B81A9503" },
-        { id: 16, name: "Lisa Wang", regNo: "23B81A9504" }
-      ],
-      githubLink: "https://github.com/project5",
-      driveLink: "https://drive.google.com/project5"
-    }
-  ];
+  const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  
+  // Get data and functions from the store
+  const { 
+    guidedProjects, 
+    isLoading, 
+    error, 
+    fetchGuidedProjects,
+    user 
+  } = useStore();
 
-  const [searchTerm, setSearchTerm] = useState('');
-  const [showFilters, setShowFilters] = useState(false);
-  const [filters, setFilters] = useState({
-    batch: 'all',
-    department: 'all',
-    type: 'all',
-    section: 'all'
-  });
-  const [currentPage, setCurrentPage] = useState(1);
-  const projectsPerPage = 6;
-
-  const batchYears = ['all', '2022-2026', '2023-2027', '2024-2028', '2025-2029'];
-  const projectTypes = ['all', 'CBP', 'Mini', 'Field Project', 'Major'];
-  const classSections = [
-    'all',
-    'CSE-A', 'CSE-B', 'CSE-C', 'CSE-D',
-    'CSBS',
-    'IT-A', 'IT-B', 'IT-C',
-    'CSDS',
-    'CS-AIML',
-    'CS-DS',
-    'CS-IOT',
-    'CS-CyS',
-    'AI & DS'
-  ];
-
-  const sections = ['all', 'A', 'B', 'C', 'D'];
-
-  const departments = [
-    'all',
-    'CSE',
-    'CSBS',
-    'IT',
-    'CSDS',
-    'AIML',
-    'IOT',
-    'CyS',
-    'AIDS'
-  ];
-
-  // Filter completed projects
-  const archivedProjects = useMemo(() => {
-    return staticProjects.filter(project => 
-      project.status === 'completed' && 
-      project.facultyGuide === "Dr. Sarah Johnson"
-    );
-  }, []);
-
-  const filteredProjects = archivedProjects.filter(project => {
-    const matchesSearch = 
-      project.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      project.department?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      project.teamMembers?.some(member => 
-        member.name.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    
-    const matchesYear = filters.batch === 'all' || project.batch === filters.batch;
-    const matchesType = filters.type === 'all' || project.type === filters.type;
-    const matchesDepartment = filters.department === 'all' || project.department === filters.department;
-    const matchesSection = filters.section === 'all' || project.section === filters.section;
-    
-    return matchesSearch && matchesYear && matchesType && matchesDepartment && matchesSection;
-  });
-
-  // Pagination
-  const indexOfLastProject = currentPage * projectsPerPage;
-  const indexOfFirstProject = indexOfLastProject - projectsPerPage;
-  const currentProjects = filteredProjects.slice(indexOfFirstProject, indexOfLastProject);
-  const totalPages = Math.ceil(filteredProjects.length / projectsPerPage);
-
-  const getProjectTypeStyles = (type) => {
-    switch (type) {
-      case 'CBP':
-        return {
-          bg: 'bg-blue-50',
-          badge: 'bg-blue-500',
-          text: 'text-blue-700'
-        };
-      case 'Mini':
-        return {
-          bg: 'bg-green-50',
-          badge: 'bg-green-500',
-          text: 'text-green-700'
-        };
-      case 'Field Project':
-        return {
-          bg: 'bg-purple-50',
-          badge: 'bg-purple-500',
-          text: 'text-purple-700'
-        };
-      case 'Major':
-        return {
-          bg: 'bg-orange-50',
-          badge: 'bg-orange-500',
-          text: 'text-orange-700'
-        };
-      default:
-        return {
-          bg: 'bg-gray-50',
-          badge: 'bg-gray-500',
-          text: 'text-gray-700'
-        };
+  // Format date helper function
+  const formatDate = (dateString) => {
+    if (!dateString) return "N/A";
+    try {
+      return format(new Date(dateString), "yyyy-MM-dd");
+    } catch (e) {
+      return dateString;
     }
   };
 
+  // Fetch guided projects when component mounts
+  useEffect(() => {
+    if (!guidedProjects) {
+      fetchGuidedProjects(user?.facultyID);
+    }
+  }, [user, fetchGuidedProjects, guidedProjects]);
+
+  // Define project type categories
+  const categories = ['all', 'CBP', 'Mini', 'Major'];
+
+  // Process the data to create a list of completed projects
+  const processedProjects = React.useMemo(() => {
+    if (!guidedProjects?.teams) {
+      return [];
+    }
+
+    // Filter for completed projects only
+    return guidedProjects.teams
+      .filter(team => team.status === 'completed')
+      .map(team => {
+        // Find the section team for this project
+        const sectionTeam = guidedProjects.sectionTeams?.find(
+          st => team.teamId.startsWith(st.classID)
+        );
+
+        // Extract branch and section from sectionTeam
+        const branch = sectionTeam?.branch || "Unknown";
+        const section = sectionTeam?.section || "N/A";
+        const projectType = sectionTeam?.projectType?.replace("Project", "").trim() || "Unknown";
+
+        return {
+          id: team._id || team.teamId,
+          teamId: team.teamId,
+          title: team.projectTitle || "Untitled Project",
+          branch: branch,
+          section: section,
+          projectType: projectType,
+          teamSize: team.members?.length || 0,
+          completionDate: formatDate(team.completedAt || team.updatedAt || team.createdAt),
+          reviewsCompleted: team.reviews?.length || 0,
+          totalReviews: 3, // Assuming 3 reviews per team
+          progress: 100 // Since it's completed
+        };
+      });
+  }, [guidedProjects]);
+
+  // Filter projects based on search query and selected category
+  const filteredProjects = processedProjects.filter(
+    (project) =>
+      (selectedCategory === 'all' || 
+       project.projectType.includes(selectedCategory)) &&
+      (project.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+       project.branch.toLowerCase().includes(searchQuery.toLowerCase()) ||
+       project.section.toLowerCase().includes(searchQuery.toLowerCase()))
+  );
+
+  const handleCardClick = (project) => {
+    navigate(`/Faculty/ArchivedProjects/Guide/${project.id}`);
+  };
+
+  const getTypeColor = (type) => {
+    if (!type) return "bg-gray-50 text-gray-700";
+    
+    if (type.includes("CBP")) 
+      return "bg-blue-50 text-blue-700";
+    if (type.includes("Mini")) 
+      return "bg-orange-50 text-orange-700";
+    if (type.includes("Major")) 
+      return "bg-purple-50 text-purple-700";
+    return "bg-gray-50 text-gray-700";
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#9b1a31]"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-6 max-w-7xl mx-auto">
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+          <p>Error loading projects: {error}</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-gray-100 p-6">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex justify-between items-center mb-8">
-          <div className="w-full">
-            <h1 className="text-3xl font-bold text-gray-800 text-center">
-              Archived Projects - Guide
-            </h1>
-          </div>
+    <div className="p-6 max-w-7xl mx-auto">
+      <div className="flex justify-between items-center mb-8">
+        <div className="w-full">
+          <h1 className="text-3xl font-bold text-gray-800 text-center">
+            Archived Projects - Guide
+          </h1>
         </div>
+      </div>
 
-        {/* Search and Filter Section */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-8">
-          <div className="flex flex-col gap-6">
-            {/* Search Bar and Filter Toggle */}
-            <div className="flex gap-4">
-              <div className="relative flex-1">
-                <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Search by project name, team members..."
-                  className="w-full pl-12 pr-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#9b1a31] focus:border-transparent"
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-              </div>
-              <button
-                onClick={() => setShowFilters(!showFilters)}
-                className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg flex items-center gap-2 transition-colors"
-              >
-                <FaFilter className="text-gray-600" />
-                <span className="text-gray-600">Filters</span>
-              </button>
-            </div>
-
-            {/* Collapsible Filters */}
-            {showFilters && (
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 pt-4 border-t border-gray-100">
-                <select
-                  className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#9b1a31] focus:border-transparent"
-                  onChange={(e) => setFilters(prev => ({ ...prev, batch: e.target.value }))}
-                >
-                  <option value="all">All Batches</option>
-                  {batchYears.filter(year => year !== 'all').map(year => (
-                    <option key={year} value={year}>{year}</option>
-                  ))}
-                </select>
-
-                <select
-                  className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#9b1a31] focus:border-transparent"
-                  onChange={(e) => setFilters(prev => ({ ...prev, department: e.target.value }))}
-                >
-                  <option value="all">All Departments</option>
-                  {departments.filter(dept => dept !== 'all').map(dept => (
-                    <option key={dept} value={dept}>{dept}</option>
-                  ))}
-                </select>
-
-                <select
-                  className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#9b1a31] focus:border-transparent"
-                  onChange={(e) => setFilters(prev => ({ ...prev, section: e.target.value }))}
-                >
-                  <option value="all">All Sections</option>
-                  {sections.filter(section => section !== 'all').map(section => (
-                    <option key={section} value={section}>Section {section}</option>
-                  ))}
-                </select>
-
-                <select
-                  className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#9b1a31] focus:border-transparent"
-                  onChange={(e) => setFilters(prev => ({ ...prev, type: e.target.value }))}
-                >
-                  <option value="all">All Types</option>
-                  {projectTypes.filter(type => type !== 'all').map(type => (
-                    <option key={type} value={type}>{type}</option>
-                  ))}
-                </select>
-              </div>
-            )}
-          </div>
+      {/* Search and Filter */}
+      <div className="mb-8">
+        <div className="relative">
+          <input
+            type="text"
+            placeholder="Search projects..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full px-4 py-2 pl-10 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#9b1a31] focus:border-transparent"
+          />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
         </div>
+      </div>
 
-        {/* Project Cards Grid */}
+      {/* Category Filter */}
+      <div className="flex flex-wrap gap-2 mb-6">
+        {categories.map((category) => (
+          <button
+            key={category}
+            onClick={() => setSelectedCategory(category)}
+            className={`
+              px-4 py-2 rounded-full text-sm font-medium transition-colors
+              ${
+                selectedCategory === category
+                  ? "bg-[#9b1a31] text-white"
+                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+              }
+            `}
+          >
+            {category}
+          </button>
+        ))}
+      </div>
+
+      {filteredProjects.length === 0 ? (
+        <div className="text-center py-12">
+          <p className="text-gray-500">No archived projects found.</p>
+        </div>
+      ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {currentProjects.map(project => (
+          {filteredProjects.map((project) => (
             <div 
               key={project.id} 
-              className="bg-white rounded-lg shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300"
+              className="relative"
+              onClick={() => handleCardClick(project)}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => e.key === "Enter" && handleCardClick(project)}
             >
-              <div className="p-5">
-                {/* Project Header with Title and Type */}
-                <div className="flex justify-between items-start mb-4">
-                  <h3 className="text-xl font-semibold text-gray-800 pr-4">
-                    {project.title}
-                  </h3>
-                  <span className="px-3 py-1 bg-yellow-500 text-white rounded-full text-sm font-medium whitespace-nowrap">
-                    {project.type}
-                  </span>
-                </div>
+              {/* Stacked card effect with enhanced shadows */}
+              <div className="absolute -bottom-4 left-4 w-full h-full bg-white rounded-lg shadow-sm"></div>
+              <div className="absolute -bottom-2 left-2 w-full h-full bg-white rounded-lg shadow-md"></div>
 
-                {/* Project Details */}
-                <div className="space-y-3 mb-4">
-                  <div className="flex items-center text-gray-600">
-                    <span className="w-24 text-sm font-medium">Department:</span>
-                    <span className="text-sm">{project.department}</span>
-                  </div>
-                  <div className="flex items-center text-gray-600">
-                    <span className="w-24 text-sm font-medium">Section:</span>
-                    <span className="text-sm">{project.section}</span>
-                  </div>
-                  <div className="flex items-center text-gray-600">
-                    <span className="w-24 text-sm font-medium">Batch:</span>
-                    <span className="text-sm">{project.batch}</span>
-                  </div>
-                  <div className="flex items-center text-gray-600">
-                    <FaUsers className="w-4 h-4 mr-2" />
-                    <span className="text-sm">{project.teamSize} members</span>
-                  </div>
-                  <div className="flex items-center text-gray-600">
-                    <FaClipboardCheck className="w-4 h-4 mr-2" />
-                    <span className="text-sm">{project.reviewsConducted} reviews</span>
-                  </div>
-                </div>
+              <div
+                className="relative bg-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 cursor-pointer overflow-hidden"
+              >
+                <div className="p-6">
+                  <div className="flex flex-col gap-2">
+                    <h3 className="text-lg font-semibold text-gray-900 line-clamp-2">
+                      {project.title}
+                    </h3>
 
-                {/* Action Buttons */}
-                <div className="flex items-center justify-center gap-2 pt-3 border-t border-gray-200">
-                  <Link
-                    to={`/Faculty/ArchivedProjects/Guide/${project.id}`}
-                    className="w-40 flex items-center justify-center gap-1 px-2 py-1.5 bg-[#9b1a31] text-white rounded hover:bg-[#82001A] transition-colors text-s"
-                  >
-                    <FaEye size={15} />
-                    <span>View Details</span>
-                  </Link>
-                  
-                  <div className="flex-1 flex justify-center gap-2">
-                    <a
-                      href={project.githubLink}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="p-1.5 text-gray-600 hover:text-[#9b1a31] hover:bg-gray-50 rounded transition-colors"
-                      title="GitHub Repository"
-                    >
-                      <FaGithub size={30} />
-                    </a>
-                    
-                    <a
-                      href={project.driveLink}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="p-1.5 text-gray-600 hover:text-[#9b1a31] hover:bg-gray-50 rounded transition-colors"
-                      title="Google Drive"
-                    >
-                      <FaGoogleDrive size={30} />
-                    </a>
+                    <div className="flex items-center gap-2">
+                      <span className={`px-2.5 py-0.5 text-xs font-medium rounded-full ${getTypeColor(project.projectType)}`}>
+                        {project.projectType}
+                      </span>
+                      <span className="px-2.5 py-0.5 text-xs font-medium bg-green-50 text-green-700 rounded-full">
+                        Completed
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-2 text-sm text-gray-600 mt-1">
+                      <User className="w-4 h-4" />
+                      <span>{project.branch} - {project.section} ({project.teamSize} members)</span>
+                    </div>
+
+                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                      <Calendar className="w-4 h-4" />
+                      <span>Completed: {project.completionDate}</span>
+                    </div>
+
+                    <div className="mt-2">
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="text-sm font-medium text-gray-700">Progress</span>
+                        <span className="text-sm font-medium text-[#9b1a31]">{project.progress}%</span>
+                      </div>
+                      <div className="w-full bg-gray-100 rounded-full h-2">
+                        <div
+                          className="bg-[#9b1a31] rounded-full h-2 transition-all duration-300"
+                          style={{ width: `${project.progress}%` }}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="mt-2 pt-2 border-t">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-gray-600">
+                          Reviews: {project.reviewsCompleted}/{project.totalReviews}
+                        </span>
+                        <span className="text-sm font-medium text-green-600">
+                          All Reviews Complete
+                        </span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
           ))}
         </div>
-
-        {/* Empty State */}
-        {staticProjects.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-gray-500">No archived projects found</p>
-          </div>
-        )}
-
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="flex justify-center mt-8 gap-2">
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-              <button
-                key={page}
-                onClick={() => setCurrentPage(page)}
-                className={`
-                  px-4 py-2 rounded-lg transition-colors
-                  ${currentPage === page
-                    ? 'bg-[#9b1a31] text-white'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                  }
-                `}
-              >
-                {page}
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
+      )}
     </div>
   );
 };

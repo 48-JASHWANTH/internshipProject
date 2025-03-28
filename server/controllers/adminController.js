@@ -1,5 +1,7 @@
 import Admin from "../models/adminModel.js";
 import Student from "../models/studentModel.js";
+import Team from "../models/teamsModel.js";
+import Faculty from "../models/facultyModel.js";
 
 export const addStudents = async (req, res) => {
   try {
@@ -227,6 +229,68 @@ export const getInactiveStudents = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Error fetching inactive students',
+      error: error.message
+    });
+  }
+};
+
+// Update the getDashboardStats function with better debugging
+export const getDashboardStats = async (req, res) => {
+  try {
+    // Get all faculty documents to check their structure
+    const allFaculty = await Faculty.find().lean();
+    console.log('Total faculty documents found:', allFaculty.length);
+    
+    if (allFaculty.length > 0) {
+      // Log the first faculty document to see its structure
+      console.log('Sample faculty document:', allFaculty[0]);
+      
+      // Check if isActive field exists and how many have it set to true
+      const activeFacultyCount = allFaculty.filter(f => f.isActive === true).length;
+      console.log('Faculty with isActive=true:', activeFacultyCount);
+      
+      // Count faculty without filtering by isActive
+      const totalFacultyCount = await Faculty.countDocuments();
+      console.log('Total faculty count without filters:', totalFacultyCount);
+    }
+    
+    // Get counts from each collection - try without the isActive filter for faculty
+    const studentCount = await Student.countDocuments({ isActive: true });
+    const facultyCount = await Faculty.countDocuments();
+    const projectCount = await Team.countDocuments();
+    
+    // Get active and completed projects - without filtering by status for now
+    const activeProjectCount = projectCount;
+    const completedProjectCount = 0;
+    
+    // Get pending approvals (faculty with pending status)
+    const pendingApprovals = 0;
+    
+    // Get today's new users
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const newUsersToday = await Student.countDocuments({ 
+      createdAt: { $gte: today },
+      isActive: true
+    });
+    
+    res.status(200).json({
+      success: true,
+      stats: {
+        students: studentCount,
+        faculty: facultyCount,
+        projects: projectCount,
+        activeProjects: activeProjectCount,
+        completedProjects: completedProjectCount,
+        pendingApprovals: pendingApprovals,
+        newUsersToday: newUsersToday
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching dashboard stats:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching dashboard statistics',
       error: error.message
     });
   }

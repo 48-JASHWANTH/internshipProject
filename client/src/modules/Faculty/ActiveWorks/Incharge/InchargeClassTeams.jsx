@@ -1,43 +1,67 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Search, Calendar, User, ArrowLeft, ChevronRight } from 'lucide-react';
+import { useStore } from '@/store/useStore';
+import { format } from 'date-fns';
 
 const InchargeClassTeams = () => {
   const navigate = useNavigate();
   const { classSection } = useParams();
   const [searchQuery, setSearchQuery] = useState('');
+  
+  // Get data from the store
+  const { activeProjects } = useStore();
+  
+  // Find the section team and its teams
+  const sectionTeam = useMemo(() => {
+    if (!activeProjects?.sectionTeams) return null;
+    return activeProjects.sectionTeams.find(section => section.classID === classSection);
+  }, [activeProjects, classSection]);
+  
+  // Get teams for this section
+  const teamsData = useMemo(() => {
+    if (!activeProjects?.teams || !sectionTeam) return [];
+    
+    // Filter teams that belong to this section
+    const sectionTeams = activeProjects.teams.filter(team => 
+      team.teamId.startsWith(classSection)
+    );
 
-  // Updated Mock data with team numbers
-  const teamsData = [
-    {
-      id: 1,
-      teamNo: "01", // Added team number
-      teamName: "Team Alpha",
-      projectTitle: "AI-Powered Healthcare System",
-      category: "CBP",
-      status: "In Progress",
-      startDate: "2024-01-15",
-      teamSize: 4,
-      guide: "Dr. Sarah Johnson",
-      section: "CSE-A",
-      progress: 75  // Add progress
-    },
-    {
-      id: 2,
-      teamNo: "02", // Added team number
-      teamName: "Team Beta",
-      projectTitle: "Smart City Planning",
-      category: "CBP",
-      status: "In Progress",
-      startDate: "2024-01-20",
-      teamSize: 3,
-      guide: "Dr. Michael Brown",
-      section: "CSE-A",
-      progress: 60  // Add progress
-    },
-    // Add more teams as needed
-  ];
-
+    
+    // Map to the format needed for display
+    return sectionTeams.map(team => {
+      // Extract team number from teamId (e.g., "1742886507270_1" -> "01")
+      const teamNo = team.teamId.split('_')[1].padStart(2, '0');
+      //console.log(team.tasks);
+      // Calculate progress based on tasks and reviews
+      const totalTasks = team.tasks?.length || 0;
+      // console.log(team.tasks);
+      const completedTasks = team.tasks?.filter(task => 
+        task.status === 'done' || task.status === 'approved'
+      ).length || 0;
+      
+      
+      // Calculate progress percentage
+      const progress = totalTasks > 0 
+        ? Math.round((completedTasks / totalTasks) * 100) 
+        : 0;
+      
+      return {
+        id: team.teamId,
+        teamNo,
+        teamName: `Team ${teamNo}`,
+        projectTitle: team.projectTitle || sectionTeam.projectTitles[team.teamId] || 'Untitled Project',
+        category: sectionTeam.projectType,
+        status: team.status ? 'Completed' : 'In Progress',
+        startDate: team.createdAt,
+        teamSize: team.listOfStudents?.length || 0,
+        guide: team.guideFacultyId || 'Not Assigned',
+        progress: progress, // Use the calculated progress
+        section: sectionTeam.section
+      };
+    });
+  }, [activeProjects, sectionTeam, classSection]);
+  
   const filteredTeams = useMemo(() => {
     return teamsData.filter(team => 
       team.projectTitle.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -47,6 +71,16 @@ const InchargeClassTeams = () => {
 
   const handleTeamClick = (teamId) => {
     navigate(`/Faculty/ActiveWorks/Incharge/${classSection}/${teamId}`);
+  };
+  
+  // Format date or provide a default
+  const formatDate = (dateString) => {
+    if (!dateString) return "N/A";
+    try {
+      return format(new Date(dateString), "yyyy-MM-dd");
+    } catch (e) {
+      return dateString;
+    }
   };
 
   return (
@@ -62,12 +96,19 @@ const InchargeClassTeams = () => {
             Back
           </button>
           <ChevronRight className="w-4 h-4" />
-          <span className="text-gray-900 font-medium">{classSection}</span>
+          {/* <span className="text-gray-900 font-medium">{classSection}</span> */}
         </nav>
 
         {/* Centered Heading */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">{classSection} Teams</h1>
+          <h1 className="text-3xl font-bold text-gray-900">
+            {sectionTeam ? `${sectionTeam.branch} - Section ${sectionTeam.section}` : classSection} Teams
+          </h1>
+          {sectionTeam && (
+            <p className="text-gray-600 mt-2">
+              {sectionTeam.projectType} • {sectionTeam.numberOfTeams} Teams
+            </p>
+          )}
         </div>
         
         {/* Search Bar */}
@@ -83,64 +124,70 @@ const InchargeClassTeams = () => {
         </div>
 
         {/* Teams Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredTeams.map(team => (
-            <div 
-              key={team.id}
-              onClick={() => handleTeamClick(team.id)}
-              className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer overflow-hidden"
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => e.key === 'Enter' && handleTeamClick(team.id)}
-            >
-              <div className="p-6">
-                <div className="flex flex-col gap-2">
-                  <h3 className="text-lg font-semibold text-gray-900 line-clamp-2">
-                    {team.teamNo} - {team.projectTitle}
-                  </h3>
-                  
-                  <div className="flex items-center gap-2">
-                    <span className="px-2.5 py-0.5 text-xs font-medium bg-purple-50 text-purple-700 rounded-full">
-                      {team.category}
-                    </span>
-                    <span className="px-2.5 py-0.5 text-xs font-medium bg-yellow-50 text-yellow-700 rounded-full">
-                      {team.status}
-                    </span>
-                  </div>
-
-                  <div className="flex items-center gap-2 text-sm text-gray-600 mt-1">
-                    <User className="w-4 h-4" />
-                    <span>Team Size: {team.teamSize}</span>
-                  </div>
-
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
-                    <Calendar className="w-4 h-4" />
-                    <span>Started: {team.startDate}</span>
-                  </div>
-
-                  <div className="mt-2">
-                    <div className="flex justify-between items-center mb-1">
-                      <span className="text-sm font-medium text-gray-700">Progress</span>
-                      <span className="text-sm font-medium text-[#9b1a31]">{team.progress}%</span>
+        {filteredTeams.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-gray-500">No teams found for this class section.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredTeams.map(team => (
+              <div 
+                key={team.id}
+                onClick={() => handleTeamClick(team.id)}
+                className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer overflow-hidden"
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => e.key === 'Enter' && handleTeamClick(team.id)}
+              >
+                <div className="p-6">
+                  <div className="flex flex-col gap-2">
+                    <h3 className="text-lg font-semibold text-gray-900 line-clamp-2">
+                      {team.teamNo} - {team.projectTitle}
+                    </h3>
+                    
+                    <div className="flex items-center gap-2">
+                      <span className="px-2.5 py-0.5 text-xs font-medium bg-purple-50 text-purple-700 rounded-full">
+                        {team.category}
+                      </span>
+                      <span className="px-2.5 py-0.5 text-xs font-medium bg-yellow-50 text-yellow-700 rounded-full">
+                        {team.status}
+                      </span>
                     </div>
-                    <div className="w-full bg-gray-100 rounded-full h-2">
-                      <div
-                        className="bg-[#9b1a31] rounded-full h-2 transition-all duration-300"
-                        style={{ width: `${team.progress}%` }}
-                      />
-                    </div>
-                  </div>
 
-                  <div className="mt-2 pt-2 border-t">
-                    <p className="text-sm text-gray-600">
-                      Guide: {team.guide}
-                    </p>
+                    <div className="flex items-center gap-2 text-sm text-gray-600 mt-1">
+                      <User className="w-4 h-4" />
+                      <span>Team Size: {team.teamSize}</span>
+                    </div>
+
+                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                      <Calendar className="w-4 h-4" />
+                      <span>Started: {formatDate(team.startDate)}</span>
+                    </div>
+
+                    <div className="mt-2">
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="text-sm font-medium text-gray-700">Progress</span>
+                        <span className="text-sm font-medium text-[#9b1a31]">{team.progress}%</span>
+                      </div>
+                      <div className="w-full bg-gray-100 rounded-full h-2">
+                        <div
+                          className="bg-[#9b1a31] rounded-full h-2 transition-all duration-300"
+                          style={{ width: `${team.progress}%` }}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="mt-2 pt-2 border-t">
+                      <p className="text-sm text-gray-600">
+                        Guide: {team.guide}
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

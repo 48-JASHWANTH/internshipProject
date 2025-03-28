@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
   ArrowLeft, 
@@ -7,7 +7,12 @@ import {
   ChevronRight,
   Github,
   File,
+  AlertCircle,
+  Loader
 } from 'lucide-react';
+import { useStore } from '@/store/useStore';
+import { format } from 'date-fns';
+import toast from 'react-hot-toast';
 import GuideWorkboard from './GuideWorkboard';
 import GuideReviews from './GuideReviews';
 
@@ -16,40 +21,128 @@ const GuideProjectDetails = () => {
   const navigate = useNavigate();
   const [activeView, setActiveView] = useState('details');
 
-  // Mock project data - replace with actual data fetch
-  const project = {
-    id: projectId,
-    title: "AI-Powered Healthcare Diagnostic System",
-    category: "Major",
-    status: "In Progress",
-    startDate: "2024-01-15",
-    progress: 75,
-    Abstract: "A system that uses artificial intelligence to assist in medical diagnosis...",
-    facultyGuide: "Dr. Sarah Johnson",
-    facultyEmail: "sarah.johnson@example.com",
-    teamMembers: [
-      { id: 1, name: "John Doe", role: "Team Lead" },
-      { id: 2, name: "Jane Smith", role: "ML Engineer" },
-      { id: 3, name: "Mike Johnson", role: "Backend Developer" }
-    ],
-    resources: {
-      abstractPdf: null,
-      githubUrl: null,
-      documents: []
-    }
-  };
+  const { 
+    user,
+    guidedProjects,
+    fetchGuidedProjects,
+    isLoading,
+    error
+  } = useStore();
 
-  if (!project) {
+  useEffect(() => {
+    const loadGuidedProjects = async () => {
+      if (user?.facultyID && (!guidedProjects || !guidedProjects.teams)) {
+        const result = await fetchGuidedProjects(user.facultyID);
+        if (!result.success) {
+          toast.error(result.error || 'Failed to load project details');
+        }
+      }
+    };
+
+    loadGuidedProjects();
+  }, [user, fetchGuidedProjects, guidedProjects]);
+
+  const project = useMemo(() => {
+    if (!guidedProjects?.teams) return null;
+    
+    const teamData = guidedProjects.teams.find(team => team.teamId === projectId);
+    if (!teamData) return null;
+    
+    // Find the latest review to determine progress
+    const latestReview = teamData.reviews && teamData.reviews.length > 0 
+      ? teamData.reviews.sort((a, b) => new Date(b.dateOfReview) - new Date(a.dateOfReview))[0]
+      : null;
+    
+    // Calculate progress percentage from the latest review's progress field
+    let progressPercentage = 0;
+    if (latestReview?.progress) {
+      const progressStr = latestReview.progress;
+      const match = progressStr.match(/(\d+)%?/);
+      if (match) {
+        progressPercentage = parseInt(match[1], 10);
+      }
+    }
+    
+    // Format team members - handle both old and new data structures
+    const teamMembers = teamData.listOfStudents.map((student, index) => {
+      // Check if student is already an object with id and name properties
+      if (typeof student === 'object' && student !== null && 'id' in student && 'name' in student) {
+        return {
+          id: student.id,
+          name: student.name,
+          role: index === 0 ? "Team Lead" : "Team Member"
+        };
+      } else {
+        // Handle the old format where student is just an ID string
+        return {
+          id: student,
+          name: student, // Use ID as name for backward compatibility
+          role: index === 0 ? "Team Lead" : "Team Member"
+        };
+      }
+    });
+    
+    return {
+      id: teamData.teamId,
+      title: teamData.projectTitle,
+      category: teamData.projectType,
+      status: teamData.status ? "Completed" : "In Progress",
+      startDate: format(new Date(teamData.createdAt), 'yyyy-MM-dd'),
+      progress: progressPercentage,
+      Abstract: teamData.projectOverview || "No project overview available.",
+      facultyGuide: user?.name || "Faculty Guide",
+      facultyEmail: user?.email || "",
+      teamMembers,
+      resources: {
+        abstractPdf: null, // These would need to be populated from actual data
+        githubUrl: teamData.githubURL || null,
+        driveUrl: teamData.googleDriveLink || null,
+        documents: []
+      },
+      rawData: teamData // Keep the raw data for other components
+    };
+  }, [guidedProjects, projectId, user]);
+
+  if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh]">
-        <h2 className="text-xl font-semibold text-gray-800">Project not found</h2>
+        <Loader className="w-8 h-8 text-[#9b1a31] animate-spin mb-4" />
+        <h2 className="text-xl font-semibold text-gray-800">Loading project details...</h2>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh]">
+        <AlertCircle className="w-8 h-8 text-red-500 mb-4" />
+        <h2 className="text-xl font-semibold text-gray-800 mb-2">Error loading project</h2>
+        <p className="text-gray-600">{error}</p>
         <button
           onClick={() => navigate('/Faculty/ActiveWorks/Guide')}
           className="mt-4 flex items-center gap-2 text-[#9b1a31] hover:underline"
           tabIndex={0}
         >
           <ArrowLeft className="w-4 h-4" />
-          Back 
+          Back to projects
+        </button>
+      </div>
+    );
+  }
+
+  if (!project) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh]">
+        <AlertCircle className="w-8 h-8 text-yellow-500 mb-4" />
+        <h2 className="text-xl font-semibold text-gray-800 mb-2">Project not found</h2>
+        <p className="text-gray-600">The project you're looking for doesn't exist or you don't have access to it.</p>
+        <button
+          onClick={() => navigate('/Faculty/ActiveWorks/Guide')}
+          className="mt-4 flex items-center gap-2 text-[#9b1a31] hover:underline"
+          tabIndex={0}
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Back to projects
         </button>
       </div>
     );
@@ -76,7 +169,7 @@ const GuideProjectDetails = () => {
           onClick={() => setActiveView('details')}
           className={`px-4 py-2 rounded-l-md text-sm font-medium transition-all ${
             activeView === 'details'
-              ? 'bg-yellow-500 text-white shadow-md'
+              ? 'bg-[#9b1a31] text-white shadow-md'
               : 'bg-white text-gray-600 border border-gray-300 hover:bg-gray-100'
           }`}
         >
@@ -86,7 +179,7 @@ const GuideProjectDetails = () => {
           onClick={() => setActiveView('workboard')}
           className={`px-4 py-2 text-sm font-medium transition-all ${
             activeView === 'workboard'
-              ? 'bg-yellow-500 text-white shadow-md'
+              ? 'bg-[#9b1a31] text-white shadow-md'
               : 'bg-white text-gray-600 border border-gray-300 hover:bg-gray-100'
           }`}
         >
@@ -96,7 +189,7 @@ const GuideProjectDetails = () => {
           onClick={() => setActiveView('reviews')}
           className={`px-4 py-2 rounded-r-md text-sm font-medium transition-all ${
             activeView === 'reviews'
-              ? 'bg-yellow-500 text-white shadow-md'
+              ? 'bg-[#9b1a31] text-white shadow-md'
               : 'bg-white text-gray-600 border border-gray-300 hover:bg-gray-100'
           }`}
         >
@@ -110,11 +203,15 @@ const GuideProjectDetails = () => {
           <div className="flex justify-between items-start mb-4">
             <div className="space-y-2">
               <h1 className="text-2xl font-bold text-gray-900">{project.title}</h1>
-              <div className="flex gap-3 items-center">
+              <div className="flex gap-3 items-center flex-wrap">
                 <span className="px-3 py-1 text-sm font-medium text-purple-700 bg-purple-50 rounded-full">
                   {project.category}
                 </span>
-                <span className="text-green-600 text-sm font-medium flex items-center gap-1">
+                <span className={`px-3 py-1 text-sm font-medium rounded-full ${
+                  project.status === "Completed" 
+                    ? "bg-green-50 text-green-700" 
+                    : "bg-yellow-50 text-yellow-700"
+                }`}>
                   {project.status}
                 </span>
                 <span className="text-gray-500 text-sm flex items-center gap-1">
@@ -219,24 +316,24 @@ const GuideProjectDetails = () => {
                   className="flex items-center gap-3 bg-gray-50 rounded-lg p-3"
                 >
                   <div className="w-10 h-10 rounded-full bg-[#9b1a31] text-white flex items-center justify-center font-medium text-base">
-                    {member.name.charAt(0)}
+                    {typeof member.name === 'string' ? member.name.charAt(0) : '?'}
                   </div>
-              <div>
+                  <div>
                     <p className="text-gray-900 font-medium">{member.name}</p>
                     <p className="text-gray-600 text-sm">{member.role}</p>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
             </div>
+          </div>
         </div>
-      </div>
       ) : activeView === 'workboard' ? (
         <div className="bg-white rounded-xl shadow-sm p-6">
-          <GuideWorkboard projectId={projectId} />
+          <GuideWorkboard projectId={projectId} project={project.rawData} />
         </div>
       ) : activeView === 'reviews' ? (
         <div className="bg-white rounded-xl shadow-sm p-6">
-          <GuideReviews projectId={projectId} />
+          <GuideReviews projectId={projectId} project={project.rawData} />
         </div>
       ) : null}
     </div>

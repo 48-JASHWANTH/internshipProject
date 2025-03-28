@@ -1,46 +1,8 @@
-import React, { useState } from 'react';
-import { Plus, Calendar, User, CheckCircle, Clock, XCircle } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import { Plus, Calendar, User, CheckCircle, Clock, XCircle, AlertCircle } from 'lucide-react';
 import { format } from 'date-fns';
-import AddTaskModal from './Components/AddTaskModal';
-
-const initialTasks = [
-  {
-    id: '1',
-    title: 'Literature Review',
-    description: 'Complete comprehensive literature survey for the project',
-    dueDate: '2024-04-01',
-    priority: 'High',
-    status: 'todo',
-    assignedTo: 'John Doe, Jane Smith, '
-  },
-  {
-    id: '2',
-    title: 'Technical Review',
-    description: 'Review code implementation',
-    dueDate: '2024-04-15',
-    priority: 'Medium',
-    status: 'in_progress',
-    assignedTo: 'John Doe'
-  },
-  {
-    id: '3',
-    title: 'Database Design',
-    description: 'Design and implement database schema',
-    dueDate: '2024-03-25',
-    priority: 'Medium',
-    status: 'done',
-    assignedTo: 'John Doe'
-  },
-  {
-    id: '4',
-    title: 'Project Setup',
-    description: 'Initial project configuration and setup',
-    dueDate: '2024-03-15',
-    priority: 'Low',
-    status: 'approved',
-    assignedTo: 'John Doe'
-  }
-];
+import { useStore } from '@/store/useStore';
+import AddTaskModal from './components/AddTaskModal';
 
 const TaskCard = ({ task, onStatusChange, onApprove }) => {
   const priorityColors = {
@@ -72,7 +34,8 @@ const TaskCard = ({ task, onStatusChange, onApprove }) => {
     }
   };
 
-  const StatusIcon = statusConfig[task.status].icon;
+  const StatusIcon = statusConfig[task.status]?.icon || XCircle;
+  const dueDate = task.dueDate ? new Date(task.dueDate) : null;
 
   return (
     <div className="bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-all border border-gray-100 mb-4">
@@ -82,41 +45,41 @@ const TaskCard = ({ task, onStatusChange, onApprove }) => {
           <p className="text-sm text-gray-600 line-clamp-2">{task.description}</p>
         </div>
         <div className="flex items-center gap-2">
-          <span className={`px-3 py-1.5 rounded-full text-sm font-medium flex items-center gap-2 ${statusConfig[task.status].color}`}>
+          <span className={`px-3 py-1.5 rounded-full text-sm font-medium flex items-center gap-2 ${statusConfig[task.status]?.color || 'text-gray-500'}`}>
             <StatusIcon className="w-4 h-4" />
-            {statusConfig[task.status].label}
+            {statusConfig[task.status]?.label || 'To Do'}
           </span>
         </div>
       </div>
 
       <div className="flex flex-wrap gap-3 items-center mb-4">
-        <span className={`text-xs px-2 py-1 rounded-full border ${priorityColors[task.priority]}`}>
-          {task.priority}
+        <span className={`text-xs px-2 py-1 rounded-full border ${priorityColors[task.priority] || 'bg-gray-100 text-gray-800 border-gray-200'}`}>
+          {task.priority || 'Medium'}
         </span>
         <span className="text-xs flex items-center gap-1 text-gray-500">
           <Calendar className="w-3 h-3" />
-          {format(new Date(task.dueDate), 'MMM dd, yyyy')}
+          {dueDate ? format(dueDate, 'MMM dd, yyyy') : 'No due date'}
         </span>
         <span className="text-xs flex items-center gap-1 text-gray-500">
           <User className="w-3 h-3" />
-          Assigned to: {task.assignedTo}
+          Assigned to: {task.assignedTo || 'Unassigned'}
         </span>
       </div>
 
-      <div className="flex items-center justify-between pt-4 border-t">
-        <select
+      <div >
+        {/* <select
           className="text-sm border rounded-lg px-3 py-1.5 bg-white focus:ring-2 focus:ring-[#9b1a31] focus:border-[#9b1a31] outline-none"
           value={task.status}
-          onChange={(e) => onStatusChange(task.id, e.target.value)}
+          onChange={(e) => onStatusChange(task._id, e.target.value)}
         >
           <option value="todo">To Do</option>
           <option value="in_progress">In Progress</option>
           <option value="done">Done</option>
-        </select>
+        </select> */}
 
         {task.status === 'done' && (
           <button
-            onClick={() => onApprove(task.id)}
+            onClick={() => onApprove(task._id)}
             className="px-4 py-1.5 bg-[#9b1a31] text-white rounded-lg hover:bg-[#82001A] transition-colors text-sm flex items-center gap-2"
           >
             <CheckCircle className="w-4 h-4" />
@@ -128,20 +91,46 @@ const TaskCard = ({ task, onStatusChange, onApprove }) => {
   );
 };
 
-const GuideWorkboard = () => {
+const GuideWorkboard = ({ projectId, project }) => {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [tasks, setTasks] = useState(initialTasks);
+  const { user, updateGuidedProjectTask, addGuidedProjectTask } = useStore();
+
+  const tasks = useMemo(() => {
+    if (!project || !project.tasks) return [];
+    
+    // Sort tasks by due date (closest first)
+    return [...project.tasks].sort((a, b) => {
+      const dateA = a.dueDate ? new Date(a.dueDate) : new Date(9999, 11, 31);
+      const dateB = b.dueDate ? new Date(b.dueDate) : new Date(9999, 11, 31);
+      return dateA - dateB;
+    });
+  }, [project]);
 
   const handleStatusChange = (taskId, newStatus) => {
-    setTasks(tasks.map(task => 
-      task.id === taskId ? { ...task, status: newStatus } : task
-    ));
+    updateGuidedProjectTask(projectId, taskId, { status: newStatus });
   };
 
   const handleApprove = (taskId) => {
-    setTasks(tasks.map(task =>
-      task.id === taskId ? { ...task, status: 'approved' } : task
-    ));
+    updateGuidedProjectTask(projectId, taskId, { status: 'approved' });
+  };
+
+  const handleAddTask = (newTask) => {
+    // Add faculty information to the task
+    const taskWithFaculty = {
+      ...newTask,
+      assignedBy: {
+        name: user?.name || 'Faculty',
+        type: 'Guide',
+        facultyID: user?.facultyID || ''
+      },
+      createdAt: new Date().toISOString()
+    };
+    
+    // Add to store
+    addGuidedProjectTask(projectId, taskWithFaculty);
+    
+    // Close modal
+    setIsAddModalOpen(false);
   };
 
   return (
@@ -160,19 +149,39 @@ const GuideWorkboard = () => {
         </button>
       </div>
 
-      <div className="max-w-3xl mx-auto">
-        {tasks.map(task => (
-          <TaskCard
-            key={task.id}
-            task={task}
-            onStatusChange={handleStatusChange}
-            onApprove={handleApprove}
-          />
+      {tasks.length === 0 ? (
+        <div className="bg-white rounded-xl p-8 shadow-sm text-center">
+          <AlertCircle className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-gray-900 mb-2">No tasks yet</h3>
+          <p className="text-gray-500 max-w-md mx-auto mb-6">
+            This project doesn't have any tasks yet. Add a task to help the team organize their work.
+          </p>
+          <button
+            onClick={() => setIsAddModalOpen(true)}
+            className="px-4 py-2 bg-[#9b1a31] text-white rounded-lg hover:bg-[#82001A] transition-colors"
+          >
+            Add First Task
+          </button>
+        </div>
+      ) : (
+        <div className="max-w-3xl mx-auto">
+          {tasks.map(task => (
+            <TaskCard
+              key={task._id}
+              task={task}
+              onStatusChange={handleStatusChange}
+              onApprove={handleApprove}
+            />
           ))}
         </div>
+      )}
 
       {isAddModalOpen && (
-        <AddTaskModal onClose={() => setIsAddModalOpen(false)} />
+        <AddTaskModal 
+          onClose={() => setIsAddModalOpen(false)} 
+          onAddTask={handleAddTask}
+          teamMembers={project?.listOfStudents || []}
+        />
       )}
     </div>
   );

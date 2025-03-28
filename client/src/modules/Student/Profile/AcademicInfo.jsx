@@ -4,7 +4,7 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 import {useStore} from '@/store/useStore';
 import { apiClient } from '@/lib/api-client';
-
+import { useNavigate } from 'react-router-dom';
 
 const AcademicInfo = () => {
   const [isEditing, setIsEditing] = useState(false);
@@ -19,23 +19,28 @@ const AcademicInfo = () => {
     underGraduate: '',
     postGraduate: 'NA'
   });
-  // Get student ID from localStorage or context should make changes here of extracting data 
-  const authData = localStorage.getItem('app-storage');
-  const studentID = JSON.parse(authData).state.user.studentID;
-  console.log(studentID)
-  const { studentData, loading, error, fetchStudentData ,setLoading} = useStore();
   
+  const { user, studentData, loading, error, fetchStudentData, setLoading } = useStore();
+  const navigate = useNavigate();
+
   useEffect(() => {
-   if(!studentData){
-    console.log("from academic")
-    fetchStudentData(studentID);
-   }
-  }, [fetchStudentData,studentID]);
-  useEffect(()=>{
-    if(studentData)
-    setAcademicData(studentData.academic);
-  },[studentData])
-  
+    // Check if user is logged in
+    if (!user) {
+      navigate('/login');
+      return;
+    }
+
+    if (!studentData) {
+      console.log("from academic");
+      fetchStudentData(user.studentID);
+    }
+  }, [fetchStudentData, user, navigate]);
+
+  useEffect(() => {
+    if (studentData) {
+      setAcademicData(studentData.academic);
+    }
+  }, [studentData]);
 
   const handleSaveChanges = async (e) => {
     e.preventDefault();
@@ -43,7 +48,7 @@ const AcademicInfo = () => {
     try {
       setLoading(true);
       const response = await apiClient.put(
-        `/academic/${studentID}`, 
+        `/academic/${user.studentID}`, 
         academicData,{withCredentials:true}
       );
       
