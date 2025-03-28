@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
   ArrowLeft, 
@@ -7,89 +7,102 @@ import {
   ChevronRight,
   Github,
   File,
+  Edit2,
+  X
 } from 'lucide-react';
 import { Dialog } from '@headlessui/react';
 import Workboard from './Workboard';
-import { toast } from 'react-hot-toast';
 import ReviewBoard from './ReviewBoard';
-import { useStore } from '@/store/useStore';
+import { toast } from 'react-hot-toast';
 
 const ProjectDetails = () => {
   const { projectId } = useParams();
   const navigate = useNavigate();
-  const { projects, updateProject, updateProjectResource } = useStore();
-  const [isGithubModalOpen, setIsGithubModalOpen] = useState(false);
-  const [githubUrl, setGithubUrl] = useState('');
   const [activeView, setActiveView] = useState('details');
+  const [isGithubModalOpen, setIsGithubModalOpen] = useState(false);
+  const [isDriveModalOpen, setIsDriveModalOpen] = useState(false);
+  const [isEditingOverview, setIsEditingOverview] = useState(false);
+  const [githubUrl, setGithubUrl] = useState('');
+  const [driveUrl, setDriveUrl] = useState('');
+  const [projectOverview, setProjectOverview] = useState('');
   const [isUploading, setIsUploading] = useState(false);
-  
-  const project = useMemo(() => 
-    projects.find(work => work.id === projectId),
-    [projects, projectId]
-  );
 
-  const handleFileUpload = (type) => {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = type === 'abstractPdf' ? '.pdf' : '*/*';
-    
-    input.onchange = (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-
-      setIsUploading(true);
-      
-      // Create a mock file URL and update the state
-      const fileUrl = URL.createObjectURL(file);
-      const uploadedFile = {
-        id: Date.now().toString(),
-        name: file.name,
-        url: fileUrl,
-        type: type,
-        size: file.size,
-        uploadedAt: new Date().toISOString()
-      };
-
-      // Update project resources
-      updateProjectResource(projectId, type, uploadedFile);
-      
-      console.log('Resource updated:', {
-        type,
-        file: uploadedFile
-      });
-
-      setIsUploading(false);
-    };
-
-    input.click();
+  // Static project data
+  const project = {
+    id: projectId,
+    title: "AI-Powered Healthcare Diagnostic System",
+    category: "Major",
+    status: "In Progress",
+    startDate: "2024-01-15",
+    progress: 75,
+    Abstract: "A system that uses artificial intelligence to assist in medical diagnosis. The project aims to develop an intelligent system that can analyze medical data and provide preliminary diagnostic suggestions to healthcare professionals.",
+    facultyGuide: "Dr. Sarah Johnson",
+    facultyEmail: "sarah.johnson@example.com",
+    teamMembers: [
+      { id: 1, name: "John Doe", role: "Team Lead" },
+      { id: 2, name: "Jane Smith", role: "ML Engineer" },
+      { id: 3, name: "Mike Johnson", role: "Backend Developer" }
+    ],
+    resources: {
+      abstractPdf: null,
+      githubUrl: null,
+      driveUrl: null
+    }
   };
 
-  const handleRemoveResource = (type) => {
-    updateProjectResource(projectId, type, null);
-    console.log('Resource removed:', type);
+  const handleFileUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Check file size (5MB limit)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('File size should be less than 5MB');
+      return;
+    }
+
+    if (file.type !== 'application/pdf') {
+      toast.error('Please upload a PDF file');
+      return;
+    }
+
+    setIsUploading(true);
+    
+    // Simulate file upload
+    setTimeout(() => {
+      const fileUrl = URL.createObjectURL(file);
+      project.resources.abstractPdf = {
+        name: file.name,
+        url: fileUrl
+      };
+      setIsUploading(false);
+      toast.success('Abstract PDF uploaded successfully');
+    }, 1000);
   };
 
   const handleGithubUrlSubmit = () => {
-    updateProjectResource(projectId, 'githubUrl', githubUrl);
+    if (!githubUrl.trim()) {
+      toast.error('Please enter a valid GitHub URL');
+      return;
+    }
+    project.resources.githubUrl = githubUrl;
     setIsGithubModalOpen(false);
-    console.log('GitHub URL updated:', githubUrl);
+    toast.success('GitHub repository linked successfully');
   };
 
-  const handleDocumentDelete = async (documentId) => {
-    try {
-      await resourceService.deleteDocument(projectId, documentId);
-      updateProject(projectId, {
-        ...project,
-        resources: {
-          ...project.resources,
-          documents: project.resources.documents.filter(doc => doc.id !== documentId)
-        }
-      });
-      toast.success('Document deleted successfully');
-    } catch (error) {
-      console.error('Delete error:', error);
-      toast.error(error.response?.data?.message || 'Error deleting document');
+  const handleDriveUrlSubmit = () => {
+    if (!driveUrl.trim()) {
+      toast.error('Please enter a valid Google Drive URL');
+      return;
     }
+    project.resources.driveUrl = driveUrl;
+    setIsDriveModalOpen(false);
+    toast.success('Google Drive linked successfully');
+  };
+
+  const handleOverviewSave = () => {
+    project.Abstract = projectOverview;
+    setIsEditingOverview(false);
+    toast.success('Project overview updated successfully');
   };
 
   if (!project) {
@@ -122,6 +135,7 @@ const ProjectDetails = () => {
         <ChevronRight className="w-4 h-4" />
         <span className="text-gray-900 font-medium">{project.title}</span>
       </nav>
+
       {/* Toggle Buttons */}
       <div className="flex gap-1">
         <button
@@ -167,7 +181,7 @@ const ProjectDetails = () => {
                   {project.category}
                 </span>
                 <span className="text-green-600 text-sm font-medium flex items-center gap-1">
-                  In Progress
+                  {project.status}
                 </span>
                 <span className="text-gray-500 text-sm flex items-center gap-1">
                   <Calendar className="w-4 h-4" />
@@ -195,16 +209,54 @@ const ProjectDetails = () => {
           {/* Project Overview */}
           <div className="md:col-span-2">
             <div className="bg-white rounded-xl shadow-sm p-6">
-            <h1 className="text-lg font-semibold text-gray-900 mb-4"> <span className="font-semibold">Project Overview</span></h1>
-              <p className="text-gray-600 leading-relaxed">
-                {project.Abstract}
-              </p>
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-lg font-semibold text-gray-900">Project Overview</h2>
+                {isEditingOverview ? (
+                  <div className="flex gap-2">
+                    <button
+                      onClick={handleOverviewSave}
+                      className="text-green-600 hover:text-green-700"
+                    >
+                      Save
+                    </button>
+                    <button
+                      onClick={() => setIsEditingOverview(false)}
+                      className="text-red-600 hover:text-red-700"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => {
+                      setProjectOverview(project.Abstract);
+                      setIsEditingOverview(true);
+                    }}
+                    className="text-gray-600 hover:text-[#9b1a31]"
+                  >
+                    <Edit2 className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+              {isEditingOverview ? (
+                <textarea
+                  value={projectOverview}
+                  onChange={(e) => setProjectOverview(e.target.value)}
+                  className="w-full h-40 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#9b1a31] focus:border-transparent"
+                  placeholder="Enter project overview..."
+                />
+              ) : (
+                <p className="text-gray-600 leading-relaxed">
+                  {project.Abstract}
+                </p>
+              )}
             </div>
-            
+
             {/* Resources */}
             <div className="bg-white rounded-xl shadow-sm p-6 mt-6">
               <h2 className="text-lg font-semibold text-gray-900 mb-4">Resources</h2>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                {/* Abstract PDF */}
                 <div className="p-4 bg-gray-50 rounded-lg">
                   <h3 className="font-medium text-gray-900 mb-2">Abstract PDF</h3>
                   {project.resources?.abstractPdf ? (
@@ -213,28 +265,41 @@ const ProjectDetails = () => {
                         href={project.resources.abstractPdf.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-sm text-yellow-600 hover:underline flex items-center gap-2"
+                        className="text-sm text-[#9b1a31] hover:underline flex items-center gap-2"
                       >
                         <File className="w-4 h-4" />
                         {project.resources.abstractPdf.name}
                       </a>
                       <button
-                        onClick={() => handleRemoveResource('abstractPdf')}
+                        onClick={() => {
+                          project.resources.abstractPdf = null;
+                          toast.success('Abstract PDF removed');
+                        }}
                         className="text-sm text-red-600 hover:text-red-700"
                       >
                         Remove
                       </button>
                     </div>
                   ) : (
-                    <button
-                      onClick={() => handleFileUpload('abstractPdf')}
-                      disabled={isUploading}
-                      className="w-full p-2 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-[#9b1a31] hover:text-[#9b1a31] transition-colors flex items-center justify-center gap-2"
-                    >
-                      {isUploading ? 'Uploading...' : 'Upload Abstract PDF'}
-                    </button>
+                    <div>
+                      <input
+                        type="file"
+                        accept=".pdf"
+                        onChange={handleFileUpload}
+                        className="hidden"
+                        id="abstractPdf"
+                      />
+                      <label
+                        htmlFor="abstractPdf"
+                        className="cursor-pointer block w-full p-2 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-[#9b1a31] hover:text-[#9b1a31] transition-colors text-center text-sm"
+                      >
+                        {isUploading ? 'Uploading...' : 'Upload Abstract PDF'}
+                      </label>
+                    </div>
                   )}
                 </div>
+
+                {/* GitHub Repository */}
                 <div className="p-4 bg-gray-50 rounded-lg">
                   <h3 className="font-medium text-gray-900 mb-2">GitHub Repository</h3>
                   {project.resources?.githubUrl ? (
@@ -243,13 +308,16 @@ const ProjectDetails = () => {
                         href={project.resources.githubUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-sm text-yellow-600 hover:underline flex items-center gap-2"
+                        className="text-sm text-[#9b1a31] hover:underline flex items-center gap-2"
                       >
                         <Github className="w-4 h-4" />
                         View Repository
                       </a>
                       <button
-                        onClick={() => handleRemoveResource('githubUrl')}
+                        onClick={() => {
+                          project.resources.githubUrl = null;
+                          toast.success('GitHub repository unlinked');
+                        }}
                         className="text-sm text-red-600 hover:text-red-700"
                       >
                         Remove
@@ -258,44 +326,45 @@ const ProjectDetails = () => {
                   ) : (
                     <button
                       onClick={() => setIsGithubModalOpen(true)}
-                      className="w-full p-2 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-[#9b1a31] hover:text-[#9b1a31] transition-colors flex items-center justify-center gap-2"
+                      className="w-full p-2 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-[#9b1a31] hover:text-[#9b1a31] transition-colors text-sm"
                     >
                       Add GitHub Repository
                     </button>
                   )}
                 </div>
+
+                {/* Google Drive Link */}
                 <div className="p-4 bg-gray-50 rounded-lg">
-                  <h3 className="font-medium text-gray-900 mb-2">Additional Documents</h3>
-                  {project.resources?.documents?.length > 0 ? (
+                  <h3 className="font-medium text-gray-900 mb-2">Google Drive</h3>
+                  {project.resources?.driveUrl ? (
                     <div className="space-y-2">
-                      {project.resources.documents.map(doc => (
-                        <div key={doc.id} className="flex items-center justify-between">
-                          <a
-                            href={doc.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-sm text-yellow-600 hover:underline flex items-center gap-2"
-                          >
-                            <File className="w-4 h-4" />
-                            {doc.name}
-                          </a>
-                          <button
-                            onClick={() => handleDocumentDelete(doc.id)}
-                            className="text-sm text-red-600 hover:text-red-700"
-                          >
-                            Remove
-                          </button>
-                        </div>
-                      ))}
+                      <a
+                        href={project.resources.driveUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm text-[#9b1a31] hover:underline flex items-center gap-2"
+                      >
+                        <File className="w-4 h-4" />
+                        View Drive Folder
+                      </a>
+                      <button
+                        onClick={() => {
+                          project.resources.driveUrl = null;
+                          toast.success('Google Drive unlinked');
+                        }}
+                        className="text-sm text-red-600 hover:text-red-700"
+                      >
+                        Remove
+                      </button>
                     </div>
-                  ) : null}
-                  <button
-                    onClick={() => handleFileUpload('document')}
-                    disabled={isUploading}
-                    className="w-full mt-2 p-2 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-[#9b1a31] hover:text-[#9b1a31] transition-colors flex items-center justify-center gap-2"
-                  >
-                    {isUploading ? 'Uploading...' : 'Add Document'}
-                  </button>
+                  ) : (
+                    <button
+                      onClick={() => setIsDriveModalOpen(true)}
+                      className="w-full p-2 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-[#9b1a31] hover:text-[#9b1a31] transition-colors text-sm"
+                    >
+                      Add Drive Link
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
@@ -308,7 +377,7 @@ const ProjectDetails = () => {
               {/* Faculty Guide Section */}
               <div className="bg-gray-50 rounded-lg p-4">
                 <h3 className="text-base font-semibold mb-2">Faculty Guide</h3>
-                <p className="text-gray-900 ">{project.facultyGuide}</p>
+                <p className="text-gray-900">{project.facultyGuide}</p>
                 <a 
                   href={`mailto:${project.facultyEmail}`}
                   className="text-[#9b1a31] text-sm hover:underline inline-flex items-center gap-1"
@@ -343,15 +412,11 @@ const ProjectDetails = () => {
         </div>
       ) : activeView === 'workboard' ? (
         <div className="bg-white rounded-xl shadow-sm p-6">
-          <Workboard 
-            projectId={projectId}
-          />
+          <Workboard projectId={projectId} />
         </div>
       ) : activeView === 'reviews' ? (
         <div className="bg-white rounded-xl shadow-sm p-6">
-          <ReviewBoard 
-            projectId={projectId}
-          />
+          <ReviewBoard projectId={projectId} />
         </div>
       ) : null}
 
@@ -383,6 +448,43 @@ const ProjectDetails = () => {
               </button>
               <button
                 onClick={handleGithubUrlSubmit}
+                className="px-4 py-2 bg-[#9b1a31] text-white rounded-lg hover:bg-[#7d1527] transition-colors"
+              >
+                Save
+              </button>
+            </div>
+          </Dialog.Panel>
+        </div>
+      </Dialog>
+
+      {/* Google Drive URL Modal */}
+      <Dialog
+        open={isDriveModalOpen}
+        onClose={() => setIsDriveModalOpen(false)}
+        className="relative z-50"
+      >
+        <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
+        <div className="fixed inset-0 flex items-center justify-center p-4">
+          <Dialog.Panel className="bg-white rounded-xl p-6 max-w-md w-full">
+            <Dialog.Title className="text-lg font-semibold text-gray-900 mb-4">
+              Add Google Drive Link
+            </Dialog.Title>
+            <input
+              type="url"
+              value={driveUrl}
+              onChange={(e) => setDriveUrl(e.target.value)}
+              placeholder="https://drive.google.com/..."
+              className="w-full p-2 border border-gray-300 rounded-lg mb-4"
+            />
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setIsDriveModalOpen(false)}
+                className="px-4 py-2 text-gray-600 hover:text-gray-800"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDriveUrlSubmit}
                 className="px-4 py-2 bg-[#9b1a31] text-white rounded-lg hover:bg-[#7d1527] transition-colors"
               >
                 Save
