@@ -107,6 +107,10 @@ const StudentSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+    resumeFileId: {
+      type: String,
+      default: null
+    },
     isActive: {
       type: Boolean,
       default: true

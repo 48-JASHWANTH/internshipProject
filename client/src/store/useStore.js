@@ -15,18 +15,18 @@ export const useStore = create(
             ...createFacultyProfileSlice(set, get),
             ...createProjectForumSlice(set, get),
         }),
-        {
-            name: 'app-storage',
-            partialize: (state) => ({
-                // Specify which parts of the state should be persisted
-                user: state.user,
-                isAuthenticated: state.isAuthenticated,
-                profileData: state.profileData,
-                projects: state.projects,
-                forumProjects: state.forumProjects,
-            }),
-            getStorage: () => localStorage,
-        }
+        // {
+        //     name: 'app-storage',
+        //     partialize: (state) => ({
+        //         // Specify which parts of the state should be persisted
+        //         user: state.user,
+        //         isAuthenticated: state.isAuthenticated,
+        //         profileData: state.profileData,
+        //         projects: state.projects,
+        //         forumProjects: state.forumProjects,
+        //     }),
+        //     getStorage: () => localStorage,
+        // }
     )
 );
 

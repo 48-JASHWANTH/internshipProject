@@ -1,10 +1,41 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { FaFileUpload, FaFileDownload, FaFilePdf, FaTimes } from 'react-icons/fa';
+import axios from 'axios';
+import { useStore } from '@/store/useStore';
+
 
 const Resume = () => {
   const [resume, setResume] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const {user} = useStore();
+  const studentID = user.studentID;
+
+  // Fetch student's resume on component mount
+  useEffect(() => {
+    fetchStudentResume();
+  }, []);
+
+  const fetchStudentResume = async () => {
+    try {
+      const response = await axios.get(`http://localhost:1544/files/resume/${studentID}`, {
+        withCredentials: true
+      });
+      if (response.data) {
+        setResume({
+          name: response.data.filename,
+          url: `http://localhost:1544/files/download/${response.data._id}`,
+          fileId: response.data._id
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching resume:', error);
+      if (error.response?.status === 404) {
+        setResume(null);
+      }
+    }
+  };
 
   const handleFile = (file) => {
     if (file && file.type === 'application/pdf') {
@@ -13,11 +44,41 @@ const Resume = () => {
       alert('Please upload a PDF file');
     }
   };
-  
 
-  const handleFileUpload = (event) => {
+  const handleFileUpload = async (event) => {
     const file = event.target.files[0];
-    handleFile(file);
+    if (file) {
+      handleFile(file);
+      await uploadFile(file);
+    }
+  };
+
+  const uploadFile = async (file) => {
+    try {
+      setIsLoading(true);
+
+      const formData = new FormData();
+      formData.append('pdf', file);
+      formData.append('studentID', studentID);
+      formData.append('projectID', 'RESUME');
+
+      const response = await axios.post('http://localhost:1544/files/upload', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+        withCredentials: true
+      });
+
+      if (response.data.fileId) {
+        // Fetch the updated resume
+        await fetchStudentResume();
+      }
+    } catch (error) {
+      console.error('Error uploading file:', error);
+      alert('Error uploading file. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleDrag = useCallback((e) => {
@@ -30,25 +91,38 @@ const Resume = () => {
     }
   }, []);
 
-  const handleDrop = useCallback((e) => {
+  const handleDrop = useCallback(async (e) => {
     e.preventDefault();
     e.stopPropagation();
     setIsDragging(false);
     
     const file = e.dataTransfer.files[0];
-    handleFile(file);
+    if (file) {
+      handleFile(file);
+      await uploadFile(file);
+    }
   }, []);
 
-  const handleDownload = () => {
+  const handleDownload = async () => {
     if (resume) {
-      const fileURL = URL.createObjectURL(resume);
-      const link = document.createElement('a');
-      link.href = fileURL;
-      link.download = resume.name;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(fileURL);
+      try {
+        const response = await axios.get(`http://localhost:1544/files/download/${resume.fileId}`, {
+          responseType: 'blob',
+          withCredentials: true
+        });
+        
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', resume.name);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.URL.revokeObjectURL(url);
+      } catch (error) {
+        console.error('Error downloading file:', error);
+        alert('Error downloading file. Please try again.');
+      }
     }
   };
 
@@ -159,7 +233,7 @@ const Resume = () => {
             </div>
             <div className="flex-1 p-2 md:p-4">
               <iframe
-                src={URL.createObjectURL(resume)}
+                src={resume.url}
                 className="w-full h-full rounded border"
                 title="Resume Preview"
               />
