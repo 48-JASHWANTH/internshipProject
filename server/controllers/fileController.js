@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 import multer from 'multer';
 import path from 'path';
 import Student from '../models/studentModel.js';
+import Team from '../models/teamsModel.js';
 
 // Initialize bucket as null
 let bucket = null;
@@ -228,5 +229,121 @@ export const deleteFile = async (req, res) => {
     res.json({ message: 'File deleted successfully' });
   } catch (error) {
     res.status(500).json({ message: 'Error deleting file', error: error.message });
+  }
+};
+
+// Upload project abstract PDF
+export const uploadProjectAbstractPdf = async (req, res) => {
+  try {
+    const bucket = ensureBucket();
+    if (!bucket) {
+      return res.status(503).json({ message: 'File storage system not initialized' });
+    }
+
+    if (!req.file) {
+      return res.status(400).json({ message: 'No file uploaded' });
+    }
+
+    const { teamId } = req.body;
+    const filename = req.file.originalname;
+
+    // Delete existing file if it exists
+    const team = await Team.findOne({ teamId });
+    if (team && team.abstractPdfId) {
+      try {
+        await bucket.delete(new mongoose.Types.ObjectId(team.abstractPdfId));
+      } catch (error) {
+        console.error('Error deleting existing abstract PDF:', error);
+      }
+    }
+
+    const uploadStream = bucket.openUploadStream(filename, {
+      metadata: {
+        teamId,
+        contentType: req.file.mimetype,
+        fileType: 'abstractPdf'
+      }
+    });
+
+    uploadStream.end(req.file.buffer);
+
+    uploadStream.on('finish', async () => {
+      // Update team's abstractPdfId
+      await Team.findOneAndUpdate(
+        { teamId },
+        { abstractPdfId: uploadStream.id.toString() }
+      );
+
+      res.status(201).json({
+        success: true, 
+        message: 'Abstract PDF uploaded successfully',
+        fileId: uploadStream.id
+      });
+    });
+
+    uploadStream.on('error', (error) => {
+      res.status(500).json({ 
+        success: false,
+        message: 'Error uploading abstract PDF', 
+        error: error.message 
+      });
+    });
+  } catch (error) {
+    res.status(500).json({ 
+      success: false,
+      message: 'Error uploading abstract PDF', 
+      error: error.message 
+    });
+  }
+};
+
+// Get project abstract PDF info
+export const getProjectAbstractPdf = async (req, res) => {
+  try {
+    console.log('getProjectAbstractPdf called for team:', req.params.teamId);
+    const bucket = ensureBucket();
+    if (!bucket) {
+      return res.status(503).json({ message: 'File storage system not initialized' });
+    }
+
+    const teamId = req.params.teamId;
+    console.log('Looking for team with ID:', teamId);
+    
+    const team = await Team.findOne({ teamId });
+    console.log('Found team:', team ? team.teamId : 'None');
+
+    if (!team || !team.abstractPdfId) {
+      console.log('No team or abstractPdfId found');
+      return res.status(404).json({ 
+        success: false,
+        message: 'No abstract PDF found for this project' 
+      });
+    }
+
+    const fileId = team.abstractPdfId;
+    console.log('Looking for file with ID:', fileId);
+    
+    const files = await bucket.find({ _id: new mongoose.Types.ObjectId(fileId) }).toArray();
+    console.log('Found files:', files);
+    
+    if (files.length === 0) {
+      console.log('No files found');
+      return res.status(404).json({ 
+        success: false,
+        message: 'File not found' 
+      });
+    }
+
+    res.json({
+      success: true,
+      fileInfo: files[0]
+    });
+  } catch (error) {
+    console.error('Error in getProjectAbstractPdf:', error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Error getting project abstract PDF', 
+      error: error.message 
+    });
   }
 };

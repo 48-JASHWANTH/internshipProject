@@ -57,6 +57,15 @@ const createAuthSlice = (set, get) => ({
             get().clearStudentData();
         }
         
+        // Clear active works data
+        if (get().clearActiveWorks) {
+            get().clearActiveWorks();
+        }
+
+        if(get().clearArchiveProjects){
+            get().clearArchiveProjects();
+        }
+        
         // Clear auth header
         delete apiClient.defaults.headers.common['Authorization'];
         

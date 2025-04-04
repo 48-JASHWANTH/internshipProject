@@ -73,6 +73,14 @@ const TeamSchema = new mongoose.Schema({
     type: String,
     default: ""
   },
+  objectives: {
+    type: [String],
+    default: []
+  },
+  outcomes: {
+    type: [String],
+    default: []
+  },
   googleDriveLink: {
     type: String,
     default: ""
@@ -98,6 +106,10 @@ const TeamSchema = new mongoose.Schema({
   },
   githubURL: {
     type: String,
+  },
+  abstractPdfId: {
+    type: String,
+    default: null
   },
   guideApproval:{
     type: Boolean,

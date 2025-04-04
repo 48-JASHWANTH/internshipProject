@@ -1,7 +1,22 @@
 import { Router } from "express";
 import { studentLogin } from "../controllers/authController.js";
 import { verifyToken} from "../middleware/verifyToken.js";
-import { updateStudentAcademicData, updateStudentAdditional,updateStudentPersonal, getStudentDashBoardDetails, getStudentActiveWorks, getStudentArchive, getCampusProjects, getStudentData } from "../controllers/studentController.js";
+import { 
+  updateStudentAcademicData, 
+  updateStudentAdditional,
+  updateStudentPersonal, 
+  getStudentDashBoardDetails, 
+  getStudentActiveWorks, 
+  getStudentArchive, 
+  getCampusProjects, 
+  getStudentData,
+  updateProjectGithub,
+  updateProjectDrive,
+  updateProjectOverview,
+  updateTaskStatus,
+  getTeamReviews,
+  getTeamTasks
+} from "../controllers/studentController.js";
 const studentRoutes = Router();
 
 // Public routes
@@ -18,4 +33,15 @@ studentRoutes.get('/dashboard/:studentID',verifyToken , getStudentDashBoardDetai
 studentRoutes.get('/activeWorks/:studentID',verifyToken , getStudentActiveWorks)
 studentRoutes.get('/archive/:studentID',verifyToken , getStudentArchive)
 studentRoutes.get('/campusProjects',verifyToken , getCampusProjects)
+
+// New dedicated routes for reviews and tasks
+studentRoutes.get('/team/:teamId/reviews', verifyToken, getTeamReviews);
+studentRoutes.get('/team/:teamId/tasks', verifyToken, getTeamTasks);
+
+// Project update routes
+studentRoutes.put('/project/github/:teamId', verifyToken, updateProjectGithub);
+studentRoutes.put('/project/drive/:teamId', verifyToken, updateProjectDrive);
+studentRoutes.put('/project/overview/:teamId', verifyToken, updateProjectOverview);
+studentRoutes.put('/project/task/:teamId/:taskId', verifyToken, updateTaskStatus);
+
 export default studentRoutes;

@@ -1,11 +1,24 @@
 import { Router } from 'express';
 import { verifyToken } from '../middleware/verifyToken.js';
-import { deleteFile, downloadFile, getFileMetadata, uploadFile, upload, getStudentResume } from '../controllers/fileController.js';
+import { 
+  deleteFile, 
+  downloadFile, 
+  getFileMetadata, 
+  uploadFile, 
+  upload, 
+  getStudentResume,
+  uploadProjectAbstractPdf,
+  getProjectAbstractPdf
+} from '../controllers/fileController.js';
 
 const fileRoutes = Router();
 
 // File upload route with multer middleware
 fileRoutes.post('/upload', verifyToken, upload.single('pdf'), uploadFile);
+
+// Project abstract PDF routes
+fileRoutes.post('/project/abstract', verifyToken, upload.single('pdf'), uploadProjectAbstractPdf);
+fileRoutes.get('/project/abstract/:teamId', verifyToken, getProjectAbstractPdf);
 
 // Get student's resume
 fileRoutes.get('/resume/:studentId', verifyToken, getStudentResume);
