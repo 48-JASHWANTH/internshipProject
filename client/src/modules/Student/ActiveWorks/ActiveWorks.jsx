@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Search, Calendar, User } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { useStore } from '@/store/useStore';
+import { apiClient } from '@/lib/api-client';
 
 const ActiveWorks = () => {
   const navigate = useNavigate();
@@ -10,7 +11,9 @@ const ActiveWorks = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [availableCategories, setAvailableCategories] = useState(['all']);
   const [projects, setProjects] = useState([]);
-  const { user, activeWorks, loading, error, fetchActiveWorks } = useStore();
+  const { user } = useStore();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const getTypeColor = (type) => {
     const normalizedType = type?.toLowerCase() || '';
@@ -25,46 +28,59 @@ const ActiveWorks = () => {
     }
   };
 
-  // Transform and set projects when activeWorks changes
+  // Fetch active works directly from API
   useEffect(() => {
-    if (activeWorks?.success && activeWorks?.activeProjects) {
-      const transformedProjects = activeWorks.activeProjects.map(project => ({
-        id: project.teamId,
-        title: project.projectDetails.projectTitle,
-        category: project.projectDetails.projectType,
-        status: project.projectDetails.projectStatus,
-        startDate: new Date(project.projectDetails.startDate).toLocaleDateString(),
-        progress: calculateProgress(project.workDetails.tasks),
-        guide: project.facultyDetails.guide?.name || 'Not Assigned',
-        guideEmail: project.facultyDetails.guide?.email,
-        teamSize: project.teamDetails.members.length,
-        techStack: project.projectDetails.techStack || [],
-        lastReviewDate: project.workDetails.reviews.lastReviewDate 
-          ? new Date(project.workDetails.reviews.lastReviewDate).toLocaleDateString()
-          : 'No reviews yet',
-        // Keep full details for project page
-        workDetails: project.workDetails,
-        projectDetails: project.projectDetails,
-        facultyDetails: project.facultyDetails,
-        teamDetails: project.teamDetails
-      }));
+    const fetchActiveWorks = async () => {
+      if (!user?.studentID) return;
       
-      setProjects(transformedProjects);
+      try {
+        setLoading(true);
+        const response = await apiClient.get(`/student/activeworks/${user.studentID}`, {
+          withCredentials: true
+        });
+        
+        if (response.data.success && response.data.activeProjects) {
+          const transformedProjects = response.data.activeProjects.map(project => ({
+            id: project.teamId,
+            title: project.projectDetails.projectTitle,
+            category: project.projectDetails.projectType,
+            status: project.projectDetails.projectStatus,
+            startDate: new Date(project.projectDetails.startDate).toLocaleDateString(),
+            progress: calculateProgress(project.workDetails.tasks),
+            guide: project.facultyDetails.guide?.name || 'Not Assigned',
+            guideEmail: project.facultyDetails.guide?.email,
+            teamSize: project.teamDetails.members.length,
+            techStack: project.projectDetails.techStack || [],
+            lastReviewDate: project.workDetails.reviews.lastReviewDate 
+              ? new Date(project.workDetails.reviews.lastReviewDate).toLocaleDateString()
+              : 'No reviews yet',
+            // Keep full details for project page
+            workDetails: project.workDetails,
+            projectDetails: project.projectDetails,
+            facultyDetails: project.facultyDetails,
+            teamDetails: project.teamDetails
+          }));
+          
+          setProjects(transformedProjects);
 
-      // Update available categories
-      const categories = ['all'];
-      const uniqueCategories = new Set(transformedProjects.map(p => p.category).filter(Boolean));
-      categories.push(...uniqueCategories);
-      setAvailableCategories(categories);
-    }
-  }, [activeWorks]);
+          // Update available categories
+          const categories = ['all'];
+          const uniqueCategories = new Set(transformedProjects.map(p => p.category).filter(Boolean));
+          categories.push(...uniqueCategories);
+          setAvailableCategories(categories);
+        } else {
+          setError('Failed to fetch projects');
+        }
+      } catch (error) {
+        console.error('Error fetching active works:', error);
+        setError('Failed to fetch projects');
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  // Fetch active works from store only if not present
-  useEffect(() => {
-    if (user?.studentID && !activeWorks?.activeProjects) {
-      fetchActiveWorks(user.studentID);
-    }
-  }, [user?.studentID, activeWorks?.activeProjects, fetchActiveWorks]);
+    fetchActiveWorks();
+  }, [user?.studentID]);
 
   // Filter projects based on search and category
   const filteredProjects = projects.filter(project => {

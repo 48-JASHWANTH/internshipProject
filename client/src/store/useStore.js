@@ -20,7 +20,7 @@ export const useStore = create(
             ...createProjectForumSlice(set, get),
             ...createLeadedWorksSlice(set, get),
             ...createGuidedWorksSlice(set, get),
-            ...createActiveWorksSlice(set, get),
+            // ...createActiveWorksSlice(set, get),
             ...createArchiveProjectsSlice(set, get)
         }),
         // {

@@ -41,28 +41,46 @@ const ProjectDetails = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [abstractPdf, setAbstractPdf] = useState(null);
   const [showPdfPreview, setShowPdfPreview] = useState(false);
-  const { user, activeWorks, loading, error, fetchActiveWorks } = useStore();
-  const [needsRefresh, setNeedsRefresh] = useState(false);
+  const { user } = useStore();
+  const [project, setProject] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Get current project from activeWorks
-  const project = useMemo(() => {
-    if (!activeWorks?.activeProjects) return null;
-    return activeWorks.activeProjects.find(p => p.teamId === projectId);
-  }, [activeWorks?.activeProjects, projectId]);
-
-  // Get project from store and fetch if needed
+  // Fetch project details directly from API
   useEffect(() => {
-    if (user?.studentID) {
-      if (!activeWorks?.activeProjects) {
-        // Initial fetch if no data
-        fetchActiveWorks(user.studentID);
-      } else if (needsRefresh) {
-        // Force refresh after updates
-        fetchActiveWorks(user.studentID, true);
-        setNeedsRefresh(false);
+    const fetchProjectDetails = async () => {
+      if (!user?.studentID || !projectId) return;
+      
+      try {
+        setLoading(true);
+        const response = await apiClient.get(`/student/activeworks/${user.studentID}`, {
+          withCredentials: true
+        });
+        
+        if (response.data.success) {
+          const projectData = response.data.activeProjects.find(p => p.teamId === projectId);
+          if (projectData) {
+            setProject(projectData);
+            setGithubUrl(projectData.projectDetails.githubURL || '');
+            setDriveUrl(projectData.projectDetails.googleDriveLink || '');
+            setProjectOverview(projectData.projectDetails.projectOverview || '');
+            fetchAbstractPdf();
+          } else {
+            setError('Project not found');
+          }
+        } else {
+          setError('Failed to fetch project details');
+        }
+      } catch (error) {
+        console.error('Error fetching project details:', error);
+        setError('Failed to fetch project details');
+      } finally {
+        setLoading(false);
       }
-    }
-  }, [user?.studentID, activeWorks?.activeProjects, needsRefresh, fetchActiveWorks]);
+    };
+
+    fetchProjectDetails();
+  }, [user?.studentID, projectId]);
 
   // Fetch abstract PDF info
   const fetchAbstractPdf = async () => {
@@ -86,16 +104,6 @@ const ProjectDetails = () => {
     }
   };
 
-  // Update local state when project data changes
-  useEffect(() => {
-    if (project) {
-      setGithubUrl(project.projectDetails.githubURL || '');
-      setDriveUrl(project.projectDetails.googleDriveLink || '');
-      setProjectOverview(project.projectDetails.projectOverview || '');
-      fetchAbstractPdf();
-    }
-  }, [project]);
-
   const handleGithubUrlSubmit = async () => {
     if (!githubUrl.trim()) {
       toast.error('Please enter a valid GitHub URL');
@@ -111,7 +119,14 @@ const ProjectDetails = () => {
       if (response.data.success) {
         setIsGithubModalOpen(false);
         toast.success('GitHub repository linked successfully');
-        setNeedsRefresh(true);
+        // Update local state
+        setProject(prev => ({
+          ...prev,
+          projectDetails: {
+            ...prev.projectDetails,
+            githubURL: githubUrl
+          }
+        }));
       }
     } catch (error) {
       console.error('Error updating GitHub URL:', error);
@@ -134,7 +149,14 @@ const ProjectDetails = () => {
       if (response.data.success) {
         setIsDriveModalOpen(false);
         toast.success('Google Drive linked successfully');
-        setNeedsRefresh(true);
+        // Update local state
+        setProject(prev => ({
+          ...prev,
+          projectDetails: {
+            ...prev.projectDetails,
+            googleDriveLink: driveUrl
+          }
+        }));
       }
     } catch (error) {
       console.error('Error updating Drive URL:', error);
@@ -153,7 +175,14 @@ const ProjectDetails = () => {
       if (response.data.success) {
         setIsEditingOverview(false);
         toast.success('Project overview updated successfully');
-        setNeedsRefresh(true);
+        // Update local state
+        setProject(prev => ({
+          ...prev,
+          projectDetails: {
+            ...prev.projectDetails,
+            projectOverview
+          }
+        }));
       }
     } catch (error) {
       console.error('Error updating project overview:', error);
@@ -257,10 +286,10 @@ const ProjectDetails = () => {
     );
   }
 
-  if (!project) {
+  if (error || !project) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh]">
-        <h2 className="text-xl font-semibold text-gray-800">Project not found</h2>
+        <h2 className="text-xl font-semibold text-gray-800">{error || 'Project not found'}</h2>
         <button
           onClick={() => navigate('/Student/ActiveWorks')}
           className="mt-4 flex items-center gap-2 text-[#9b1a31] hover:underline"
