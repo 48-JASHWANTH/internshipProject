@@ -57,7 +57,7 @@ Content-Type: application/json
 Cookie: jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZTE3MDcxMmEyZDk0MTFkODkyNzU3MCIsInJvbGUiOiJmYWN1bHR5IiwiZW1haWwiOiIiLCJpYXQiOjE3NDI4MzE0MTEsImV4cCI6MjAwMjAzMTQxMX0.cwajFoiMU-eM_LXeI2hFnEfZv4AFXSKezY_2SlVptF4
 
 ### Add a new task to a team's workboard
-POST http://localhost:1544/faculty/team/1742886507270_1/task
+POST http://localhost:1544/faculty/team/1743267559686_1/task
 Content-Type: application/json
 Cookie: jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZTE3MDcxMmEyZDk0MTFkODkyNzU3MCIsInJvbGUiOiJmYWN1bHR5IiwiZW1haWwiOiIiLCJpYXQiOjE3NDI4MzE0MTEsImV4cCI6MjAwMjAzMTQxMX0.cwajFoiMU-eM_LXeI2hFnEfZv4AFXSKezY_2SlVptF4
 
@@ -75,7 +75,7 @@ Cookie: jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZTE3MDcxMmEyZDk0MTF
 }
 
 ### Add a new review to a team
-POST http://localhost:1544/faculty/team/1742886507270_1/review
+POST http://localhost:1544/faculty/team/1743267559686_1/review
 Content-Type: application/json
 Cookie: jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZTE3MDcxMmEyZDk0MTFkODkyNzU3MCIsInJvbGUiOiJmYWN1bHR5IiwiZW1haWwiOiIiLCJpYXQiOjE3NDI4MzE0MTEsImV4cCI6MjAwMjAzMTQxMX0.cwajFoiMU-eM_LXeI2hFnEfZv4AFXSKezY_2SlVptF4
 
@@ -98,12 +98,12 @@ Cookie: jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZTE3MDcxMmEyZDk0MTF
 }
 
 ### Get all tasks for a team
-GET http://localhost:1544/faculty/team/1742886507270_1/tasks
+GET http://localhost:1544/faculty/team/1743267559686_1/tasks
 Content-Type: application/json
 Cookie: jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZTE3MDcxMmEyZDk0MTFkODkyNzU3MCIsInJvbGUiOiJmYWN1bHR5IiwiZW1haWwiOiIiLCJpYXQiOjE3NDI4MzE0MTEsImV4cCI6MjAwMjAzMTQxMX0.cwajFoiMU-eM_LXeI2hFnEfZv4AFXSKezY_2SlVptF4
 
 ### Get all reviews for a team
-GET http://localhost:1544/faculty/team/1742886507270_1/reviews
+GET http://localhost:1544/faculty/team/1743267559686_1/reviews
 Content-Type: application/json
 Cookie: jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZTE3MDcxMmEyZDk0MTFkODkyNzU3MCIsInJvbGUiOiJmYWN1bHR5IiwiZW1haWwiOiIiLCJpYXQiOjE3NDI4MzE0MTEsImV4cCI6MjAwMjAzMTQxMX0.cwajFoiMU-eM_LXeI2hFnEfZv4AFXSKezY_2SlVptF4
 
@@ -117,4 +117,30 @@ GET http://localhost:1544/faculty/info/00CSE007
 Content-Type: application/json
 Cookie: jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZTE3MDcxMmEyZDk0MTFkODkyNzU3MCIsInJvbGUiOiJmYWN1bHR5IiwiZW1haWwiOiIiLCJpYXQiOjE3NDI4MzE0MTEsImV4cCI6MjAwMjAzMTQxMX0.cwajFoiMU-eM_LXeI2hFnEfZv4AFXSKezY_2SlVptF4
 
+### Mark class as completed (complete submission)
+PUT http://localhost:1544/faculty/complete-class/1743451674217
+Content-Type: application/json
+Cookie: jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZWFmNDEzYTUxMTY5NjdlNWZmY2E0NCIsInJvbGUiOiJmYWN1bHR5IiwiZW1haWwiOiIiLCJpYXQiOjE3NDM0OTM3MDMsImV4cCI6MjAwMjY5MzcwM30.nePrOAx7Hmudi2n-pCOMPEANwna2V5k5dBQ4nd9zvnI
 
+{
+  "facultyID": "00CSE007",
+  "completionDate": "2024-05-15"
+}
+
+### Get faculty by facultyID
+GET http://localhost:1544/faculty/00CSE007
+Content-Type: application/json
+Cookie: jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZWFmNDEzYTUxMTY5NjdlNWZmY2E0NCIsInJvbGUiOiJmYWN1bHR5IiwiZW1haWwiOiIiLCJpYXQiOjE3NDM0OTM3MDMsImV4cCI6MjAwMjY5MzcwM30.nePrOAx7Hmudi2n-pCOMPEANwna2V5k5dBQ4nd9zvnI
+
+### Update faculty data
+PUT http://localhost:1544/faculty/update/00CSE007
+Content-Type: application/json
+Cookie: jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZWFmNDEzYTUxMTY5NjdlNWZmY2E0NCIsInJvbGUiOiJmYWN1bHR5IiwiZW1haWwiOiIiLCJpYXQiOjE3NDM0OTM3MDMsImV4cCI6MjAwMjY5MzcwM30.nePrOAx7Hmudi2n-pCOMPEANwna2V5k5dBQ4nd9zvnI
+
+{
+  "phoneNumber": "+91 9876543210",
+  "qualification": "Ph.D. in Computer Science",
+  "googleScholarID": "https://scholar.google.com/citations?user=janesmith",
+  "vidwanID": "https://vidwan.inflibnet.ac.in/profile/janesmith",
+  "linkedInURL": "https://linkedin.com/in/janesmith"
+}

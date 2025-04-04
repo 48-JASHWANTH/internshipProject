@@ -1,16 +1,20 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Search, Calendar, User, ArrowLeft, ChevronRight } from 'lucide-react';
+import { Search, Calendar, User, ArrowLeft, ChevronRight, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import { format } from 'date-fns';
+import axios from 'axios';
+import toast from 'react-hot-toast';
 
 const InchargeClassTeams = () => {
   const navigate = useNavigate();
   const { classSection } = useParams();
   const [searchQuery, setSearchQuery] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
   
   // Get data from the store
-  const { activeProjects } = useStore();
+  const { activeProjects, user, fetchLeadedProjects } = useStore();
   
   // Find the section team and its teams
   const sectionTeam = useMemo(() => {
@@ -83,6 +87,52 @@ const InchargeClassTeams = () => {
     }
   };
 
+  // Handle complete submission
+  const handleCompleteSubmission = async () => {
+    if (!user?.facultyID) {
+      toast.error("Faculty ID not found");
+      return;
+    }
+    
+    setIsSubmitting(true);
+    
+    try {
+      const response = await axios.put(
+        `http://localhost:1544/faculty/complete-class/${classSection}`,
+        {
+          facultyID: user.facultyID,
+          completionDate: new Date().toISOString().split('T')[0]
+        },
+        {
+          withCredentials: true
+        }
+      );
+      
+      if (response.data.success) {
+        toast.success("Class marked as completed successfully!");
+        // Refresh the data
+        await fetchLeadedProjects(user.facultyID);
+        // Navigate back to active works
+        navigate('/Faculty/ActiveWorks/Incharge');
+      } else {
+        toast.error(response.data.message || "Failed to complete submission");
+      }
+    } catch (error) {
+      console.error("Error completing submission:", error);
+      toast.error(error.response?.data?.message || "An error occurred while completing submission");
+    } finally {
+      setIsSubmitting(false);
+      setShowConfirmModal(false);
+    }
+  };
+
+  // Calculate overall progress
+  const overallProgress = useMemo(() => {
+    if (teamsData.length === 0) return 0;
+    const totalProgress = teamsData.reduce((sum, team) => sum + team.progress, 0);
+    return Math.round(totalProgress / teamsData.length);
+  }, [teamsData]);
+
   return (
     <div className="flex justify-center p-6">
       <div className="w-full max-w-6xl">
@@ -109,6 +159,41 @@ const InchargeClassTeams = () => {
               {sectionTeam.projectType} • {sectionTeam.numberOfTeams} Teams
             </p>
           )}
+        </div>
+        
+        {/* Overall Progress and Complete Submission Button */}
+        <div className="bg-white rounded-lg shadow-sm p-6 mb-6 flex flex-col md:flex-row justify-between items-center gap-4">
+          <div className="flex-1">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Overall Progress</h3>
+            <div className="flex justify-between items-center mb-1">
+              <span className="text-sm font-medium text-gray-700">Class Completion</span>
+              <span className="text-sm font-medium text-[#9b1a31]">{overallProgress}%</span>
+            </div>
+            <div className="w-full bg-gray-100 rounded-full h-2.5">
+              <div
+                className="bg-[#9b1a31] rounded-full h-2.5 transition-all duration-300"
+                style={{ width: `${overallProgress}%` }}
+              />
+            </div>
+          </div>
+          
+          <button
+            onClick={() => setShowConfirmModal(true)}
+            disabled={isSubmitting}
+            className="px-4 py-2 bg-[#9b1a31] text-white rounded-lg hover:bg-[#7d1527] transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isSubmitting ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Submitting...
+              </>
+            ) : (
+              <>
+                <CheckCircle className="w-4 h-4" />
+                Complete Submission
+              </>
+            )}
+          </button>
         </div>
         
         {/* Search Bar */}
@@ -189,6 +274,45 @@ const InchargeClassTeams = () => {
           </div>
         )}
       </div>
+
+      {/* Confirmation Modal */}
+      {showConfirmModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full">
+            <div className="flex items-center gap-3 mb-4">
+              <AlertCircle className="w-6 h-6 text-[#9b1a31]" />
+              <h3 className="text-xl font-semibold text-gray-900">Confirm Completion</h3>
+            </div>
+            
+            <p className="text-gray-600 mb-6">
+              Are you sure you want to mark this class as completed? This action will move all teams to the archived projects section and cannot be undone.
+            </p>
+            
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setShowConfirmModal(false)}
+                className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleCompleteSubmission}
+                disabled={isSubmitting}
+                className="px-4 py-2 bg-[#9b1a31] text-white rounded-lg hover:bg-[#7d1527] transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Submitting...
+                  </>
+                ) : (
+                  "Complete"
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -4,7 +4,7 @@ import { format } from 'date-fns';
 import { useStore } from '@/store/useStore';
 import AddTaskModal from './components/AddTaskModal';
 
-const TaskCard = ({ task, onStatusChange, onApprove }) => {
+const TaskCard = ({ task, onApprove }) => {
   const priorityColors = {
     Low: 'bg-green-100 text-green-800 border-green-200',
     Medium: 'bg-yellow-100 text-yellow-800 border-yellow-200',
@@ -67,16 +67,6 @@ const TaskCard = ({ task, onStatusChange, onApprove }) => {
       </div>
 
       <div >
-        {/* <select
-          className="text-sm border rounded-lg px-3 py-1.5 bg-white focus:ring-2 focus:ring-[#9b1a31] focus:border-[#9b1a31] outline-none"
-          value={task.status}
-          onChange={(e) => onStatusChange(task._id, e.target.value)}
-        >
-          <option value="todo">To Do</option>
-          <option value="in_progress">In Progress</option>
-          <option value="done">Done</option>
-        </select> */}
-
         {task.status === 'done' && (
           <button
             onClick={() => onApprove(task._id)}

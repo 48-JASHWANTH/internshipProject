@@ -1,0 +1,48 @@
+### Create a new project
+POST http://localhost:1544/forum-projects/create-forum-projects
+Content-Type: application/json
+Cookie: jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZWFmNDEzYTUxMTY5NjdlNWZmY2E0NCIsInJvbGUiOiJmYWN1bHR5IiwiZW1haWwiOiIiLCJpYXQiOjE3NDM1MDE4MjgsImV4cCI6MjAwMjcwMTgyOH0.5y9A9_ALBR9QDnDmQzaMBTp63UH8cR5AYoFEnPhn9Ks
+
+{
+  "Description": "A project to develop an AI-powered chatbot for student queries",
+  "Domain": "Artificial Intelligence",
+  "TechStack": ["Python", "TensorFlow", "Flask", "React"],
+  "Title": "AI Student Assistant",
+  "facultyId": "00CSE007"
+}
+
+### Get all projects
+GET http://localhost:1544/forum-projects/get-all-forumProjects
+Content-Type: application/json
+Cookie: jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZWFmNDEzYTUxMTY5NjdlNWZmY2E0NCIsInJvbGUiOiJmYWN1bHR5IiwiZW1haWwiOiIiLCJpYXQiOjE3NDM1MDE4MjgsImV4cCI6MjAwMjcwMTgyOH0.5y9A9_ALBR9QDnDmQzaMBTp63UH8cR5AYoFEnPhn9Ks
+
+### Get projects by faculty ID
+GET http://localhost:1544/forum-projects/00CSE007
+Content-Type: application/json
+Cookie: jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZWFmNDEzYTUxMTY5NjdlNWZmY2E0NCIsInJvbGUiOiJmYWN1bHR5IiwiZW1haWwiOiIiLCJpYXQiOjE3NDM0OTM3MDMsImV4cCI6MjAwMjY5MzcwM30.nePrOAx7Hmudi2n-pCOMPEANwna2V5k5dBQ4nd9zvnI
+
+### Update project status (replace 1743567890123 with an actual projectId)
+PUT http://localhost:1544/forum-projects/1743502424103/status
+Content-Type: application/json
+Cookie: jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZWFmNDEzYTUxMTY5NjdlNWZmY2E0NCIsInJvbGUiOiJmYWN1bHR5IiwiZW1haWwiOiIiLCJpYXQiOjE3NDM0OTM3MDMsImV4cCI6MjAwMjY5MzcwM30.nePrOAx7Hmudi2n-pCOMPEANwna2V5k5dBQ4nd9zvnI
+
+{
+  "status": "Close"
+}
+
+### Express interest in a project (replace 1743567890123 with an actual projectId)
+POST http://localhost:1544/forum-projects/1743502424103/express-interest
+Content-Type: application/json
+Cookie: jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZWFmNDEzYTUxMTY5NjdlNWZmY2E0NCIsInJvbGUiOiJmYWN1bHR5IiwiZW1haWwiOiIiLCJpYXQiOjE3NDM0OTM3MDMsImV4cCI6MjAwMjY5MzcwM30.nePrOAx7Hmudi2n-pCOMPEANwna2V5k5dBQ4nd9zvnI
+
+{
+  "studentID": "22071A3237",
+  "name": "John Doe",
+  "branch": "Computer Science and Engineering",
+  "mail": "john.doe@example.com"
+}
+
+### Get project details by projectId
+GET http://localhost:1544/forum-projects/project/1743502424103
+Content-Type: application/json
+Cookie: jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZWFmNDEzYTUxMTY5NjdlNWZmY2E0NCIsInJvbGUiOiJmYWN1bHR5IiwiZW1haWwiOiIiLCJpYXQiOjE3NDM0OTM3MDMsImV4cCI6MjAwMjY5MzcwM30.nePrOAx7Hmudi2n-pCOMPEANwna2V5k5dBQ4nd9zvnI

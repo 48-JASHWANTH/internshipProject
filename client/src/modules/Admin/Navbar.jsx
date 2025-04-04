@@ -2,11 +2,16 @@ import React, { useState, useRef, useEffect } from "react";
 import { FaUserCircle, FaBell, FaBars, FaTimes } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import vnrlogo from "../images/vnrvjiet.png";
-import { useStore } from "@/store/useStore";
 
 const Navbar = ({ isMobileMenuOpen, setIsMobileMenuOpen }) => {
-  const profileData = useStore(state => state.profileData);
-  const logout = useStore(state => state.logout);
+  // Static profile data
+  const profileData = {
+    name: "Admin User",
+    regNumber: "ADMIN001",
+    email: "admin@vnrvjiet.in",
+    profilePic: null // Set to null to show the default icon
+  };
+
   const [showProfile, setShowProfile] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const navigate = useNavigate(); 
@@ -25,7 +30,8 @@ const Navbar = ({ isMobileMenuOpen, setIsMobileMenuOpen }) => {
 
   const handleLogout = () => {
     setShowProfile(false);
-    logout();
+    // Remove token from localStorage
+    localStorage.removeItem("userToken");
     navigate("/");
   };
 

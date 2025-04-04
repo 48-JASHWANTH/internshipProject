@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Search, User, Calendar, ArrowLeft } from "lucide-react";
+import { Search, ArrowLeft } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { FaGithub, FaGoogleDrive, FaEye, FaUsers, FaClipboardCheck } from "react-icons/fa";
 import { Link } from "react-router-dom";

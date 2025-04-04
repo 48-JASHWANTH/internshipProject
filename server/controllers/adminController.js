@@ -5,15 +5,16 @@ import Faculty from "../models/facultyModel.js";
 
 export const addStudents = async (req, res) => {
   try {
-    const { students } = req.body; // Object with studentID: name pairs
+    const { students, department, batch } = req.body; // Get department and batch from request
 
     const createdStudents = await Promise.all(
       Object.entries(students).map(async ([studentID, name]) => {
-        // Create student with just ID and name
-        // All other fields will use their default values
+        // Create student with ID, name, department, and batch
         return await Student.create({
           studentID,
-          name
+          name,
+          department, // Add department from request
+          batch      // Add batch from request
         });
       })
     );

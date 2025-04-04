@@ -1,12 +1,10 @@
 import React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { useStore } from "@/store/useStore";
 import { FaChevronRight, FaHome, FaArchive, FaForumbee, FaBriefcase, FaGraduationCap, FaUserCircle, FaBell } from "react-icons/fa";
 
 const Sidemenu = ({ isProfilePage, isMobileMenuOpen, setIsMobileMenuOpen }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { profileData } = useStore();
 
   const menuItems = [
     { text: "Dashboard", icon: <FaHome size={20} />, path: "/Student/Dashboard" },
@@ -35,34 +33,17 @@ const Sidemenu = ({ isProfilePage, isMobileMenuOpen, setIsMobileMenuOpen }) => {
       onClick={() => setIsMobileMenuOpen(false)}
     >
       <div 
-        className={`fixed top-0 left-0 h-full w-full bg-[#82001A] transform transition-transform duration-300 ease-in-out
+        className={`fixed top-0 left-0 h-full w-full bg-[#82001A] transform transition-transform duration-300 ease-in-out flex flex-col
           ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Simplified User Info Section */}
-        <div className="bg-[#82001A] p-4 pt-20">
-          <div className="flex items-center space-x-3 mb-4 border-b border-[#9b1a31] pb-4">
-            <div className="w-12 h-12 rounded-full overflow-hidden bg-white">
-              {profileData.profilePic ? (
-                <img 
-                  src={profileData.profilePic} 
-                  alt="Profile" 
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <FaUserCircle className="w-full h-full text-gray-400" />
-              )}
-            </div>
-            <div className="text-white">
-              <p className="text-sm font-medium">Welcome,</p>
-              <p className="text-xs opacity-90 py-1">{profileData.name}</p>
-              <p className="text-xs opacity-75">Student ID: {profileData.regNumber}</p>
-            </div>
-          </div>
+        {/* Simple Header */}
+        <div className="bg-[#82001A] p-4 pt-12 pb-6 border-b border-[#9b1a31]">
+          <h2 className="text-xl font-bold text-white text-center"></h2>
         </div>
 
         {/* Menu Items */}
-        <div className="mt-2 flex-grow overflow-y-auto">
+        <div className="flex-grow overflow-y-auto">
           {menuItems.map((item) => (
             <div 
               key={item.path} 
@@ -92,22 +73,24 @@ const Sidemenu = ({ isProfilePage, isMobileMenuOpen, setIsMobileMenuOpen }) => {
         {/* Add notifications before bottom */}
         <div className="mt-auto border-t border-[#9b1a31]">
           <div 
-            className={`flex items-center justify-between p-4 pb-8 hover:bg-[#9b1a31] cursor-pointer transition-all duration-200 ease-in-out ${
-              location.pathname === notificationsItem.path ? 'bg-[#9b1a31]' : ''
-            }`}
+            className="flex items-center justify-between py-4 px-4 pb-6 bg-[#82001A] hover:bg-[#9b1a31] cursor-pointer transition-all duration-200 ease-in-out"
             onClick={() => handleClick(notificationsItem)}
+            tabIndex="0"
+            role="button"
+            aria-label="Navigate to Notifications"
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                handleClick(notificationsItem);
+              }
+            }}
           >
             <div className="flex items-center gap-4 pl-6">
-              <span className={`text-white ${
-                location.pathname === notificationsItem.path ? 'text-yellow-400' : ''
-              }`}>{notificationsItem.icon}</span>
-              <span className={`font-medium text-lg tracking-wide text-white ${
-                location.pathname === notificationsItem.path ? 'text-yellow-400' : ''
-              }`}>{notificationsItem.text}</span>
+              <span className="text-white">{notificationsItem.icon}</span>
+              <span className="font-medium text-lg tracking-wide text-white">{notificationsItem.text}</span>
             </div>
             <FaChevronRight 
               size={14} 
-              className={`mr-4 ${location.pathname === notificationsItem.path ? 'text-yellow-400' : 'text-white'}`}
+              className="mr-4 text-yellow-400"
             />
           </div>
         </div>
@@ -143,7 +126,7 @@ const Sidemenu = ({ isProfilePage, isMobileMenuOpen, setIsMobileMenuOpen }) => {
               {!isProfilePage && (
                 <FaChevronRight 
                   size={14} 
-                  className={`mr-4 ${location.pathname === item.path ? 'text-yellow-400' : 'text-yellow-400'}`}
+                  className={`mr-4 ${location.pathname === item.path ? 'text-yellow-400' : 'text-white'}`}
                 />
               )}
             </div>
@@ -152,27 +135,29 @@ const Sidemenu = ({ isProfilePage, isMobileMenuOpen, setIsMobileMenuOpen }) => {
       </div>
 
       {/* Add notifications before bottom */}
-      <div className="mt-auto border-t border-[#9b1a31] py-4">
+      <div className="mt-auto border-t border-[#9b1a31]">
         <div 
-          className={`flex items-center justify-between p-4 hover:bg-[#9b1a31] cursor-pointer transition-all duration-200 ease-in-out ${
-            location.pathname === notificationsItem.path ? 'bg-[#9b1a31]' : ''
-          }`}
+          className="flex items-center justify-between p-4 bg-[#82001A] hover:bg-[#9b1a31] cursor-pointer transition-all duration-200 ease-in-out"
           onClick={() => handleClick(notificationsItem)}
+          tabIndex="0"
+          role="button"
+          aria-label="Navigate to Notifications"
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              handleClick(notificationsItem);
+            }
+          }}
         >
           <div className="flex items-center gap-4 pl-6">
-            <span className={`text-white ${
-              location.pathname === notificationsItem.path ? 'text-yellow-400' : ''
-            }`}>{notificationsItem.icon}</span>
+            <span className="text-white">{notificationsItem.icon}</span>
             {!isProfilePage && (
-              <span className={`font-medium text-sm tracking-wide ${
-                location.pathname === notificationsItem.path ? 'text-yellow-400' : ''
-              }`}>{notificationsItem.text}</span>
+              <span className="font-medium text-sm tracking-wide text-white">{notificationsItem.text}</span>
             )}
           </div>
           {!isProfilePage && (
             <FaChevronRight 
               size={14} 
-              className={`mr-4 ${location.pathname === notificationsItem.path ? 'text-yellow-400' : 'text-yellow-400'}`}
+              className="mr-4 text-yellow-400"
             />
           )}
         </div>

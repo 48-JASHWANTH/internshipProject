@@ -2,6 +2,10 @@ import mongoose from "mongoose";
 
 // Enhanced review schema based on InchargeReviews.jsx mock data
 const reviewSchema = new mongoose.Schema({
+  reviewId: { 
+    type: String, 
+    default: () => `${Date.now()}_${Math.floor(Math.random() * 1000)}` 
+  },
   reviewName: { type: String, required: true },
   dateOfReview: { type: Date, default: Date.now },
   satisfactionLevel: { 
@@ -23,6 +27,10 @@ const reviewSchema = new mongoose.Schema({
 
 // New workboard schema based on InchargeWorkboard.jsx mock data
 const taskSchema = new mongoose.Schema({
+  taskId: { 
+    type: String, 
+    default: () => `${Date.now()}_${Math.floor(Math.random() * 1000)}` 
+  },
   title: { type: String, required: true },
   description: { type: String },
   dueDate: { type: Date, required: true },
@@ -112,6 +120,10 @@ const TeamSchema = new mongoose.Schema({
   completedDate:{
     type:Date,
     default:null
+  },
+  batch: {
+    type: String,
+    default: ''
   }
 }, { timestamps: true });
 

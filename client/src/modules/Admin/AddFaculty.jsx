@@ -149,6 +149,8 @@ const AddFaculty = () => {
             details: details
           }, {withCredentials: true});
 
+          
+
           if (response.data.success) {
             toast.success(`${Object.keys(faculties).length} faculty members added successfully`);
             navigate('/Admin/Faculty');

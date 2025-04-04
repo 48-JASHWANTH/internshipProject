@@ -17,9 +17,12 @@ const PasswordResetSchema = new mongoose.Schema({
   createdAt: {
     type: Date,
     default: Date.now,
-    expires: 900 // Token expires after 15 minutes (900 seconds)
+    expires: 86400 // Token expires after 24 hours (86400 seconds)
   }
 });
+
+// Compound index to ensure uniqueness of userId and userType combination
+PasswordResetSchema.index({ userId: 1, userType: 1 }, { unique: true });
 
 const PasswordReset = mongoose.model("PasswordReset", PasswordResetSchema);
 export default PasswordReset; 

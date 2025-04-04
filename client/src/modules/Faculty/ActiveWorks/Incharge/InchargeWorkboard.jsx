@@ -50,6 +50,10 @@ const TaskCard = ({ task, onStatusChange, onApprove }) => {
     }
   };
 
+  const handleApproveClick = () => {
+    onApprove(task.taskId);
+  };
+
   return (
     <div className="bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-all border border-gray-100 mb-4">
       <div className="flex justify-between items-start mb-4">
@@ -80,19 +84,9 @@ const TaskCard = ({ task, onStatusChange, onApprove }) => {
       </div>
 
       <div>
-        {/* <select
-          className="text-sm border rounded-lg px-3 py-1.5 bg-white focus:ring-2 focus:ring-[#9b1a31] focus:border-[#9b1a31] outline-none"
-          value={task.status}
-          onChange={(e) => onStatusChange(task._id, e.target.value)}
-        >
-          <option value="todo">To Do</option>
-          <option value="in_progress">In Progress</option>
-          <option value="done">Done</option>
-        </select> */}
-
         {task.status === 'done' && (
           <button
-            onClick={() => onApprove(task._id)}
+            onClick={handleApproveClick}
             className="px-4 py-1.5 bg-[#9b1a31] text-white rounded-lg hover:bg-[#82001A] transition-colors text-sm flex items-center gap-2"
           >
             <CheckCircle className="w-4 h-4" />
@@ -106,9 +100,8 @@ const TaskCard = ({ task, onStatusChange, onApprove }) => {
 
 const InchargeWorkboard = ({ projectId }) => {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [tasks, setTasks] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const { activeProjects, user } = useStore();
+  const [isLoading, setIsLoading] = useState(false);
+  const { activeProjects, user, fetchLeadedProjects } = useStore();
   
   // Find the team data
   const team = useMemo(() => {
@@ -116,125 +109,85 @@ const InchargeWorkboard = ({ projectId }) => {
     return activeProjects.teams.find(t => t.teamId === projectId);
   }, [activeProjects, projectId]);
   
-  // Fetch tasks for this team
-  useEffect(() => {
-    const fetchTasks = async () => {
-      if (!projectId) return;
-      
-      try {
-        setIsLoading(true);
-        const response = await apiClient.get(`/faculty/team/${projectId}/tasks`, {
-          withCredentials: true
-        });
-        
-        if (response.data.success) {
-          setTasks(response.data.tasks || []);
-        } else {
-          toast.error('Failed to fetch tasks');
-        }
-      } catch (error) {
-        console.error('Error fetching tasks:', error);
-        toast.error('Error loading tasks');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    
-    fetchTasks();
-  }, [projectId]);
+  // Get tasks directly from the team object
+  const tasks = useMemo(() => {
+    return team?.tasks || [];
+  }, [team]);
   
   const handleStatusChange = async (taskId, newStatus) => {
     try {
-      // Optimistically update UI
-      setTasks(tasks.map(task => 
-        task._id === taskId ? { ...task, status: newStatus } : task
-      ));
-      
       // Update on server
       await apiClient.put(`/faculty/team/${projectId}/task/${taskId}`, {
         status: newStatus
       }, { withCredentials: true });
       
+      // Update in store by refreshing the team data
+      if (user?.facultyID) {
+        await useStore.getState().fetchLeadedProjects(user.facultyID);
+      }
+      
       toast.success('Task status updated');
     } catch (error) {
       console.error('Error updating task status:', error);
       toast.error('Failed to update task status');
-      
-      // Revert optimistic update on failure
-      const response = await apiClient.get(`/faculty/team/${projectId}/tasks`, {
-        withCredentials: true
-      });
-      
-      if (response.data.success) {
-        setTasks(response.data.tasks || []);
-      }
     }
   };
   
   const handleApprove = async (taskId) => {
     try {
-      // Optimistically update UI
-      setTasks(tasks.map(task =>
-        task._id === taskId ? { ...task, status: 'approved' } : task
-      ));
+      // Make sure taskId is properly defined and not undefined
+      if (!taskId) {
+        console.error('Task ID is undefined or empty');
+        toast.error('Invalid task ID');
+        return;
+      }
+      
+      console.log('Approving task with ID:', taskId); // Add this for debugging
       
       // Update on server
       await apiClient.put(`/faculty/team/${projectId}/task/${taskId}`, {
         status: 'approved'
       }, { withCredentials: true });
       
+      // Update in store by refreshing the team data
+      if (user?.facultyID) {
+        await useStore.getState().fetchLeadedProjects(user.facultyID);
+      }
+      
       toast.success('Task approved');
     } catch (error) {
       console.error('Error approving task:', error);
       toast.error('Failed to approve task');
-      
-      // Revert optimistic update on failure
-      const response = await apiClient.get(`/faculty/team/${projectId}/tasks`, {
-        withCredentials: true
-      });
-      
-      if (response.data.success) {
-        setTasks(response.data.tasks || []);
-      }
     }
   };
   
-  const handleAddTask = async (newTask) => {
+  // This function will be passed to AddTaskModal
+  const handleAddTask = async (taskData) => {
     try {
-      const taskData = {
-        ...newTask,
-        assignedBy: {
-          name: user?.name || 'Faculty',
-          type: 'Incharge',
-          facultyID: user?.facultyID
-        }
-      };
+      setIsLoading(true);
       
-      const response = await apiClient.post(`/faculty/team/${projectId}/task`, 
-        taskData, 
-        { withCredentials: true }
-      );
-      
-      if (response.data.success) {
-        // Refresh tasks
-        const tasksResponse = await apiClient.get(`/faculty/team/${projectId}/tasks`, {
-          withCredentials: true
-        });
-        
-        if (tasksResponse.data.success) {
-          setTasks(tasksResponse.data.tasks || []);
-          toast.success('Task added successfully');
-        }
-      } else {
-        toast.error('Failed to add task');
+      // After the task is added successfully in AddTaskModal
+      // Refresh the team data to get the updated tasks
+      if (user?.facultyID) {
+        await useStore.getState().fetchLeadedProjects(user.facultyID);
       }
-    } catch (error) {
-      console.error('Error adding task:', error);
-      toast.error('Error adding task');
-    } finally {
+      
+      // Close the modal after successful refresh
       setIsAddModalOpen(false);
+      
+      return true; // Indicate success to AddTaskModal
+    } catch (error) {
+      console.error('Error refreshing tasks:', error);
+      return false; // Indicate failure to AddTaskModal
+    } finally {
+      setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    // Log the tasks to see their structure
+    console.log('Tasks:', tasks);
+  }, [tasks]);
 
   if (isLoading) {
     return (
@@ -288,6 +241,7 @@ const InchargeWorkboard = ({ projectId }) => {
           onClose={() => setIsAddModalOpen(false)} 
           onAddTask={handleAddTask}
           teamMembers={team?.listOfStudents || []}
+          projectId={projectId}  // Pass projectId to AddTaskModal
         />
       )}
     </div>

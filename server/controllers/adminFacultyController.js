@@ -3,18 +3,22 @@ import Faculty from "../models/facultyModel.js";
 // Add faculty
 export const addFaculty = async (req, res) => {
   try {
-    //console.log(req.body);
-    const { faculties } = req.body; // Object with facultyID: name pairs
-    // console.log(faculties);
+    const { faculties, details } = req.body; // Get faculties and details from request
+    
     const createdFaculties = await Promise.all(
       Object.entries(faculties).map(async ([facultyID, name]) => {
-        console.log(facultyID, name);
+        // Get department and designation from details if available
+        const facultyDetails = details && details[facultyID] ? details[facultyID] : {};
+        
         return await Faculty.create({
           facultyID,
           name,
+          department: facultyDetails.department || '',  // Add department from details
+          designation: facultyDetails.designation || '' // Add designation from details
         });
       })
     );
+    
     res.status(201).json({
       success: true,
       message: `Successfully added ${createdFaculties.length} faculty members`,

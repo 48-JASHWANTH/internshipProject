@@ -4,7 +4,7 @@ import { apiClient } from '@/lib/api-client';
 import { useStore } from '@/store/useStore';
 import toast from 'react-hot-toast';
 
-const AddTaskModal = ({ onClose, onAddTask, teamMembers = [] }) => {
+const AddTaskModal = ({ onClose, onAddTask, teamMembers = [], projectId }) => {
   const { user } = useStore();
   const [formData, setFormData] = useState({
     title: '',
@@ -12,6 +12,7 @@ const AddTaskModal = ({ onClose, onAddTask, teamMembers = [] }) => {
     dueDate: '',
     priority: 'Medium'
   });
+
   const [selectedStudents, setSelectedStudents] = useState([]);
   const [showSuccess, setShowSuccess] = useState(false);
   const [errors, setErrors] = useState({});
@@ -69,13 +70,25 @@ const AddTaskModal = ({ onClose, onAddTask, teamMembers = [] }) => {
         }
       };
 
-      // Call the onAddTask function with the task data
-      // This will be handled by the parent component (InchargeWorkboard)
-      if (onAddTask) {
-        await onAddTask(taskData);
+      console.log(taskData);
+      // Make the API call directly from here
+      const response = await apiClient.post(
+        `/faculty/team/${projectId}/task`, 
+        taskData, 
+        { withCredentials: true }
+      );
+
+
+      console.log(response);
+      
+      if (response.data.success) {
+        // Call the onAddTask function to refresh data in the parent component
+        if (onAddTask) {
+          await onAddTask(taskData);
+        }
         setShowSuccess(true);
       } else {
-        toast.error('Error: Task submission handler not provided');
+        toast.error('Failed to add task');
       }
     } catch (error) {
       console.error('Error submitting task:', error);

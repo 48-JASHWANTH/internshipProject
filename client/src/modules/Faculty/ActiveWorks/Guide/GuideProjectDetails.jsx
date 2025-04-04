@@ -48,20 +48,16 @@ const GuideProjectDetails = () => {
     const teamData = guidedProjects.teams.find(team => team.teamId === projectId);
     if (!teamData) return null;
     
-    // Find the latest review to determine progress
-    const latestReview = teamData.reviews && teamData.reviews.length > 0 
-      ? teamData.reviews.sort((a, b) => new Date(b.dateOfReview) - new Date(a.dateOfReview))[0]
-      : null;
+    // Calculate progress based on tasks (same formula as in InchargeProjectDetails.jsx)
+    const totalTasks = teamData.tasks?.length || 0;
+    const completedTasks = teamData.tasks?.filter(task => 
+      task.status === 'done' || task.status === 'approved'
+    ).length || 0;
     
-    // Calculate progress percentage from the latest review's progress field
-    let progressPercentage = 0;
-    if (latestReview?.progress) {
-      const progressStr = latestReview.progress;
-      const match = progressStr.match(/(\d+)%?/);
-      if (match) {
-        progressPercentage = parseInt(match[1], 10);
-      }
-    }
+    // Calculate progress percentage
+    const progress = totalTasks > 0 
+      ? Math.round((completedTasks / totalTasks) * 100) 
+      : 0;
     
     // Format team members - handle both old and new data structures
     const teamMembers = teamData.listOfStudents.map((student, index) => {
@@ -70,14 +66,12 @@ const GuideProjectDetails = () => {
         return {
           id: student.id,
           name: student.name,
-          role: index === 0 ? "Team Lead" : "Team Member"
         };
       } else {
         // Handle the old format where student is just an ID string
         return {
           id: student,
           name: student, // Use ID as name for backward compatibility
-          role: index === 0 ? "Team Lead" : "Team Member"
         };
       }
     });
@@ -88,7 +82,7 @@ const GuideProjectDetails = () => {
       category: teamData.projectType,
       status: teamData.status ? "Completed" : "In Progress",
       startDate: format(new Date(teamData.createdAt), 'yyyy-MM-dd'),
-      progress: progressPercentage,
+      progress: progress, // Using the task-based progress calculation
       Abstract: teamData.projectOverview || "No project overview available.",
       facultyGuide: user?.name || "Faculty Guide",
       facultyEmail: user?.email || "",
@@ -320,7 +314,6 @@ const GuideProjectDetails = () => {
                   </div>
                   <div>
                     <p className="text-gray-900 font-medium">{member.name}</p>
-                    <p className="text-gray-600 text-sm">{member.role}</p>
                   </div>
                 </div>
               ))}

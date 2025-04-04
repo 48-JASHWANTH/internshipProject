@@ -1,27 +1,115 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Edit, X } from 'lucide-react';
-import {useStore} from '@/store/useStore';
+import { useStore } from '@/store/useStore';
+import axios from 'axios';
+import { toast } from 'react-hot-toast';
 
 const BasicInfo = () => {
-  const { profileData, updateProfileData } = useStore();
+  const { profileData, updateProfileData, isLoading, error, fetchProfileData } = useStore();
+  const { user } = useStore();
   const [isEditing, setIsEditing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [employeeData, setEmployeeData] = useState({
-    workLocation: profileData.workLocation || "Main Campus",
-    department: profileData.department || "Computer Science",
-    designation: profileData.designation || "Assistant Professor",
-    manager1: profileData.manager1 || "",
-    manager2: profileData.manager2 || "",
-    employmentType: profileData.employmentType || "Full-Time",
-    teachType: profileData.teachType || "Regular",
-    shift: profileData.shift || "General Shift",
-    status: profileData.status || "Active"
+    workLocation: '',
+    department: '',
+    designation: '',
+    manager1: '',
+    manager2: '',
+    employmentType: '',
+    teachType: '',
+    shift: '',
+    status: ''
   });
 
-  const handleSaveChanges = (e) => {
+  // Update local state when profileData changes
+  useEffect(() => {
+    if (profileData) {
+      setEmployeeData({
+        workLocation: profileData.workLocation || '',
+        department: profileData.department || '',
+        designation: profileData.designation || '',
+        manager1: profileData.manager1 || '',
+        manager2: profileData.manager2 || '',
+        employmentType: profileData.employmentType || '',
+        teachType: profileData.teachType || '',
+        shift: profileData.shift || '',
+        status: profileData.status || ''
+      });
+    }
+  }, [profileData]);
+
+  const handleSaveChanges = async (e) => {
     e.preventDefault();
-    updateProfileData(employeeData);
-    setIsEditing(false);
+    setIsSaving(true);
+    
+    try {
+      // Get faculty ID from user state or profile data
+      const facultyId = user?.facultyID || profileData?.empcode;
+      
+      if (!facultyId) {
+        toast.error('Faculty ID not found');
+        setIsSaving(false);
+        return;
+      }
+      
+      // Make API call to update faculty data
+      const response = await axios.put(
+        `http://localhost:1544/faculty/update/${facultyId}`,
+        employeeData,
+        { withCredentials: true }
+      );
+      
+      if (response.data.success) {
+        // Update local state
+        updateProfileData(employeeData);
+        
+        // Refresh profile data from server
+        if (fetchProfileData) {
+          fetchProfileData(facultyId);
+        }
+        
+        toast.success('Employee information updated successfully');
+        setIsEditing(false);
+      } else {
+        toast.error(response.data.message || 'Failed to update employee information');
+      }
+    } catch (error) {
+      console.error('Error updating employee information:', error);
+      toast.error(error.response?.data?.message || 'An error occurred while updating employee information');
+    } finally {
+      setIsSaving(false);
+    }
   };
+
+  if (isLoading) {
+    return (
+      <div className="mt-4 p-2 md:p-4">
+        <div className="flex justify-center items-center h-40">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#82001A]"></div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="mt-4 p-2 md:p-4">
+        <div className="bg-red-50 text-red-700 p-4 rounded-lg">
+          <p>Error loading profile data: {error}</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!profileData) {
+    return (
+      <div className="mt-4 p-2 md:p-4">
+        <div className="bg-yellow-50 text-yellow-700 p-4 rounded-lg">
+          <p>No profile data available. Please try again later.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="mt-4 p-2 md:p-4">
@@ -50,15 +138,15 @@ const BasicInfo = () => {
           </thead>
           <tbody className="divide-y divide-gray-200">
             {[
-              ["Work Location", profileData.workLocation || employeeData.workLocation],
-              ["Department", profileData.department || employeeData.department],
-              ["Designation", profileData.designation || employeeData.designation],
-              ["Manager 1", profileData.manager1 || employeeData.manager1],
-              ["Manager 2", profileData.manager2 || employeeData.manager2],
-              ["Employment Type", profileData.employmentType || employeeData.employmentType],
-              ["Teach Type", profileData.teachType || employeeData.teachType],
-              ["Shift", profileData.shift || employeeData.shift],
-              ["Status", profileData.status || employeeData.status],
+              ["Work Location", profileData.workLocation || "Not specified"],
+              ["Department", profileData.department || "Not specified"],
+              ["Designation", profileData.designation || "Not specified"],
+              ["Manager 1", profileData.manager1 || "Not specified"],
+              ["Manager 2", profileData.manager2 || "Not specified"],
+              ["Employment Type", profileData.employmentType || "Not specified"],
+              ["Teach Type", profileData.teachType || "Not specified"],
+              ["Shift", profileData.shift || "Not specified"],
+              ["Status", profileData.status || "Not specified"],
             ].map(([info, detail], index) => (
               <tr key={info} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
                 <td className="px-4 md:px-6 py-3 text-xs md:text-sm font-medium text-gray-900">{info}</td>
@@ -72,15 +160,15 @@ const BasicInfo = () => {
       {/* Mobile Card View */}
       <div className="md:hidden space-y-4">
         {[
-          ["Work Location", profileData.workLocation || employeeData.workLocation],
-          ["Department", profileData.department || employeeData.department],
-          ["Designation", profileData.designation || employeeData.designation],
-          ["Manager 1", profileData.manager1 || employeeData.manager1],
-          ["Manager 2", profileData.manager2 || employeeData.manager2],
-          ["Employment Type", profileData.employmentType || employeeData.employmentType],
-          ["Teach Type", profileData.teachType || employeeData.teachType],
-          ["Shift", profileData.shift || employeeData.shift],
-          ["Status", profileData.status || employeeData.status],
+          ["Work Location", profileData.workLocation || "Not specified"],
+          ["Department", profileData.department || "Not specified"],
+          ["Designation", profileData.designation || "Not specified"],
+          ["Manager 1", profileData.manager1 || "Not specified"],
+          ["Manager 2", profileData.manager2 || "Not specified"],
+          ["Employment Type", profileData.employmentType || "Not specified"],
+          ["Teach Type", profileData.teachType || "Not specified"],
+          ["Shift", profileData.shift || "Not specified"],
+          ["Status", profileData.status || "Not specified"],
         ].map(([info, detail]) => (
           <div key={info} className="bg-white p-4 rounded-lg shadow-sm">
             <div className="text-sm font-medium text-gray-900 mb-1">{info}</div>
@@ -139,14 +227,23 @@ const BasicInfo = () => {
                   type="button"
                   className="px-3 py-2 text-xs md:text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
                   onClick={() => setIsEditing(false)}
+                  disabled={isSaving}
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-3 py-2 text-xs md:text-sm font-medium text-white bg-[#82001A] rounded-lg hover:bg-[#6b0016]"
+                  className="px-3 py-2 text-xs md:text-sm font-medium text-white bg-[#82001A] rounded-lg hover:bg-[#6b0016] disabled:opacity-50 flex items-center"
+                  disabled={isSaving}
                 >
-                  Save Changes
+                  {isSaving ? (
+                    <>
+                      <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full mr-2"></div>
+                      Saving...
+                    </>
+                  ) : (
+                    'Save Changes'
+                  )}
                 </button>
               </div>
             </form>

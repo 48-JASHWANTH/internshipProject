@@ -14,10 +14,10 @@ passwordResetRoutes.post('/request-reset', requestPasswordReset);
 // Reset password with token
 passwordResetRoutes.post('/reset-password', resetPassword);
 
-// Direct password reset (for testing)
-passwordResetRoutes.post('/direct-reset', directPasswordReset);
-
-// Verify reset token (optional)
+// Verify reset token
 passwordResetRoutes.get('/verify-token', verifyResetToken);
+
+// Direct password reset (for testing/admin purposes only)
+passwordResetRoutes.post('/direct-reset', directPasswordReset);
 
 export default passwordResetRoutes; 

@@ -1,23 +1,108 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Edit, X } from 'lucide-react';
-import {useStore} from '@/store/useStore';
+import { useStore } from '@/store/useStore';
+import axios from 'axios';
+import { toast } from 'react-hot-toast';
 
 const AdditionalInfo = () => {
-  const { profileData, updateProfileData } = useStore();
+  const { profileData, updateProfileData, isLoading, error, fetchProfileData } = useStore();
+  const { user } = useStore();
   const [isEditing, setIsEditing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [additionalData, setAdditionalData] = useState({
-    joiningDate: profileData.joiningDate || "",
-    qualification: profileData.qualification || "",
-    natureOfAssociation: profileData.natureOfAssociation || "Regular",
-    alternateEmail: profileData.alternateEmail || "",
-    emergencyContact: profileData.emergencyContact || ""
+    joiningDate: '',
+    qualification: '',
+    natureOfAssociation: 'Regular',
+    alternateEmail: '',
+    emergencyContact: ''
   });
 
-  const handleSaveChanges = (e) => {
+  console.log(profileData);
+  // Update local state when profileData changes
+  useEffect(() => {
+    if (profileData) {
+      setAdditionalData({
+        joiningDate: profileData.joiningDate || '',
+        qualification: profileData.qualification || '',
+        natureOfAssociation: profileData.natureOfAssociation || 'Regular',
+        alternateEmail: profileData.alternateEmail || '',
+        emergencyContact: profileData.emergencyContact || ''
+      });
+    }
+  }, [profileData]);
+
+  const handleSaveChanges = async (e) => {
     e.preventDefault();
-    updateProfileData(additionalData);
-    setIsEditing(false);
+    setIsSaving(true);
+    
+    try {
+      // Get faculty ID from user state or profile data
+      const facultyId = user?.facultyID || profileData?.empcode;
+      
+      if (!facultyId) {
+        toast.error('Faculty ID not found');
+        setIsSaving(false);
+        return;
+      }
+      
+      // Make API call to update faculty data
+      const response = await axios.put(
+        `http://localhost:1544/faculty/update/${facultyId}`,
+        additionalData,
+        { withCredentials: true }
+      );
+      
+      if (response.data.success) {
+        // Update local state
+        updateProfileData(additionalData);
+        
+        // Refresh profile data from server
+        if (fetchProfileData) {
+          fetchProfileData(facultyId);
+        }
+        
+        toast.success('Additional information updated successfully');
+        setIsEditing(false);
+      } else {
+        toast.error(response.data.message || 'Failed to update additional information');
+      }
+    } catch (error) {
+      console.error('Error updating additional information:', error);
+      toast.error(error.response?.data?.message || 'An error occurred while updating additional information');
+    } finally {
+      setIsSaving(false);
+    }
   };
+
+  if (isLoading) {
+    return (
+      <div className="mt-4 p-2 md:p-4">
+        <div className="flex justify-center items-center h-40">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#82001A]"></div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="mt-4 p-2 md:p-4">
+        <div className="bg-red-50 text-red-700 p-4 rounded-lg">
+          <p>Error loading profile data: {error}</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!profileData) {
+    return (
+      <div className="mt-4 p-2 md:p-4">
+        <div className="bg-yellow-50 text-yellow-700 p-4 rounded-lg">
+          <p>No profile data available. Please try again later.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="mt-4 p-2 md:p-4">
@@ -46,11 +131,11 @@ const AdditionalInfo = () => {
           </thead>
           <tbody className="divide-y divide-gray-200">
             {[
-              ["Joining Date", profileData.joiningDate],
-              ["Qualification", profileData.qualification],
-              ["Nature of Association", profileData.natureOfAssociation],
-              ["Alternate Email", profileData.alternateEmail],
-              ["Emergency Contact", profileData.emergencyContact],
+              ["Joining Date", profileData.joiningDate || "Not specified"],
+              ["Qualification", profileData.qualification || "Not specified"],
+              ["Nature of Association", profileData.natureOfAssociation || "Not specified"],
+              ["Alternate Email", profileData.alternateEmail || "Not specified"],
+              ["Emergency Contact", profileData.emergencyContact || "Not specified"],
             ].map(([info, detail], index) => (
               <tr key={info} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
                 <td className="px-4 md:px-6 py-3 text-xs md:text-sm font-medium text-gray-900">{info}</td>
@@ -64,11 +149,11 @@ const AdditionalInfo = () => {
       {/* Mobile Card View */}
       <div className="md:hidden space-y-4">
         {[
-          ["Joining Date", profileData.joiningDate],
-          ["Qualification", profileData.qualification],
-          ["Nature of Association", profileData.natureOfAssociation],
-          ["Alternate Email", profileData.alternateEmail],
-          ["Emergency Contact", profileData.emergencyContact],
+          ["Joining Date", profileData.joiningDate || "Not specified"],
+          ["Qualification", profileData.qualification || "Not specified"],
+          ["Nature of Association", profileData.natureOfAssociation || "Not specified"],
+          ["Alternate Email", profileData.alternateEmail || "Not specified"],
+          ["Emergency Contact", profileData.emergencyContact || "Not specified"],
         ].map(([info, detail]) => (
           <div key={info} className="bg-white p-4 rounded-lg shadow-sm">
             <div className="text-sm font-medium text-gray-900 mb-1">{info}</div>
@@ -99,44 +184,36 @@ const AdditionalInfo = () => {
             <form onSubmit={handleSaveChanges} className="p-4 md:p-6 space-y-4 md:space-y-6">
               {/* Joining Date - Read Only */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Joining Date
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Joining Date</label>
                 <input
-                  type="text"
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 bg-gray-50 cursor-not-allowed text-sm"
+                  type="date"
                   value={additionalData.joiningDate}
-                  disabled
-                  readOnly
+                  onChange={(e) => setAdditionalData({...additionalData, joiningDate: e.target.value})}
+                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-[#82001A] focus:border-[#82001A]"
                 />
-                <p className="text-xs text-gray-500 mt-1">Set by administrator and cannot be edited</p>
               </div>
 
               {/* Qualification */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Qualification <span className="text-red-500">*</span>
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Qualification</label>
                 <input
                   type="text"
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
                   value={additionalData.qualification}
-                  onChange={(e) => setAdditionalData({ ...additionalData, qualification: e.target.value })}
+                  onChange={(e) => setAdditionalData({...additionalData, qualification: e.target.value})}
                   placeholder="Enter your highest qualification"
+                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-[#82001A] focus:border-[#82001A]"
                 />
               </div>
 
               {/* Nature of Association */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Nature of Association <span className="text-red-500">*</span>
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Nature of Association</label>
                 <select
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
                   value={additionalData.natureOfAssociation}
-                  onChange={(e) => setAdditionalData({ ...additionalData, natureOfAssociation: e.target.value })}
+                  onChange={(e) => setAdditionalData({...additionalData, natureOfAssociation: e.target.value})}
+                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-[#82001A] focus:border-[#82001A]"
                 >
-                  <option value="Permanent">Permanent</option>
+                  <option value="Regular">Regular</option>
                   <option value="Contract">Contract</option>
                   <option value="Visiting">Visiting</option>
                   <option value="Adjunct">Adjunct</option>
@@ -145,50 +222,51 @@ const AdditionalInfo = () => {
 
               {/* Alternate Email */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Alternate Email <span className="text-red-500">*</span>
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Alternate Email</label>
                 <input
                   type="email"
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
                   value={additionalData.alternateEmail}
-                  onChange={(e) => setAdditionalData({ ...additionalData, alternateEmail: e.target.value })}
-                  placeholder="Enter your personal email address"
+                  onChange={(e) => setAdditionalData({...additionalData, alternateEmail: e.target.value})}
+                  placeholder="Enter your alternate email"
+                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-[#82001A] focus:border-[#82001A]"
                 />
               </div>
 
               {/* Emergency Contact */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Emergency Contact <span className="text-red-500">*</span>
-                </label>
-                <div className="flex gap-2">
-                  <select className="w-20 border border-gray-300 rounded-lg px-2 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                    <option>+91</option>
-                  </select>
-                  <input
-                    type="tel"
-                    className="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
-                    value={additionalData.emergencyContact.replace('+91 ', '')}
-                    onChange={(e) => setAdditionalData({ ...additionalData, emergencyContact: '+91 ' + e.target.value })}
-                    placeholder="Enter emergency contact number"
-                  />
-                </div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Emergency Contact</label>
+                <input
+                  type="tel"
+                  value={additionalData.emergencyContact}
+                  onChange={(e) => setAdditionalData({...additionalData, emergencyContact: e.target.value})}
+                  placeholder="Enter emergency contact number"
+                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-[#82001A] focus:border-[#82001A]"
+                />
               </div>
 
-              <div className="flex justify-end gap-3 pt-6 border-t border-gray-200">
+              {/* Action Buttons */}
+              <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
                 <button
                   type="button"
-                  className="px-3 py-2 text-xs md:text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
                   onClick={() => setIsEditing(false)}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+                  disabled={isSaving}
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-3 py-2 text-xs md:text-sm font-medium text-white bg-[#82001A] rounded-lg hover:bg-[#6b0016]"
+                  className="px-4 py-2 text-sm font-medium text-white bg-[#82001A] rounded-md hover:bg-[#9b1a31] disabled:opacity-50 flex items-center"
+                  disabled={isSaving}
                 >
-                  Save Changes
+                  {isSaving ? (
+                    <>
+                      <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full mr-2"></div>
+                      Saving...
+                    </>
+                  ) : (
+                    'Save Changes'
+                  )}
                 </button>
               </div>
             </form>

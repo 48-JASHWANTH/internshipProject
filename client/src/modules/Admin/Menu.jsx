@@ -1,13 +1,18 @@
 import React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { FaChevronRight, FaHome, FaArchive, FaForumbee, FaBriefcase, FaGraduationCap, FaUserCircle, FaChalkboardTeacher, FaUserGraduate } from "react-icons/fa";
-import { useStore } from "@/store/useStore";
+import { FaChevronRight, FaHome, FaGraduationCap, FaUserCircle, FaChalkboardTeacher, FaUserGraduate } from "react-icons/fa";
 
 const Menu = ({ isProfilePage, isMobileMenuOpen, setIsMobileMenuOpen }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const profileData = useStore(state => state.profileData);
-
+  
+  // Static profile data
+  const profileData = {
+    name: "Admin User",
+    regNumber: "ADMIN001",
+    email: "admin@vnrvjiet.in",
+    profilePic: null // Set to null to show the default icon
+  };
 
   const menuItems = [
     { text: "Dashboard", icon: <FaHome size={20} />, path: "/Admin/Dashboard" },

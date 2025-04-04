@@ -91,7 +91,7 @@ const Menu = ({ isProfilePage, isMobileMenuOpen, setIsMobileMenuOpen }) => {
         <div className="bg-[#82001A] p-4 pt-20">
           <div className="flex items-center space-x-3 mb-4 border-b border-[#9b1a31] pb-4">
             <div className="w-12 h-12 rounded-full overflow-hidden bg-white">
-              {profileData.profilePic ? (
+              {/* {profileData.profilePic ? (
                 <img 
                   src={profileData.profilePic} 
                   alt="Profile" 
@@ -99,12 +99,12 @@ const Menu = ({ isProfilePage, isMobileMenuOpen, setIsMobileMenuOpen }) => {
                 />
               ) : (
                 <FaUserCircle className="w-full h-full text-gray-400" />
-              )}
+              )} */}
             </div>
             <div className="text-white">
               <p className="text-sm font-medium">Welcome,</p>
-              <p className="text-xs opacity-90 py-1">{profileData.name}</p>
-              <p className="text-xs opacity-75">Student ID: {profileData.regNumber}</p>
+              {/* <p className="text-xs opacity-90 py-1">{profileData.name}</p> */}
+              {/* <p className="text-xs opacity-75">Student ID: {profileData.regNumber}</p> */}
             </div>
           </div>
         </div>

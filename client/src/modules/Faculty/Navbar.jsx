@@ -5,21 +5,43 @@ import vnrlogo from '../images/vnrvjiet.png';
 import { useStore } from "@/store/useStore";
 
 const Navbar = ({ isMobileMenuOpen, setIsMobileMenuOpen }) => {
-  const { profileData, clearProfileData } = useStore();
+  const { profileData, clearProfileData, fetchProfileData, isLoading } = useStore();
+  const { user, logout } = useStore();
   const [showProfile, setShowProfile] = useState(false);
   const navigate = useNavigate(); 
-
   const dropdownRef = useRef(null);
+
+  // Fetch profile data when component mounts
+  useEffect(() => {
+    if (user?.facultyID && fetchProfileData) {
+      fetchProfileData(user.facultyID);
+    }
+  }, [user, fetchProfileData]);
 
   const toggleProfile = () => {
     setShowProfile((prev) => !prev);
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     setShowProfile(false);
-    clearProfileData(); // Clear the profile data from store
-    localStorage.removeItem("userToken");  
-    navigate("/"); 
+    
+    try {
+      // Call the logout function from auth slice
+      if (logout) {
+        await logout();
+      }
+      
+      // Clear profile data
+      clearProfileData();
+      
+      // Remove token from localStorage
+      localStorage.removeItem("userToken");
+      
+      // Navigate to login page
+      navigate("/"); 
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
   };
 
   const handleLogo = () => {
@@ -59,7 +81,9 @@ const Navbar = ({ isMobileMenuOpen, setIsMobileMenuOpen }) => {
             onClick={toggleProfile}
             className="cursor-pointer flex items-center justify-center w-10 h-10 bg-gray-200 rounded-full overflow-hidden"
           >
-            {profileData.profilePic ? (
+            {isLoading ? (
+              <div className="animate-pulse bg-gray-300 w-full h-full"></div>
+            ) : profileData && profileData.profilePic ? (
               <img 
                 src={profileData.profilePic} 
                 alt="Profile" 
@@ -88,20 +112,40 @@ const Navbar = ({ isMobileMenuOpen, setIsMobileMenuOpen }) => {
           <div className="absolute top-14 right-4 w-80 bg-white border border-gray-300 rounded-lg shadow-lg">
             <div className="flex items-center px-4 py-2 border-b border-gray-300">
               <div className="w-16 h-16 rounded-full overflow-hidden mr-3">
-                {profileData.profilePic ? (
+                {isLoading ? (
+                  <div className="animate-pulse bg-gray-300 w-full h-full"></div>
+                ) : profileData && profileData.profilePic ? (
                   <img 
                     src={profileData.profilePic} 
                     alt="Profile" 
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <FaUserCircle className="text-gray-700 text-4xl" />
+                  <FaUserCircle className="text-gray-700 w-full h-full" />
                 )}
               </div>
               <div>
-                <p className="font-bold text-sm">{`${profileData.empcode} - ${profileData.empname}`}</p>
-                <p className="text-xs text-gray-500">{profileData.email}</p>
-                <p className="text-xs text-gray-500">{profileData.department}</p>
+                {isLoading ? (
+                  <div className="space-y-2">
+                    <div className="animate-pulse bg-gray-300 h-4 w-32 rounded"></div>
+                    <div className="animate-pulse bg-gray-300 h-3 w-24 rounded"></div>
+                    <div className="animate-pulse bg-gray-300 h-3 w-28 rounded"></div>
+                  </div>
+                ) : (
+                  <>
+                    <p className="font-bold text-sm">
+                      {profileData ? 
+                        `${profileData.empcode || user?.facultyID || ''} - ${profileData.empname || user?.name || ''}` : 
+                        'Loading...'}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {profileData?.email || user?.email || ''}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {profileData?.department || ''}
+                    </p>
+                  </>
+                )}
               </div>
             </div>
             <div className="flex flex-col">

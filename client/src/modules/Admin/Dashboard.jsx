@@ -30,15 +30,6 @@ const Dashboard = () => {
     setViewingAllActivities(!viewingAllActivities);
   };
 
-  if (viewingAllActivities) {
-    return (
-      <div className="p-6 bg-gray-50 min-h-screen">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">Admin Dashboard</h1>
-        <Activity onBack={toggleViewAll} />
-      </div>
-    );
-  }
-
   // Fetch data from API
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -87,15 +78,15 @@ const Dashboard = () => {
             const timeAgo = formatDistanceToNow(new Date(log.timestamp), { addSuffix: true });
             
             return {
-            id: log._id,
-            user: { 
+              id: log._id,
+              user: { 
                 name: name,
-              id: log.userId, 
-              type: log.userType,
+                id: log.userId, 
+                type: log.userType,
                 initials: initials,
                 showIdSeparately: hasUserName
-            },
-            activity: log.action,
+              },
+              activity: log.action,
               details: log.details,
               time: timeAgo,
               timestamp: new Date(log.timestamp),
@@ -125,8 +116,54 @@ const Dashboard = () => {
           const activityTypes = {};
           
           logs.forEach(log => {
-            // Extract the main action type (first word or up to first space)
-            const actionType = log.action.split(' ')[0];
+            // Extract a more meaningful action type from the action string
+            let actionType;
+            
+            // Categorize actions more specifically with more detailed categories
+            if (log.action.toLowerCase().includes('login')) {
+              actionType = 'Login';
+            } else if (log.action.toLowerCase().includes('logout')) {
+              actionType = 'Logout';
+            } else if (log.action.toLowerCase().includes('password reset')) {
+              actionType = 'Password Reset';
+            } else if (log.action.toLowerCase().includes('profile') && log.action.toLowerCase().includes('update')) {
+              actionType = 'Profile Update';
+            } else if (log.action.toLowerCase().includes('profile') && log.action.toLowerCase().includes('view')) {
+              actionType = 'Profile View';
+            } else if (log.action.toLowerCase().includes('project') && log.action.toLowerCase().includes('create')) {
+              actionType = 'Project Creation';
+            } else if (log.action.toLowerCase().includes('project') && log.action.toLowerCase().includes('update')) {
+              actionType = 'Project Update';
+            } else if (log.action.toLowerCase().includes('project') && log.action.toLowerCase().includes('delete')) {
+              actionType = 'Project Deletion';
+            } else if (log.action.toLowerCase().includes('project') && log.action.toLowerCase().includes('view')) {
+              actionType = 'Project View';
+            } else if (log.action.toLowerCase().includes('document') && log.action.toLowerCase().includes('upload')) {
+              actionType = 'Document Upload';
+            } else if (log.action.toLowerCase().includes('document') && log.action.toLowerCase().includes('download')) {
+              actionType = 'Document Download';
+            } else if (log.action.toLowerCase().includes('file') && log.action.toLowerCase().includes('upload')) {
+              actionType = 'File Upload';
+            } else if (log.action.toLowerCase().includes('comment') && log.action.toLowerCase().includes('add')) {
+              actionType = 'Add Comment';
+            } else if (log.action.toLowerCase().includes('comment') && log.action.toLowerCase().includes('delete')) {
+              actionType = 'Delete Comment';
+            } else if (log.action.toLowerCase().includes('view') && log.action.toLowerCase().includes('dashboard')) {
+              actionType = 'Dashboard View';
+            } else if (log.action.toLowerCase().includes('search')) {
+              actionType = 'Search';
+            } else if (log.action.toLowerCase().includes('notification')) {
+              actionType = 'Notification';
+            } else if (log.action.toLowerCase().includes('message')) {
+              actionType = 'Messaging';
+            } else if (log.action.toLowerCase().includes('report')) {
+              actionType = 'Report Generation';
+            } else if (log.action.toLowerCase().includes('settings')) {
+              actionType = 'Settings Change';
+            } else {
+              // Default to first word if no specific category matches
+              actionType = log.action.split(' ')[0];
+            }
             
             if (!activityTypes[actionType]) {
               activityTypes[actionType] = { 
@@ -134,12 +171,15 @@ const Dashboard = () => {
                 count: 0, 
                 student: 0, 
                 faculty: 0, 
-                admin: 0 
+                admin: 0,
+                failed: 0,
+                successful: 0
               };
             }
             
             activityTypes[actionType].count += 1;
             
+            // Count by user type
             if (log.userType === 'student') {
               activityTypes[actionType].student += 1;
             } else if (log.userType === 'faculty') {
@@ -147,12 +187,19 @@ const Dashboard = () => {
             } else if (log.userType === 'admin') {
               activityTypes[actionType].admin += 1;
             }
+            
+            // Count success/failure status
+            if (log.action.toLowerCase().includes('failed') || log.details?.toLowerCase().includes('failed')) {
+              activityTypes[actionType].failed += 1;
+            } else {
+              activityTypes[actionType].successful += 1;
+            }
           });
           
           // Convert to array and sort by count (highest first)
           const chartData = Object.values(activityTypes)
             .sort((a, b) => b.count - a.count)
-            .slice(0, 7); // Take top 7 activities for better visualization
+            .slice(0, 12); // Show more activity types (increased from 8 to 12)
           
           if (chartData.length > 0) {
             setActivityData(chartData);
@@ -238,6 +285,16 @@ const Dashboard = () => {
     fetchDashboardData();
   }, []);
 
+  // IMPORTANT: Move the early return after all hooks are defined
+  if (viewingAllActivities) {
+    return (
+      <div className="p-6 bg-gray-50 min-h-screen">
+        <h1 className="text-3xl font-bold text-gray-900 mb-8">Admin Dashboard</h1>
+        <Activity onBack={toggleViewAll} />
+      </div>
+    );
+  }
+
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
       <h1 className="text-3xl font-bold text-gray-900 mb-8">Admin Dashboard</h1>
@@ -281,39 +338,7 @@ const Dashboard = () => {
         </div>
       </div>
       
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        {/* Enhanced Activity Types Chart */}
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-lg font-semibold mb-4">Activity Distribution by User Type</h2>
-          {isLoading ? (
-            <div className="h-80 flex items-center justify-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#9b1a31]"></div>
-            </div>
-          ) : activityData.length === 0 ? (
-            <div className="h-80 flex items-center justify-center text-gray-500">
-              <p>No activity data available</p>
-            </div>
-          ) : (
-          <div className="h-80">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart
-                data={activityData}
-                margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-              >
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Bar dataKey="student" stackId="a" fill="#8884d8" name="Student" />
-                <Bar dataKey="faculty" stackId="a" fill="#82ca9d" name="Faculty" />
-                <Bar dataKey="admin" stackId="a" fill="#ffc658" name="Admin" />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-          )}
-        </div>
-        
+      <div className="grid grid-cols-1 gap-6 mb-8">
         {/* Weekly Activity Timeline */}
         <div className="bg-white rounded-lg shadow-md p-6">
           <h2 className="text-lg font-semibold mb-4">Weekly Activity</h2>
@@ -341,6 +366,67 @@ const Dashboard = () => {
                 <Line type="monotone" dataKey="activities" stroke="#82ca9d" name="Activities" />
                 <Line type="monotone" dataKey="projects" stroke="#ffc658" name="New Projects" />
               </LineChart>
+            </ResponsiveContainer>
+          </div>
+          )}
+        </div>
+        
+        {/* Enhanced Activity Types Chart */}
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <h2 className="text-lg font-semibold mb-4">Activity Distribution by User Type</h2>
+          <div className="flex justify-between items-center mb-2">
+            <p className="text-sm text-gray-500">Showing top {activityData.length} activity types</p>
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center">
+                <div className="w-3 h-3 bg-[#8884d8] rounded-full mr-1"></div>
+                <span className="text-xs">Student</span>
+              </div>
+              <div className="flex items-center">
+                <div className="w-3 h-3 bg-[#82ca9d] rounded-full mr-1"></div>
+                <span className="text-xs">Faculty</span>
+              </div>
+              <div className="flex items-center">
+                <div className="w-3 h-3 bg-[#ffc658] rounded-full mr-1"></div>
+                <span className="text-xs">Admin</span>
+              </div>
+            </div>
+          </div>
+          {isLoading ? (
+            <div className="h-[500px] flex items-center justify-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#9b1a31]"></div>
+            </div>
+          ) : activityData.length === 0 ? (
+            <div className="h-[500px] flex items-center justify-center text-gray-500">
+              <p>No activity data available</p>
+            </div>
+          ) : (
+          <div className="h-[500px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart
+                data={activityData}
+                margin={{ top: 5, right: 30, left: 20, bottom: 70 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis 
+                  dataKey="name" 
+                  angle={-45} 
+                  textAnchor="end" 
+                  height={70} 
+                  interval={0}
+                  tick={{fontSize: 12}}
+                />
+                <YAxis />
+                <Tooltip 
+                  formatter={(value, name) => [value, name === 'student' ? 'Student' : name === 'faculty' ? 'Faculty' : name === 'admin' ? 'Admin' : name === 'successful' ? 'Successful' : name === 'failed' ? 'Failed' : name]}
+                  labelFormatter={(label) => `Activity: ${label}`}
+                />
+                <Legend />
+                <Bar dataKey="student" stackId="a" fill="#8884d8" name="Student" />
+                <Bar dataKey="faculty" stackId="a" fill="#82ca9d" name="Faculty" />
+                <Bar dataKey="admin" stackId="a" fill="#ffc658" name="Admin" />
+                <Bar dataKey="successful" fill="#4caf50" name="Successful" />
+                <Bar dataKey="failed" fill="#f44336" name="Failed" />
+              </BarChart>
             </ResponsiveContainer>
           </div>
           )}

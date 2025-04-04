@@ -44,8 +44,13 @@ const createLeadedWorksSlice = (set, get) => ({
 
   // Clear leaded projects data
   clearLeadedProjects: () => {
-    set({ activeProjects: [], error: null });
-  }
+    set({ 
+      activeProjects: null, 
+      isLoading: false,
+      error: null 
+    });
+  },
+  
 });
 
 export default createLeadedWorksSlice; 
