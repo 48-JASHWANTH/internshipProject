@@ -23,7 +23,16 @@ const AddStudent = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
 
-  const departments = ['CSE', 'CSBS', 'IT', 'ECE', 'EEE', 'MECH', 'CIVIL'];
+  const departments = [
+    'Computer Science and Engineering (CSE)',
+    'Computer Science and Business Systems (CSBS)',
+    'Information Technology (IT)',
+    'Electronics and Communication Engineering (ECE)',
+    'Electrical and Electronics Engineering (EEE)',
+    'Mechanical Engineering (MECH)',
+    'Civil Engineering (CIVIL)'
+  ];
+  
 
   const handleInputChange = useCallback((e) => {
     const { name, value } = e.target;

@@ -1,9 +1,13 @@
 import React, { useState } from 'react';
-import { X } from 'lucide-react';
+import { X, Loader2 } from 'lucide-react';
+import axios from 'axios';
+import { useStore } from '@/store/useStore';
+import toast from 'react-hot-toast';
 
-const DOMAINS = ["AI/ML", "Web", "Mobile", "IoT"];
+const DOMAINS = ["AI/ML", "Web", "Mobile", "IoT", "Blockchain", "Cloud Computing", "Cybersecurity", "Data Science", "Artificial Intelligence"];
 
-const AddProjectModal = ({ isOpen, onClose }) => {
+const AddProjectModal = ({ isOpen, onClose, onProjectAdded }) => {
+  const { user } = useStore();
   const [formData, setFormData] = useState({
     title: '',
     domain: '',
@@ -11,9 +15,10 @@ const AddProjectModal = ({ isOpen, onClose }) => {
     description: ''
   });
   const [errors, setErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  const handleSubmit = async (e) => {
+    e.preventDefault(); 
     
     // Validate all fields
     const newErrors = {};
@@ -27,20 +32,50 @@ const AddProjectModal = ({ isOpen, onClose }) => {
       return;
     }
 
-    // Log project details in required format
-    console.log({
-      id: Date.now().toString(),
-      Guide: "Dr. John Doe", // This would come from auth context in a real app
-      Title: formData.title,
-      Domain: formData.domain,
-      Description: formData.description,
-      TechStack: formData.techStack.split(',').map(tech => tech.trim()),
-      Status: "Open"
-    });
+    if (!user?.facultyID) {
+      toast.error('Faculty ID not found. Please log in again.');
+      return;
+    }
 
-    // Reset form and close modal
-    setFormData({ title: '', domain: '', description: '', techStack: '' });
-    onClose();
+    setIsSubmitting(true);
+
+    try {
+      // Format project data according to API requirements
+      const projectData = {
+        Title: formData.title,
+        Domain: formData.domain,
+        TechStack: formData.techStack.split(',').map(tech => tech.trim()),
+        Description: formData.description,
+        facultyId: user.facultyID
+      };
+
+      // Make API request to create project
+      const response = await axios.post(
+        'http://localhost:1544/forum-projects/create-forum-projects',
+        projectData,
+        { withCredentials: true }
+      );
+
+      if (response.data.success) {
+        toast.success('Project created successfully!');
+        // Reset form and close modal
+        setFormData({ title: '', domain: '', description: '', techStack: '' });
+        
+        // Call the callback function if provided to refresh the projects list
+        if (onProjectAdded) {
+          onProjectAdded(response.data.project);
+        }
+        
+        onClose();
+      } else {
+        toast.error(response.data.message || 'Failed to create project');
+      }
+    } catch (error) {
+      console.error('Error creating project:', error);
+      toast.error(error.response?.data?.message || 'An error occurred while creating the project');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const renderField = (name, label, type = 'text', options = null, className = '') => (
@@ -107,6 +142,7 @@ const AddProjectModal = ({ isOpen, onClose }) => {
           <button 
             onClick={onClose}
             className="text-gray-400 hover:text-gray-600 transition-colors"
+            disabled={isSubmitting}
           >
             <X className="w-5 h-5" />
           </button>
@@ -117,6 +153,7 @@ const AddProjectModal = ({ isOpen, onClose }) => {
             {renderField('title', 'Project Title')}
             {renderField('domain', 'Domain', 'select', DOMAINS)}
             {renderField('techStack', 'Tech Stack', 'text')}
+            <p className="text-xs text-gray-500 -mt-3">Separate technologies with commas (e.g., React, Node.js, MongoDB)</p>
             {renderField('description', 'Description', 'textarea')}
           </div>
 
@@ -125,14 +162,23 @@ const AddProjectModal = ({ isOpen, onClose }) => {
               type="button"
               onClick={onClose}
               className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+              disabled={isSubmitting}
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-[#82001A] text-white rounded-lg hover:bg-[#6b0015] transition-colors"
+              disabled={isSubmitting}
+              className="px-4 py-2 bg-[#82001A] text-white rounded-lg hover:bg-[#6b0015] transition-colors flex items-center gap-2 disabled:opacity-70"
             >
-              Add Project
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Creating...
+                </>
+              ) : (
+                'Add Project'
+              )}
             </button>
           </div>
         </form>

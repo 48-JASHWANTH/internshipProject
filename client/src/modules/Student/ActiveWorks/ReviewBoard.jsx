@@ -1,241 +1,171 @@
-import React, { useState } from 'react';
-import { useParams } from 'react-router-dom';
-import {Calendar } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { AlertCircle } from 'lucide-react';
+import { apiClient } from '@/lib/api-client';
 import { useStore } from '@/store/useStore';
+import { toast } from 'react-hot-toast';
 
-const ReviewPage = () => {
-  const { projectId } = useParams();
-  const { projects, updateProject } = useStore();
-  const project = projects.find(work => work.id === projectId);
+const ReviewBoard = ({ projectId }) => {
+  const [reviews, setReviews] = useState({ guideReviews: [], inchargeReviews: [] });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const { user } = useStore();
   
-  // Map satisfaction levels to their color schemes
+  // Fetch reviews directly from the API
+  useEffect(() => {
+    const fetchReviews = async () => {
+      if (!projectId) return;
+      
+      try {
+        setLoading(true);
+        console.log(`Fetching reviews for project: ${projectId}`);
+        
+        const response = await apiClient.get(`/student/team/${projectId}/reviews`, {
+          withCredentials: true
+        });
+        
+        console.log('Reviews API response:', response.data);
+        
+        if (response.data.success) {
+          setReviews({
+            guideReviews: response.data.reviews.guideReviews || [],
+            inchargeReviews: response.data.reviews.inchargeReviews || []
+          });
+          setError(null);
+        } else {
+          setError(response.data.message || 'Failed to fetch reviews');
+          toast.error('Failed to load reviews');
+        }
+      } catch (err) {
+        console.error('Error fetching reviews:', err);
+        setError('Error loading reviews. Please try again later.');
+        toast.error('Error loading reviews');
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchReviews();
+  }, [projectId]);
+  
+  // Log reviews state changes for debugging
+  useEffect(() => {
+    console.log('Reviews state changed:', reviews);
+  }, [reviews]);
+
   const satisfactionColors = {
-    'Excellent': 'bg-purple-100 text-purple-800',
-    'Very Good': 'bg-blue-100 text-blue-800', 
+    'Excellent': 'bg-green-100 text-green-800',
+    'Very Good': 'bg-blue-100 text-blue-800',
     'Good': 'bg-yellow-100 text-yellow-800',
     'Fair': 'bg-orange-100 text-orange-800',
     'Poor': 'bg-red-100 text-red-800'
   };
 
-  // Static data for guide reviews
-  const guideReviews = [
-    {
-      id: "g1",
-      reviewName: "Initial Design Review",
-      date: "2024-05-10",
-      remarks: "Good initial design approach, need to improve documentation",
-      feedback: "The project concept is strong but you need to elaborate more on the technical implementation details. Consider adding sequence diagrams to explain the workflow better.",
-      satisfactionLevel: "Good",
-      status: "Completed",
-      type: "faculty"
-    },
-    {
-      id: "g2",
-      reviewName: "Prototype Evaluation",
-      date: "2024-06-05",
-      remarks: "Prototype meets basic requirements",
-      feedback: "The prototype demonstrates core functionality but lacks error handling. Focus on edge cases and user feedback in your next iteration. UI needs more polishing.",
-      satisfactionLevel: "Very Good",
-      status: "Completed",
-      type: "faculty"
-    },
-    {
-      id: "g3",
-      reviewName: "Code Quality Assessment",
-      date: "2024-06-20",
-      remarks: "Code structure needs improvement",
-      feedback: "While the application works, the code organization could be better. Consider implementing design patterns and breaking down components further. Documentation is minimal.",
-      satisfactionLevel: "Fair",
-      status: "Completed",
-      type: "faculty"
+  const ReviewTable = ({ reviews, title }) => {
+    console.log(`Rendering ${title} table with ${reviews?.length || 0} reviews`);
+    if (!reviews) {
+      console.error(`${title} reviews array is undefined`);
+      return null;
     }
-  ];
-
-  // Static data for incharge reviews
-  const inchargeReviews = [
-    {
-      id: "i1",
-      reviewName: "Abstract Review",
-      dueDate: "2024-04-01",
-      remarks: "Well structured abstract",
-      feedback: "The team has demonstrated excellent understanding of the project scope. The abstract clearly outlines the problem statement, methodology, and expected outcomes.",
-      satisfactionLevel: "Excellent",
-      status: "reviewed",
-      type: "incharge"
-    },
-    {
-      id: "i2",
-      reviewName: "Literature Review",
-      dueDate: "2024-04-15",
-      remarks: "Comprehensive coverage of existing solutions",
-      feedback: "Good analysis of existing solutions. The team has covered most of the relevant papers and technologies. Some recent papers could be added to strengthen the review.",
-      satisfactionLevel: "Very Good",
-      status: "reviewed",
-      type: "incharge"
-    },
-    {
-      id: "i3",
-      reviewName: "Midterm Progress Review",
-      dueDate: "2024-05-20",
-      remarks: "On track with project timeline",
-      feedback: "Project is progressing according to the proposed timeline. Technical implementation is sound. Need to address the feedback from the initial user testing more thoroughly in the next phase.",
-      satisfactionLevel: "Good",
-      status: "reviewed",
-      type: "incharge"
-    }
-  ];
-
-  // Use static data but would fallback to project data in production
-  // const facultyReviews = reviews.filter(review => review.type === 'faculty' || !review.type);
-  // const inchargeReviews = reviews.filter(review => review.type === 'incharge');
-
-  return (
-    <div className="p-6 bg-gray-50 min-h-screen">
-
-      <div className="space-y-10">
-        {/* Guide Reviews Table */}
-        <div className="bg-white shadow-sm rounded-lg overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-200 flex justify-center">
-            <h3 className="text-2xl font-bold text-gray-900">Guide Reviews</h3>
-          </div>
-          {guideReviews.length === 0 ? (
-            <div className="p-6 text-center text-gray-500">No guide reviews available yet</div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Review Name
-                    </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Date
-                    </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Remarks
-                    </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Detailed Feedback
-                    </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Satisfaction Level
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {guideReviews.map((review) => (
-                    <tr key={review.id} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">
-                          {review.reviewName}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-500 flex items-center gap-1">
-                          <Calendar className="w-3 h-3" />
-                          <span>{review.date || review.dueDate}</span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="text-sm text-gray-500">
-                          {review.remarks || "No remarks provided"}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="text-sm text-gray-500 max-w-md">
-                          {review.feedback || "No detailed feedback provided"}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        {review.satisfactionLevel ? (
-                          <span className={`px-2 py-1 text-xs font-medium rounded-full ${satisfactionColors[review.satisfactionLevel]}`}>
-                            {review.satisfactionLevel}
-                          </span>
-                        ) : (
-                          <span className="text-gray-400">—</span>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+    
+    return (
+    <div className="mt-6">
+      <h2 className="text-lg font-semibold text-gray-900 mb-4">{title}</h2>
+      {!reviews || reviews.length === 0 ? (
+        <div className="text-center py-8 bg-gray-50 rounded-lg">
+          <AlertCircle className="mx-auto h-12 w-12 text-gray-400" />
+          <h3 className="mt-2 text-sm font-medium text-gray-900">No reviews yet</h3>
+          <p className="mt-1 text-sm text-gray-500">Reviews will appear here once conducted.</p>
         </div>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Review Name
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Date
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Satisfaction
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Progress
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Feedback
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {reviews.map((review, index) => (
+                <tr key={review._id || index}>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    {review.reviewName}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {new Date(review.dateOfReview).toLocaleDateString()}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${satisfactionColors[review.satisfactionLevel]}`}>
+                      {review.satisfactionLevel}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {review.progress}
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-500 max-w-md">
+                    <div className="truncate">
+                      {review.feedback}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+    );
+  };
 
-        {/* Incharge Reviews Table */}
-        <div className="bg-white shadow-sm rounded-lg overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-200 flex justify-center">
-            <h3 className="text-2xl font-bold text-gray-900">Incharge Reviews</h3>
-          </div>
-          
-          {inchargeReviews.length === 0 ? (
-            <div className="p-6 text-center text-gray-500">No incharge reviews available yet</div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Review Name
-                    </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Date
-                    </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Remarks
-                    </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Detailed Feedback
-                    </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Satisfaction Level
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {inchargeReviews.map((review) => (
-                    <tr key={review.id} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">
-                          {review.reviewName}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-500 flex items-center gap-1">
-                          <Calendar className="w-3 h-3" />
-                          <span>{review.dueDate || review.date}</span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="text-sm text-gray-500">
-                          {review.remarks || "No remarks provided"}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="text-sm text-gray-500 max-w-md">
-                          {review.feedback || "No detailed feedback provided"}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        {review.satisfactionLevel ? (
-                          <span className={`px-2 py-1 text-xs font-medium rounded-full ${satisfactionColors[review.satisfactionLevel]}`}>
-                            {review.satisfactionLevel}
-                          </span>
-                        ) : (
-                          <span className="text-gray-400">—</span>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-[60vh]">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#9b1a31]"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex justify-center items-center min-h-[60vh]">
+        <div className="text-red-600">
+          <AlertCircle className="mx-auto h-12 w-12 text-red-400 mb-4" />
+          <p>{error}</p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="mt-4 px-4 py-2 bg-[#9b1a31] text-white rounded-lg"
+          >
+            Try Again
+          </button>
         </div>
       </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold text-gray-800 mb-2">Project Reviews</h1>
+        <p className="text-gray-600">Track all reviews and feedback for your project</p>
+      </div>
+
+      <ReviewTable reviews={reviews.guideReviews} title="Guide Reviews" />
+      <ReviewTable reviews={reviews.inchargeReviews} title="Incharge Reviews" />
     </div>
   );
 };
 
-export default ReviewPage; 
+export default ReviewBoard; 

@@ -10,6 +10,31 @@ export const createTeams = asynchandler(async (req, res) => {
     try {
         console.log(req.body);
         const { newSectionTeam, createdTeams } = req.body;
+        
+        // Collect all student IDs from all teams
+        const allStudentIds = createdTeams.flatMap(team => team.listOfStudents);
+        
+        // Fetch student details for all student IDs in a single query
+        const students = await Student.find(
+            { studentID: { $in: allStudentIds } },
+            { studentID: 1, name: 1, batch: 1, _id: 0 }
+        ).lean();
+        
+        // Extract batch from the first student that has a batch value
+        let batch = '';
+        for (const student of students) {
+            if (student.batch) {
+                batch = student.batch;
+                break;
+            }
+        }
+        
+        // Create a map of studentID to student name for quick lookup
+        const studentMap = {};
+        students.forEach(student => {
+            studentMap[student.studentID] = student.name;
+        });
+        
         const sectionTeam = new SectionTeams({
             classID: newSectionTeam.classID,
             year: newSectionTeam.year,
@@ -22,25 +47,11 @@ export const createTeams = asynchandler(async (req, res) => {
             teamsList: newSectionTeam.teamsList,
             projectTitles: newSectionTeam.projectTitles,
             numberOfStudents: newSectionTeam.numberOfStudents,
-            status: newSectionTeam.status
+            status: newSectionTeam.status,
+            batch: batch // Add the extracted batch
         });
 
         await sectionTeam.save();
-
-        // Collect all student IDs from all teams
-        const allStudentIds = createdTeams.flatMap(team => team.listOfStudents);
-        
-        // Fetch student names for all student IDs in a single query
-        const students = await Student.find(
-            { studentID: { $in: allStudentIds } },
-            { studentID: 1, name: 1, _id: 0 }
-        ).lean();
-        
-        // Create a map of studentID to student name for quick lookup
-        const studentMap = {};
-        students.forEach(student => {
-            studentMap[student.studentID] = student.name;
-        });
 
         const teamPromises = createdTeams.map(team => {
             // Transform listOfStudents to include both ID and name
@@ -59,19 +70,20 @@ export const createTeams = asynchandler(async (req, res) => {
                     githubURL: "",
                     guideApproval: true,
                     guideFacultyId: team.guideFacultyId,
-                    inchargefacultyId: team.inchargefacultyId
+                    inchargefacultyId: team.inchargefacultyId,
+                    batch: batch // Also add batch to each team
                 },
                 { upsert: true, new: true }
             );
         });
 
         await Promise.all(teamPromises);
-        const projectTitlesArray = newSectionTeam.classID; // Extract values
+        const projectTitlesArray = newSectionTeam.classID;
         
         // Update leaded projects for faculty in charge
         await Faculty.findOneAndUpdate(
             { facultyID: newSectionTeam.facultyID },
-            { $addToSet: { leadedProjects: newSectionTeam.classID } }, // No $each needed
+            { $addToSet: { leadedProjects: newSectionTeam.classID } },
             { new: true }
         );
 
@@ -210,37 +222,72 @@ export const getGuidedProjects = async (req, res) => {
       });
     }
     
-    const guidedProjects = faculty.guidedProjects || [];
+    // Get the list of guided project IDs
+    const guidedProjectIds = faculty.guidedProjects || [];
     
-    // If there are no guided projects, return an empty array
-    if (guidedProjects.length === 0) {
-        return res.status(200).json({
+    if (guidedProjectIds.length === 0) {
+      return res.status(200).json({
         success: true,
-        guidedProjects: [],
+        message: 'No guided projects found',
         teams: []
       });
     }
     
-    // Fetch the teams data for each team ID
-    const teams = await Team.find({ 
-      teamId: { $in: guidedProjects } 
-    }).lean();
+    // Fetch all teams that this faculty guides
+    const teams = await Team.find({ teamId: { $in: guidedProjectIds } })
+      .lean();
+    
+    // Extract the class IDs from team IDs to find the section teams
+    const classIds = teams.map(team => team.teamId.split('_')[0]);
+    
+    // Fetch section teams data
+    const sectionTeams = await SectionTeams.find({ classID: { $in: classIds } })
+      .select('classID branch year section sem batch')
+      .lean();
+    
+    // Create a map of classID to section team details for quick lookup
+    const sectionTeamMap = {};
+    sectionTeams.forEach(section => {
+      sectionTeamMap[section.classID] = {
+        branch: section.branch,
+        year: section.year,
+        section: section.section,
+        sem: section.sem,
+        batch: section.batch
+      };
+    });
+    
+    // Enhance each team with section team details
+    const enhancedTeams = teams.map(team => {
+      const classId = team.teamId.split('_')[0];
+      const sectionDetails = sectionTeamMap[classId] || {};
+      
+      return {
+        ...team,
+        branch: sectionDetails.branch || '',
+        year: sectionDetails.year || '',
+        section: sectionDetails.section || '',
+        sem: sectionDetails.sem || '',
+        // Use batch from team if available, otherwise from section
+        batch: team.batch || sectionDetails.batch || ''
+      };
+    });
     
     res.status(200).json({
       success: true,
-      guidedProjects,
-      teams
+      teams: enhancedTeams
     });
   } catch (error) {
-    console.error('Error fetching faculty guided projects:', error);
+    console.error('Error fetching guided projects:', error);
     res.status(500).json({
       success: false,
-      message: 'Error fetching faculty guided projects'
+      message: 'Error fetching guided projects',
+      error: error.message
     });
   }
 };
 
-// Add a new task to a team's workboard
+// Add a new task to a team
 export const addTaskToTeam = async (req, res) => {
   try {
     const { teamId } = req.params;
@@ -257,10 +304,10 @@ export const addTaskToTeam = async (req, res) => {
     const facultyID = req.user.email; // Assuming email is used as facultyID in the token
     
     // Validate required fields
-    if (!title || !dueDate) {
+    if (!title) {
       return res.status(400).json({
         success: false,
-        message: 'Title and due date are required'
+        message: 'Task title is required'
       });
     }
     
@@ -274,8 +321,10 @@ export const addTaskToTeam = async (req, res) => {
       });
     }
     
-    // Create new task
+    // Create new task with timestamp-based ID
+    const taskId = `task_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
     const newTask = {
+      taskId,
       title,
       description,
       dueDate,
@@ -352,8 +401,10 @@ export const addReviewToTeam = async (req, res) => {
       });
     }
     
-    // Create new review
+    // Create new review with timestamp-based ID
+    const reviewId = `review_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
     const newReview = {
+      reviewId,
       reviewNo: reviewNo || team.reviews.length + 1,
       reviewName,
       dateOfReview: dateOfReview || new Date(),
@@ -485,6 +536,218 @@ export const getFacultyInfo = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Error fetching faculty information'
+    });
+  }
+};
+
+// Update a task's status (including approval)
+export const updateTaskStatus = async (req, res) => {
+  try {
+    const { teamId, taskId } = req.params;
+    const { status } = req.body;
+    
+    // Validate status
+    const validStatuses = ['todo', 'in_progress', 'done', 'approved'];
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid status value'
+      });
+    }
+    
+    // Find the team
+    const team = await Team.findOne({ teamId });
+    
+    if (!team) {
+      return res.status(404).json({
+        success: false,
+        message: 'Team not found'
+      });
+    }
+    
+    // Find the task in the team's tasks array
+    const taskIndex = team.tasks.findIndex(task => task.taskId === taskId);
+    
+    if (taskIndex === -1) {
+      return res.status(404).json({
+        success: false,
+        message: 'Task not found'
+      });
+    }
+    
+    // Update the task status
+    team.tasks[taskIndex].status = status;
+    team.lastUpdated = new Date();
+    
+    await team.save();
+    
+    res.status(200).json({
+      success: true,
+      message: 'Task status updated successfully',
+      task: team.tasks[taskIndex]
+    });
+  } catch (error) {
+    console.error('Error updating task status:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error updating task status'
+    });
+  }
+};
+
+export const completeClass = async (req, res) => {
+  try {
+    const { classId } = req.params;
+    const { 
+      facultyID, 
+      completionDate, 
+    } = req.body;
+    
+    // Verify the faculty is authorized to complete this class
+    const faculty = await Faculty.findOne({ 
+      facultyID, 
+      leadedProjects: classId 
+    });
+    
+    if (!faculty) {
+      return res.status(403).json({
+        success: false,
+        message: 'Unauthorized: Faculty is not the incharge for this class'
+      });
+    }
+    
+    // Update the section team status to completed
+    const updatedSection = await SectionTeams.findOneAndUpdate(
+      { classID: classId },
+      { 
+        status: 'completed',
+        completedAt: completionDate || new Date(),
+      },
+      { new: true }
+    );
+    
+    if (!updatedSection) {
+      return res.status(404).json({
+        success: false,
+        message: 'Section not found'
+      });
+    }
+    
+    // Find all teams associated with this class and update their status
+    const teamPrefix = `${classId}_`;
+    const updatedTeams = await Team.updateMany(
+      { teamId: { $regex: new RegExp(`^${teamPrefix}`) } },
+      { 
+        status: true,
+        completedAt: completionDate || new Date()
+      }
+    );
+    
+    res.status(200).json({
+      success: true,
+      message: 'Class marked as completed successfully',
+      sectionTeam: updatedSection,
+      teamsUpdated: updatedTeams.modifiedCount
+    });
+    
+  } catch (error) {
+    console.error('Error completing class:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error completing class',
+      error: error.message
+    });
+  }
+};
+
+// Get faculty by facultyID
+export const getFacultyById = async (req, res) => {
+  try {
+    const { facultyId } = req.params;
+    
+    if (!facultyId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Faculty ID is required'
+      });
+    }
+    
+    const faculty = await Faculty.findOne({ facultyID: facultyId });
+    
+    if (!faculty) {
+      return res.status(404).json({
+        success: false,
+        message: 'Faculty not found'
+      });
+    }
+
+    // Convert to plain object and remove password
+    const facultyData = faculty.toObject();
+    delete facultyData.password;
+    
+    res.status(200).json({
+      success: true,
+      faculty: facultyData
+    });
+  } catch (error) {
+    console.error('Error fetching faculty details:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching faculty details',
+      error: error.message
+    });
+  }
+};
+
+// Update faculty data
+export const updateFacultyData = async (req, res) => {
+  try {
+    const { facultyId } = req.params;
+    const updateData = req.body;
+    
+    if (!facultyId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Faculty ID is required'
+      });
+    }
+    
+    // Find the faculty
+    const faculty = await Faculty.findOne({ facultyID: facultyId });
+    
+    if (!faculty) {
+      return res.status(404).json({
+        success: false,
+        message: 'Faculty not found'
+      });
+    }
+    
+    // Prevent updating sensitive fields
+    delete updateData.password;
+    delete updateData._id;
+    
+    // Update the faculty data
+    const updatedFaculty = await Faculty.findOneAndUpdate(
+      { facultyID: facultyId },
+      { $set: updateData },
+      { new: true }
+    );
+    
+    // Convert to plain object and remove password
+    const facultyData = updatedFaculty.toObject();
+    delete facultyData.password;
+    
+    res.status(200).json({
+      success: true,
+      message: 'Faculty data updated successfully',
+      faculty: facultyData
+    });
+  } catch (error) {
+    console.error('Error updating faculty data:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error updating faculty data',
+      error: error.message
     });
   }
 };

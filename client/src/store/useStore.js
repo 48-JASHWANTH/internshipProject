@@ -7,6 +7,8 @@ import createFacultyProfileSlice from './slices/facultyProfileSlice';
 import createProjectForumSlice from './slices/projectForumSlice';
 import createLeadedWorksSlice from './slices/leadedWorksSlice';
 import createGuidedWorksSlice from './slices/guidedWorksSlice';
+import createActiveWorksSlice from './slices/activeWorksSlice';
+import createArchiveProjectsSlice from './slices/archiveProjectsSlice';
 
 export const useStore = create(
     persist(
@@ -18,6 +20,8 @@ export const useStore = create(
             ...createProjectForumSlice(set, get),
             ...createLeadedWorksSlice(set, get),
             ...createGuidedWorksSlice(set, get),
+            // ...createActiveWorksSlice(set, get),
+            ...createArchiveProjectsSlice(set, get)
         }),
         // {
         //     name: 'app-storage',

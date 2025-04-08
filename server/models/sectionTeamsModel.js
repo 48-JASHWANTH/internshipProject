@@ -29,6 +29,10 @@ const SectionTeamsSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    batch: {
+        type: String,
+        default: ''
+    },
     numberOfTeams: {
         type: Number,
         default: 0
@@ -48,7 +52,7 @@ const SectionTeamsSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        default: 'Pending'
+        default: 'In Progress'
     },
     dueDate:{
         type:Date

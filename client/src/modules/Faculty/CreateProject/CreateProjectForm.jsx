@@ -71,7 +71,7 @@ const CreateProjectForm = () => {
         teamsList: teams,
         projectTitles,
         numberOfStudents: noOfStudents,
-        status: 'Pending'
+        status: 'In Progress'
       },
       createdTeams: Object.keys(teams).map(teamId => ({
         teamId,

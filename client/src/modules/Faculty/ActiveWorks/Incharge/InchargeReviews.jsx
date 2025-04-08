@@ -1,8 +1,7 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { 
   CheckCircle, 
   Plus,
-  X,
   Calendar,
   AlertCircle
 } from 'lucide-react';
@@ -83,9 +82,8 @@ const ReviewCard = ({ review }) => {
 
 const InchargeReviews = ({ projectId }) => {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [reviews, setReviews] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const { activeProjects, user } = useStore();
+  const [isLoading, setIsLoading] = useState(false);
+  const { activeProjects, user, fetchLeadedProjects } = useStore();
   
   // Find the team data
   const team = useMemo(() => {
@@ -93,35 +91,14 @@ const InchargeReviews = ({ projectId }) => {
     return activeProjects.teams.find(t => t.teamId === projectId);
   }, [activeProjects, projectId]);
   
-  // Fetch reviews for this team
-  useEffect(() => {
-    const fetchReviews = async () => {
-      if (!projectId) return;
-      
-      try {
-        setIsLoading(true);
-        const response = await apiClient.get(`/faculty/team/${projectId}/reviews`, {
-          withCredentials: true
-        });
-        
-        if (response.data.success) {
-          setReviews(response.data.reviews || []);
-        } else {
-          toast.error('Failed to fetch reviews');
-        }
-      } catch (error) {
-        console.error('Error fetching reviews:', error);
-        toast.error('Error loading reviews');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    
-    fetchReviews();
-  }, [projectId]);
+  // Get reviews directly from the team object
+  const reviews = useMemo(() => {
+    return team?.reviews || [];
+  }, [team]);
   
   const handleAddReview = async (newReview) => {
     try {
+      setIsLoading(true);
       const reviewData = {
         ...newReview,
         assignedBy: {
@@ -137,15 +114,11 @@ const InchargeReviews = ({ projectId }) => {
       );
       
       if (response.data.success) {
-        // Refresh reviews
-        const reviewsResponse = await apiClient.get(`/faculty/team/${projectId}/reviews`, {
-          withCredentials: true
-        });
-        
-        if (reviewsResponse.data.success) {
-          setReviews(reviewsResponse.data.reviews || []);
-          toast.success('Review added successfully');
+        // Refresh the team data to get the updated reviews
+        if (user?.facultyID) {
+          await useStore.getState().fetchLeadedProjects(user.facultyID);
         }
+        toast.success('Review added successfully');
       } else {
         toast.error('Failed to add review');
       }
@@ -153,6 +126,7 @@ const InchargeReviews = ({ projectId }) => {
       console.error('Error adding review:', error);
       toast.error('Error adding review');
     } finally {
+      setIsLoading(false);
       setIsAddModalOpen(false);
     }
   };

@@ -11,7 +11,7 @@ const Profile = () => {
   const [activeTab, setActiveTab] = useState("academic");
 
   const handleChangePassword = () => {
-    navigate("/StudentChangePassword");
+    navigate("/reset-password");
   };
 
   return (

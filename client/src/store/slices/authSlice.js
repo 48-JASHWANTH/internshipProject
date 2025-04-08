@@ -52,9 +52,26 @@ const createAuthSlice = (set, get) => ({
             error: null
         });
         
-        // Clear student data
+        // Clear data
         if (get().clearStudentData) {
             get().clearStudentData();
+        }
+
+        if (get().clearLeadedProjects) {
+            get().clearLeadedProjects();
+        }
+
+        if (get().clearProfileData) {
+            get().clearProfileData();
+        }
+        
+        // Clear active works data
+        if (get().clearActiveWorks) {
+            get().clearActiveWorks();
+        }
+
+        if(get().clearArchiveProjects){
+            get().clearArchiveProjects();
         }
         
         // Clear auth header

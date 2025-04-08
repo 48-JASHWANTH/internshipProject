@@ -1,12 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { Edit, X } from 'lucide-react';
 import axios from 'axios';
-import { toast } from 'react-toastify';
+import { toast } from 'react-hot-toast';
 import { useStore } from '@/store/useStore';
 
 const ProfileCard = () => {
   const [isEditing, setIsEditing] = useState(false);
-  const [profileInfo, setProfileInfo] = useState({
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const { profileData, updateProfileData, isLoading, error, fetchProfileData } = useStore();
+  const { user } = useStore();
+  
+  // Get faculty ID from user state
+  const facultyID = user?.facultyID;
+  
+  // Initialize edited data from profile data
+  const [editedData, setEditedData] = useState({
     name: '',
     regNumber: '',
     email: '',
@@ -15,146 +24,181 @@ const ProfileCard = () => {
     dateOfBirth: '',
     profilePic: ''
   });
-  const [editedData, setEditedData] = useState({});
-  const [selectedFile, setSelectedFile] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-
-  const updateProfileData = useStore(state => state.updateProfileData);
-  const user = useStore(state => state.user);
-
-  // Get faculty ID from user state
-  const facultyID = user?.facultyID;
-
+  
   // Fetch profile data on component mount
-  // useEffect(() => {
-  //   const fetchProfileData = async () => {
-  //     if (!facultyID) return;
-
-  //     try {
-  //       setLoading(true);
-  //       const response = await axios.get(`http://localhost:1544/faculty/personal/${facultyID}`);
-        
-  //       // Map the response data to our component state
-  //       const data = {
-  //         name: response.data.name || '',
-  //         regNumber: response.data.facultyID || '',
-  //         email: response.data.mail || '',
-  //         phone: response.data.phone || '',
-  //         gender: response.data.gender || '',
-  //         dateOfBirth: response.data.dateOfBirth || '',
-  //         profilePic: response.data.profilePic || ''
-  //       };
-        
-  //       setProfileInfo(data);
-  //       setEditedData(data);
-  //       updateProfileData(data);
-  //       setError(null);
-  //     } catch (err) {
-  //       console.error('Error fetching profile data:', err);
-  //       setError('Failed to load profile information. Please try again later.');
-  //       toast.error('Failed to load profile information');
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   };
-
-  //   fetchProfileData();
-  // }, [facultyID, updateProfileData]);
+  useEffect(() => {
+    if (facultyID && fetchProfileData) {
+      fetchProfileData(facultyID);
+    }
+  }, [facultyID, fetchProfileData]);
+  
+  // Update local state when profileData changes
+  useEffect(() => {
+    if (profileData) {
+      setEditedData({
+        name: profileData.empname || '',
+        regNumber: profileData.empcode || '',
+        email: profileData.email || '',
+        phone: profileData.contactNumber || '',
+        gender: profileData.gender || '',
+        dateOfBirth: profileData.dateOfBirth || '',
+        profilePic: profileData.profilePic || ''
+      });
+    }
+  }, [profileData]);
 
   const handleSaveChanges = async () => {
-    if (!facultyID) return;
+    if (!facultyID) {
+      toast.error('Faculty ID not found');
+      return;
+    }
+
+    setIsSaving(true);
 
     try {
-      setLoading(true);
-      const formData = new FormData();
-      
-      // Append all edited data
-      Object.keys(editedData).forEach(key => {
-        if (key !== 'profilePic') {
-          formData.append(key, editedData[key]);
-        }
-      });
+      // Map edited data to API format
+      const updateData = {
+        name: editedData.name,
+        facultyID: editedData.regNumber,
+        email: editedData.email,
+        phoneNumber: editedData.phone,
+        gender: editedData.gender,
+        dob: editedData.dateOfBirth,
+        profilePic: editedData.profilePic // Include the profile pic URL directly
+      };
 
-      // Append profile picture if selected
-      if (selectedFile) {
-        formData.append('profilePic', selectedFile);
-      }
-
+      // Update faculty data with a single request
       const response = await axios.put(
-        `http://localhost:1544/faculty/personal/${facultyID}`,
-        formData,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data'
-          }
-        }
+        `http://localhost:1544/faculty/update/${facultyID}`,
+        updateData,
+        { withCredentials: true }
       );
 
       if (response.data.success) {
-        setProfileInfo(editedData);
-        updateProfileData(editedData);
-        setIsEditing(false);
+        // Map API response to profile data format
+        const updatedProfileData = {
+          empname: updateData.name,
+          empcode: updateData.facultyID,
+          email: updateData.email,
+          contactNumber: updateData.phoneNumber,
+          gender: updateData.gender,
+          dateOfBirth: updateData.dob,
+          profilePic: updateData.profilePic
+        };
+        
+        // Update local state
+        updateProfileData(updatedProfileData);
+        
+        // Refresh profile data from server
+        fetchProfileData(facultyID);
+        
         toast.success('Profile updated successfully');
+        setIsEditing(false);
+        setSelectedFile(null);
+      } else {
+        toast.error(response.data.message || 'Failed to update profile');
       }
-    } catch (err) {
-      console.error('Error updating profile:', err);
-      toast.error(err.response?.data?.message || 'Error updating profile');
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      toast.error(error.response?.data?.message || 'An error occurred while updating profile');
     } finally {
-      setLoading(false);
+      setIsSaving(false);
     }
   };
 
   const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
       setSelectedFile(file);
-      setEditedData(prev => ({
-        ...prev,
-        profilePic: URL.createObjectURL(file)
-      }));
+      
+      // Convert the file to a data URL
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setEditedData(prev => ({
+          ...prev,
+          profilePic: event.target.result
+        }));
+      };
+      reader.readAsDataURL(file);
     }
   };
 
-  if (loading) {
-    return <div className="text-center py-4">Loading...</div>;
+  if (isLoading) {
+    return (
+      <div className="bg-white rounded-lg shadow-md overflow-hidden">
+        <div className="h-40 bg-gradient-to-r from-red-900 to-yellow-400"></div>
+        <div className="flex justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#82001A] mt-8 mb-8"></div>
+        </div>
+      </div>
+    );
   }
 
   if (error) {
-    return <div className="text-center text-red-600 py-4">{error}</div>;
+    return (
+      <div className="bg-white rounded-lg shadow-md overflow-hidden">
+        <div className="h-40 bg-gradient-to-r from-red-900 to-yellow-400"></div>
+        <div className="p-6">
+          <div className="bg-red-50 text-red-700 p-4 rounded-lg">
+            <p>Error loading profile data: {error}</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!profileData) {
+    return (
+      <div className="bg-white rounded-lg shadow-md overflow-hidden">
+        <div className="h-40 bg-gradient-to-r from-red-900 to-yellow-400"></div>
+        <div className="p-6">
+          <div className="bg-yellow-50 text-yellow-700 p-4 rounded-lg">
+            <p>No profile data available. Please try again later.</p>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-      {/* Profile Picture Section */}
-      <div className="relative">
-        <div className="h-32 bg-gradient-to-r from-red-900 to-yellow-400" />
-        <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2">
-          <div className="relative w-24 h-24 rounded-full border-4 border-white overflow-hidden bg-gray-200">
-            {isEditing ? (
-              <label className="cursor-pointer w-full h-full flex items-center justify-center">
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={handleFileChange}
-                />
-                <Edit className="w-6 h-6 text-gray-600" />
-              </label>
+    <div className="bg-white rounded-lg shadow-md overflow-hidden">
+      {/* Banner */}
+      <div className="h-40 bg-gradient-to-r from-red-900 to-yellow-400"></div>
+      
+      {/* Profile Picture */}
+      <div className="flex justify-center">
+        <div className="relative -mt-16">
+          <div className="w-32 h-32 rounded-full border-4 border-white overflow-hidden bg-gray-200">
+            {editedData.profilePic ? (
+              <img 
+                src={editedData.profilePic} 
+                alt="Profile" 
+                className="w-full h-full object-cover"
+              />
             ) : (
-              editedData.profilePic ? (
-                <img
-                  src={editedData.profilePic}
-                  alt="Profile"
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center">
-                  <span className="text-4xl text-gray-400">👤</span>
-                </div>
-              )
+              <div className="w-full h-full flex items-center justify-center bg-gray-200">
+                <span className="text-gray-400 text-4xl">👤</span>
+              </div>
             )}
           </div>
+          
+          {isEditing && (
+            <div className="absolute bottom-0 right-0">
+              <label 
+                htmlFor="profile-pic-upload" 
+                className="w-8 h-8 flex items-center justify-center bg-[#82001A] text-white rounded-full cursor-pointer shadow-md"
+              >
+                <Edit className="w-4 h-4" />
+              </label>
+              <input 
+                id="profile-pic-upload"
+                type="file" 
+                accept="image/*"
+                className="hidden"
+                onChange={handleFileChange}
+              />
+            </div>
+          )}
         </div>
       </div>
 
@@ -205,7 +249,7 @@ const ProfileCard = () => {
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#9b1a31] focus:ring focus:ring-[#9b1a31] focus:ring-opacity-50"
                 />
               ) : (
-                <p className="mt-1 text-gray-900">{profileInfo[key] || '-'}</p>
+                <p className="mt-1 text-gray-900">{editedData[key] || 'Not specified'}</p>
               )}
             </div>
           ))}
@@ -215,10 +259,17 @@ const ProfileCard = () => {
           <div className="mt-6 flex justify-end">
             <button
               onClick={handleSaveChanges}
-              disabled={loading}
-              className="px-4 py-2 bg-[#82001A] text-white rounded-md hover:bg-[#9b1a31] disabled:opacity-50"
+              disabled={isSaving}
+              className="px-4 py-2 bg-[#82001A] text-white rounded-md hover:bg-[#9b1a31] disabled:opacity-50 flex items-center"
             >
-              {loading ? 'Saving...' : 'Save Changes'}
+              {isSaving ? (
+                <>
+                  <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full mr-2"></div>
+                  Saving...
+                </>
+              ) : (
+                'Save Changes'
+              )}
             </button>
           </div>
         )}

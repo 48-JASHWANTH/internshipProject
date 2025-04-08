@@ -138,7 +138,31 @@ const Faculty = mongoose.models.facultyCollection || mongoose.model("facultyColl
   deletedAt: {
     type: Date,
     default: null
-  }
+  },
+
+  // Add this to the existing faculty schema
+  forumProjectsIds: {
+    type: [String],
+    default: []
+  },
+
+  // New fields
+  gender: {
+    type: String,
+    enum: ['Male', 'Female', 'Other', ''],
+    default: ''
+  },
+  
+  natureOfAssociation: {
+    type: String,
+    enum: ['Regular', 'Contract', 'Visiting', 'Adjunct', ''],
+    default: 'Regular'
+  },
+  
+  profilePic: {
+    type: String,
+    default: ''
+  },
 }, { timestamps: true }));
 
 // Add middleware to filter out soft-deleted faculty if model was just created

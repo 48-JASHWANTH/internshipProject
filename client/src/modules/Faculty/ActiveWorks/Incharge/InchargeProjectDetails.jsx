@@ -22,9 +22,9 @@ const InchargeProjectDetails = () => {
   const { activeProjects } = useStore();
   
   // Find the team and section data
-  const { team, sectionTeam, students } = useMemo(() => {
+  const { team, sectionTeam, students, progress } = useMemo(() => {
     if (!activeProjects?.teams || !activeProjects?.sectionTeams) {
-      return { team: null, sectionTeam: null, students: [] };
+      return { team: null, sectionTeam: null, students: [], progress: 0 };
     }
     
     // Find the team
@@ -37,7 +37,18 @@ const InchargeProjectDetails = () => {
     // The listOfStudents now contains objects with id and name properties
     const students = team?.listOfStudents || [];
     
-    return { team, sectionTeam, students };
+    // Calculate progress based on tasks (same formula as in InchargeClassTeams.jsx)
+    const totalTasks = team?.tasks?.length || 0;
+    const completedTasks = team?.tasks?.filter(task => 
+      task.status === 'done' || task.status === 'approved'
+    ).length || 0;
+    
+    // Calculate progress percentage
+    const progress = totalTasks > 0 
+      ? Math.round((completedTasks / totalTasks) * 100) 
+      : 0;
+    
+    return { team, sectionTeam, students, progress };
   }, [activeProjects, projectId, classSection]);
   
   // Format date or provide a default
@@ -65,9 +76,6 @@ const InchargeProjectDetails = () => {
       </div>
     );
   }
-
-  // Calculate progress (placeholder)
-  const progress = 0; // You can implement a real calculation if needed
 
   return (
     <div className="max-w-7xl mx-auto p-6 space-y-6">
