@@ -82,7 +82,7 @@ function App() {
         <Route path="/reset-password" element={<ResetPassword />} />
 
         {/* Admin Routes */}
-        {/* <Route element={<PrivateRoute allowedRoles={["admin"]} />}> */}
+        <Route element={<PrivateRoute allowedRoles={["admin"]} />}>
           <Route path="/Admin" element={<AdminLayout />}>
             <Route path="Dashboard" element={<AdminDashboard />} />
             <Route path="Profile" element={<AdminProfile />} />
@@ -94,10 +94,10 @@ function App() {
             <Route path="AddStudent" element={<AddStudent />} />
             <Route path="AddFaculty" element={<AddFaculty />} />
           </Route>
-        {/* </Route> */}
+        </Route>
 
         {/* Faculty Routes */}
-        {/* <Route element={<PrivateRoute allowedRoles={["faculty"]} />}> */}
+        <Route element={<PrivateRoute allowedRoles={["faculty"]} />}>
           <Route path="/Faculty" element={<FacultyLayout />}>
             <Route path="Dashboard" element={<FacultyDashboard />} />
             <Route path="ActiveWorks/guide" element={<GuideActiveWorks />} />
@@ -117,9 +117,9 @@ function App() {
             <Route path="FacultyProfile" element={<FacultyProfile />} />
             <Route path="Notifications" element={<Notifications />} />
           </Route>
-        {/* </Route> */}
+        </Route>
         {/* Student Routes */}
-        {/* <Route element={<PrivateRoute allowedRoles={["student"]} />}> */}
+        <Route element={<PrivateRoute allowedRoles={["student"]} />}>
           <Route path="/student" element={<Student />}>
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="archivedprojects" element={<ArchivedProjects />} />
@@ -133,7 +133,7 @@ function App() {
             <Route path="campusprojects" element={<CampusProjects />} />
             <Route path="notifications" element={<StudentNotifications />} /> 
           </Route>
-            {/* </Route> */}
+            </Route>
       </Routes>
     </Router>
     </>
