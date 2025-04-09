@@ -1,6 +1,7 @@
 import asyncHandler from 'express-async-handler';
 import ProjectForum from '../models/projectForumModel.js';
 import Faculty from '../models/facultyModel.js';
+import Student from '../models/studentModel.js';
 
 // Create a new project
 export const createProject = asyncHandler(async (req, res) => {
@@ -138,15 +139,7 @@ export const updateProjectStatus = asyncHandler(async (req, res) => {
 export const expressInterest = asyncHandler(async (req, res) => {
   try {
     const { projectId } = req.params;
-    const { studentID, name, branch, mail } = req.body;
-    
-    // Validate required fields
-    if (!studentID || !name || !branch || !mail) {
-      return res.status(400).json({
-        success: false,
-        message: 'Missing required fields'
-      });
-    }
+    const { studentID, mail } = req.body;
     
     // Check if project exists
     const project = await ProjectForum.findOne({ projectId });
@@ -177,12 +170,22 @@ export const expressInterest = asyncHandler(async (req, res) => {
         message: 'You have already expressed interest in this project'
       });
     }
+
+    // Fetch student details from student model
+    const student = await Student.findOne({ studentID });
     
-    // Add student to interested students
+    if (!student) {
+      return res.status(404).json({
+        success: false,
+        message: 'Student not found'
+      });
+    }
+    
+    // Add student to interested students with details from student model
     project.InterestedStudents.push({
       studentID,
-      name,
-      branch,
+      name: student.name,
+      branch: student.department,
       mail,
       date: new Date()
     });

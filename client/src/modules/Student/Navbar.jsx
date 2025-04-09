@@ -8,12 +8,16 @@ const Navbar = ({ isMobileMenuOpen, setIsMobileMenuOpen }) => {
   const navigate = useNavigate();
   const [showProfile, setShowProfile] = useState(false);
   
-  const profileData = useStore(state => state.profileData);
-  const user = useStore(state => state.user);
+  const studentData = useStore(state => state.studentData);
+  const {user,fetchStudentData} = useStore()
   const logout = useStore(state => state.logout);
-
   const dropdownRef = useRef(null);
 
+  useEffect(()=>{
+    if(user?.studentID && fetchStudentData){
+      fetchStudentData(user.studentID)
+    }
+  },[user,fetchStudentData])
   const toggleProfile = () => {
     setShowProfile((prev) => !prev);
   };
@@ -61,9 +65,9 @@ const Navbar = ({ isMobileMenuOpen, setIsMobileMenuOpen }) => {
             onClick={toggleProfile}
             className="cursor-pointer flex items-center justify-center w-10 h-10 bg-gray-200 rounded-full overflow-hidden"
           >
-            {profileData?.profilePic ? (
+            {studentData?.personal?.profilePic ? (
               <img 
-                src={profileData.profilePic} 
+                src={studentData.personal.profilePic} 
                 alt="Profile" 
                 className="w-full h-full object-cover"
               />
@@ -88,9 +92,9 @@ const Navbar = ({ isMobileMenuOpen, setIsMobileMenuOpen }) => {
         <div className="absolute top-14 right-4 w-80 bg-white border border-gray-300 rounded-lg shadow-lg">
           <div className="flex items-center px-4 py-2 border-b border-gray-300">
             <div className="w-16 h-16 rounded-full overflow-hidden mr-3">
-              {profileData?.profilePic ? (
+              {studentData?.personal?.profilePic ? (
                 <img 
-                  src={profileData.profilePic} 
+                  src={studentData.personal.profilePic} 
                   alt="Profile" 
                   className="w-full h-full object-cover"
                 />
@@ -99,8 +103,9 @@ const Navbar = ({ isMobileMenuOpen, setIsMobileMenuOpen }) => {
               )}
             </div>
             <div>
-              <p className="font-bold text-sm">{`${profileData?.regNumber || ''} - ${profileData?.name || ''}`}</p>
-              <p className="text-xs text-gray-500">{profileData?.email || ''}</p>
+              <p className="font-bold text-sm">{`${studentData?.academic?.studentID || ''} - ${studentData?.personal?.name || ''}`}</p>
+              <p className="text-xs text-gray-500">{studentData?.personal?.mail || ''}</p>
+              <p className="text-xs text-gray-500">{studentData?.academic?.department || ''}</p>
             </div>
           </div>
           <div className="flex flex-col">
