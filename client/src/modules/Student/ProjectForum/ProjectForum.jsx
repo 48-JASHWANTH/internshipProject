@@ -1,55 +1,57 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FaSearch, FaFilter, FaArrowRight } from "react-icons/fa";
 import { useNavigate } from 'react-router-dom';
 import ProjectForumDetails from './ProjectForumDetails';
 import { useStore } from '@/store/useStore';
-const CATEGORIES = ["All", "Web", "Mobile", "AI/ML", "IoT"];
-const PROJECT_STATUS = ["Open", "Closed"];
-const TECH_STACKS = ["Python", "TensorFlow", "React", "Node.js", "Arduino", "MQTT", "MongoDB", "Socket.io", "Django"];
+import { apiClient } from '@/lib/api-client';
+import { toast } from 'react-hot-toast';
+// const CATEGORIES = ["All", "Web", "Mobile", "AI/ML", "IoT"];
+// const PROJECT_STATUS = ["Open", "Closed"];
+// const TECH_STACKS = ["Python", "TensorFlow", "React", "Node.js", "Arduino", "MQTT", "MongoDB", "Socket.io", "Django"];
 
 // Static project data for demonstration
-const PROJECTS = [
-  {
-    title: "AI-Powered Healthcare System",
-    description: "Developing an intelligent system for early disease detection using machine learning algorithms.",
-    domain: "AI/ML",
-    techStack: ["Python", "TensorFlow", "React", "Node.js"],
-    facultyName: "Dr. Sarah Johnson",
-    status: "Open"
-  },
-  {
-    title: "Smart Home IoT Platform",
-    description: "Building a comprehensive IoT platform for home automation and energy management.",
-    domain: "IoT",
-    techStack: ["Arduino", "MQTT", "React", "MongoDB"],
-    facultyName: "Dr. Michael Chen",
-    status: "Open"
-  },
-  {
-    title: "Remote Collaboration Tools",
-    description: "Creating tools to enhance remote project collaboration efficiency.",
-    domain: "Web",
-    techStack: ["React", "Node.js", "Socket.io"],
-    facultyName: "Dr. Emily Wilson",
-    status: "Closed"
-  }
-];
+// const PROJECTS = [
+//   {
+//     title: "AI-Powered Healthcare System",
+//     description: "Developing an intelligent system for early disease detection using machine learning algorithms.",
+//     domain: "AI/ML",
+//     techStack: ["Python", "TensorFlow", "React", "Node.js"],
+//     facultyName: "Dr. Sarah Johnson",
+//     status: "Open"
+//   },
+//   {
+//     title: "Smart Home IoT Platform",
+//     description: "Building a comprehensive IoT platform for home automation and energy management.",
+//     domain: "IoT",
+//     techStack: ["Arduino", "MQTT", "React", "MongoDB"],
+//     facultyName: "Dr. Michael Chen",
+//     status: "Open"
+//   },
+//   {
+//     title: "Remote Collaboration Tools",
+//     description: "Creating tools to enhance remote project collaboration efficiency.",
+//     domain: "Web",
+//     techStack: ["React", "Node.js", "Socket.io"],
+//     facultyName: "Dr. Emily Wilson",
+//     status: "Closed"
+//   }
+// ];
 
-// Static data for interested projects
-const INTERESTED_PROJECTS = [
-  {
-    id: "1",
-    title: "Machine Learning for Climate Analysis",
-    description: "Using ML algorithms to analyze climate patterns and predict environmental changes.",
-    domain: "AI/ML",
-    techStack: ["Python", "TensorFlow", "MongoDB"],
-    facultyName: "Dr. Robert Brown",
-    facultyId: "FAC123",
-    facultyEmail: "robert.brown@university.edu",
-    status: "Open",
-    interestExpressedOn: "2024-03-15"
-  },
-];
+// // Static data for interested projects
+// const INTERESTED_PROJECTS = [
+//   {
+//     id: "1",
+//     title: "Machine Learning for Climate Analysis",
+//     description: "Using ML algorithms to analyze climate patterns and predict environmental changes.",
+//     domain: "AI/ML",
+//     techStack: ["Python", "TensorFlow", "MongoDB"],
+//     facultyName: "Dr. Robert Brown",
+//     facultyId: "FAC123",
+//     facultyEmail: "robert.brown@university.edu",
+//     status: "Open",
+//     interestExpressedOn: "2024-03-15"
+//   },
+// ];
 
 const statusColors = {
   'Open': 'bg-green-100 text-green-800',
@@ -61,14 +63,46 @@ const ProjectForum = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const [projectToConfirm, setProjectToConfirm] = useState(null);
-  const [interestedProjects, setInterestedProjects] = useState(INTERESTED_PROJECTS);
+  const [projects, setProjects] = useState([]);
+  const [interestedProjects, setInterestedProjects] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({
     domain: 'all',
     status: 'all',
     techStack: 'all'
   });
   const navigate = useNavigate();
-  const { currentUser } = useStore();
+  const { user } = useStore();
+
+  useEffect(() => {
+    fetchProjects();
+  }, []);
+
+  const fetchProjects = async () => {
+    try {
+      setLoading(true);
+      const response = await apiClient.get('/forum-projects/get-all-forumProjects', {
+        withCredentials: true
+      });
+      
+      if (response.data.success) {
+        setProjects(response.data.projects);
+        
+        // Filter interested projects for the current user
+        const userInterestedProjects = response.data.projects.filter(project => 
+          project.InterestedStudents?.some(student => student.studentID === user?.studentID)
+        );
+        setInterestedProjects(userInterestedProjects);
+      } else {
+        toast.error(response.data.message || "No Projects Found");
+      }
+    } catch (error) {
+      console.error("Error fetching projects:", error);
+      toast.error(error.response?.data?.message || "Failed to fetch projects");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleArrowClick = (e, projectId) => {
     e.stopPropagation();
@@ -77,56 +111,71 @@ const ProjectForum = () => {
 
   const handleExpressInterest = (project) => {
     setProjectToConfirm(project);
+    console.log(project);
   };
 
-  const handleConfirmInterest = () => {
+  const handleConfirmInterest = async () => {
     if (projectToConfirm) {
-      // Create a new interested project entry
-      const newInterestedProject = {
-        id: Date.now().toString(), // Generate a temporary ID
-        ...projectToConfirm,
-        interestExpressedOn: new Date().toISOString()
-      };
+      try {
+        const studentData = {
+          studentID: user?.studentID || "",
+          name: user?.name || "",
+          branch: user?.department || "",
+          mail: user?.email || ""
+        };
+        console.log(user)
+        console.log(studentData);
+        console.log(projectToConfirm.projectId);
+        const response = await apiClient.post(
+          `/forum-projects/${projectToConfirm.projectId}/express-interest`,
+          studentData,
+          { withCredentials: true }
+        );
+        
+        if (response.data.success) {
+          const newInterestedProject = {
+            id: projectToConfirm.projectId,
+            ...projectToConfirm,
+            interestExpressedOn: new Date().toISOString()
+          };
 
-      // Add the new project to interested projects
-      setInterestedProjects(prev => [...prev, newInterestedProject]);
-
-      // Log the interest details
-      console.log("Interest Expression Details:", {
-        student: {
-          id: currentUser?.id || "STU001",
-          name: currentUser?.name || "John Doe",
-          email: currentUser?.email || "john.doe@university.edu",
-          rollNo: currentUser?.rollNo || "20CS01",
-          semester: currentUser?.semester || 6
-        },
-        project: {
-          title: projectToConfirm.title,
-          faculty: projectToConfirm.facultyName,
-          domain: projectToConfirm.domain,
-          expressedOn: new Date().toISOString()
+          setInterestedProjects(prev => [...prev, newInterestedProject]);
+          toast.success("Interest expressed successfully!");
+          setProjectToConfirm(null);
+          
+          // Refresh projects to update the UI
+          fetchProjects();
+        } else {
+          toast.error(response.data.message || "Failed to express interest");
         }
-      });
-
-      // Close the confirmation modal
-      setProjectToConfirm(null);
+      } catch (error) {
+        console.error("Error expressing interest:", error);
+        toast.error(error.response?.data?.message || "Failed to express interest");
+      }
     }
   };
 
-  const filteredProjects = (viewMode === "all" ? PROJECTS : interestedProjects).filter(project => {
-    const matchesSearch = project.title.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesDomain = filters.domain === 'all' || project.domain === filters.domain;
-    const matchesStatus = filters.status === 'all' || project.status === filters.status;
-    const matchesTechStack = filters.techStack === 'all' || project.techStack.includes(filters.techStack);
+  const filteredProjects = (viewMode === "all" ? projects : interestedProjects).filter(project => {
+    const matchesSearch = project.Title.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesDomain = filters.domain === 'all' || project.Domain === filters.domain;
+    const matchesStatus = filters.status === 'all' || project.Status === filters.status;
+    const matchesTechStack = filters.techStack === 'all' || project.TechStack.includes(filters.techStack);
     return matchesSearch && matchesDomain && matchesStatus && matchesTechStack;
   });
 
-  // Add this helper function before the return statement
   const isProjectInterested = (project) => {
     return interestedProjects.some(
-      (interestedProject) => interestedProject.title === project.title
+      (interestedProject) => interestedProject.projectId === project.projectId
     );
   };
+
+  if (loading) {
+    return (
+      <div className="max-w-7xl mx-auto p-6 flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#82001A]"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-7xl mx-auto p-6">
@@ -139,14 +188,14 @@ const ProjectForum = () => {
           <div className="flex gap-4">
             <div className="relative flex-1">
               <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Search projects..."
+              <input
+                type="text"
+                placeholder="Search projects..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-12 pr-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#82001A] focus:border-transparent"
-          />
-        </div>
+              />
+            </div>
             <button
               onClick={() => setShowFilters(!showFilters)}
               className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg flex items-center gap-2 transition-colors"
@@ -164,7 +213,7 @@ const ProjectForum = () => {
                 className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#82001A] focus:border-transparent"
               >
                 <option value="all">All Domains</option>
-                {CATEGORIES.filter(cat => cat !== "All").map(domain => (
+                {Array.from(new Set(projects.map(p => p.Domain))).map(domain => (
                   <option key={domain} value={domain}>{domain}</option>
                 ))}
               </select>
@@ -175,7 +224,7 @@ const ProjectForum = () => {
                 className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#82001A] focus:border-transparent"
               >
                 <option value="all">All Status</option>
-                {PROJECT_STATUS.map(status => (
+                {Array.from(new Set(projects.map(p => p.Status))).map(status => (
                   <option key={status} value={status}>{status}</option>
                 ))}
               </select>
@@ -186,7 +235,7 @@ const ProjectForum = () => {
                 className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#82001A] focus:border-transparent"
               >
                 <option value="all">All Tech Stacks</option>
-                {TECH_STACKS.map(tech => (
+                {Array.from(new Set(projects.flatMap(p => p.TechStack))).map(tech => (
                   <option key={tech} value={tech}>{tech}</option>
                 ))}
               </select>
@@ -223,14 +272,14 @@ const ProjectForum = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredProjects.map((project) => (
           <div 
-            key={viewMode === "interested-projects" ? project.id : project.title} 
+            key={viewMode === "interested-projects" ? project.projectId : project.projectId} 
             className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow"
           >
             <div className="flex justify-between items-start mb-4">
-              <h2 className="text-xl font-semibold text-black">{project.title}</h2>
+              <h2 className="text-xl font-semibold text-black">{project.Title}</h2>
               {viewMode === "interested-projects" && (
                 <button 
-                  onClick={(e) => handleArrowClick(e, project.id)}
+                  onClick={(e) => handleArrowClick(e, project.projectId)}
                   className="text-[#82001A] transition-colors p-2"
                 >
                   <FaArrowRight size={16} />
@@ -239,11 +288,11 @@ const ProjectForum = () => {
             </div>
 
             <p className="text-gray-600 mb-4 line-clamp-2 text-sm">
-              {project.description}
+              {project.Description}
             </p>
             
             <div className="flex flex-wrap gap-2 mb-4">
-              {project.techStack?.map((tech) => (
+              {project.TechStack?.map((tech) => (
                 <span key={tech} className="px-3 py-1 bg-gray-100 text-sm text-gray-700 rounded-full">
                   {tech}
                 </span>
@@ -253,8 +302,8 @@ const ProjectForum = () => {
             <div className="space-y-3">
               <div className="flex items-center gap-2">
                 <span className="text-gray-600 text-sm">Status:</span>
-                <span className={`px-3 py-1 rounded-full text-sm font-medium ${statusColors[project.status]}`}>
-                  {project.status}
+                <span className={`px-3 py-1 rounded-full text-sm font-medium ${statusColors[project.Status]}`}>
+                  {project.Status}
                 </span>
               </div>
               
@@ -264,7 +313,7 @@ const ProjectForum = () => {
                   <span className="text-[#82001A] font-medium">{project.facultyName}</span>
                 </div>
                 {viewMode === "all" ? (
-                  project.status === "Open" ? (
+                  project.Status === "Open" ? (
                     isProjectInterested(project) ? (
                       <button
                         disabled
@@ -307,7 +356,7 @@ const ProjectForum = () => {
               Confirm Interest
             </h3>
             <p className="text-gray-600 mb-6">
-              Are you sure you want to express interest in "{projectToConfirm.title}"?
+              Are you sure you want to express interest in "{projectToConfirm.Title}"?
             </p>
             <div className="flex justify-end gap-3">
               <button

@@ -41,20 +41,21 @@ const projectForumSchema = new mongoose.Schema({
       },
       name: {
         type: String,
-        required: true
+       
       },
       branch: {
         type: String,
-        required: true
+        
       },
       mail: {
         type: String,
-        required: true
+      
       },
       date: {
         type: Date,
         default: Date.now
       }
+      
     }],
     default: []
   },
