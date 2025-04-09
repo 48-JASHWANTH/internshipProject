@@ -751,3 +751,324 @@ export const updateFacultyData = async (req, res) => {
     });
   }
 };
+
+// Get dashboard data for a faculty
+export const getFacultyDashboardData = async (req, res) => {
+  try {
+    const { facultyId } = req.params;
+    
+    if (!facultyId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Faculty ID is required'
+      });
+    }
+    
+    // Find the faculty
+    const faculty = await Faculty.findOne({ facultyID: facultyId });
+    
+    if (!faculty) {
+      return res.status(404).json({
+        success: false,
+        message: 'Faculty not found'
+      });
+    }
+    
+    // Extract faculty details
+    const facultyDetails = {
+      facultyID: faculty.facultyID,
+      name: faculty.name,
+      department: faculty.department,
+      email: faculty.email,
+      designation: faculty.designation,
+      profileImage: faculty.profileImage
+    };
+    
+    // Get the counts of leaded projects and guided projects
+    const leadedProjectsCount = faculty.leadedProjects?.length || 0;
+    const guidedProjectsCount = faculty.guidedProjects?.length || 0;
+    
+    // Get active projects (status: In Progress)
+    // First, get all teams this faculty is guiding or leading
+    const teamIds = faculty.guidedProjects || [];
+    
+    // Get all class IDs this faculty is leading
+    const classIds = faculty.leadedProjects || [];
+    
+    // Get all teams in these classes
+    let classTeamIds = [];
+    if (classIds.length > 0) {
+      const sectionTeams = await SectionTeams.find({ 
+        classID: { $in: classIds },
+        status: { $ne: 'completed' } // Not completed classes
+      });
+      
+      sectionTeams.forEach(section => {
+        if (section.teamsList) {
+          Object.keys(section.teamsList).forEach(teamId => {
+            classTeamIds.push(teamId);
+          });
+        }
+      });
+    }
+    
+    // Combine all team IDs (both guided and from led classes)
+    const allTeamIds = [...new Set([...teamIds, ...classTeamIds])];
+    
+    // Get active and completed projects
+    const activeProjects = await Team.find({
+      teamId: { $in: allTeamIds },
+      status: false // Not completed
+    }).lean();
+    
+    const completedProjects = await Team.find({
+      teamId: { $in: allTeamIds },
+      status: true // Completed
+    }).lean();
+    
+    // Get the count of students under guidance
+    const studentCount = activeProjects.reduce((count, project) => {
+      return count + (project.listOfStudents?.length || 0);
+    }, 0);
+    
+    // Get pending approval tasks
+    const pendingApprovals = await Team.countDocuments({
+      teamId: { $in: allTeamIds },
+      'tasks.status': 'done' // Tasks that are done but not yet approved
+    });
+    
+    // Get project distribution data based on project types
+    // First, get all section teams this faculty is involved with
+    const sectionTeamData = await SectionTeams.find({
+      $or: [
+        { classID: { $in: classIds } },
+        { facultyID: facultyId }
+      ]
+    }).lean();
+    
+    // Count projects by type
+    const projectTypeCount = {};
+    sectionTeamData.forEach(section => {
+      const projectType = section.projectType;
+      if (!projectTypeCount[projectType]) {
+        projectTypeCount[projectType] = 0;
+      }
+      projectTypeCount[projectType] += section.numberOfTeams || 0;
+    });
+    
+    // Format project distribution data for charts
+    const projectDistributionData = Object.keys(projectTypeCount).map(type => {
+      let color;
+      switch(type) {
+        case 'Major':
+          color = '#8884d8'; // Purple
+          break;
+        case 'Mini':
+          color = '#82ca9d'; // Green
+          break;
+        case 'CBP':
+          color = '#ffc658'; // Yellow
+          break;
+        case 'FP':
+          color = '#ff8042'; // Orange
+          break;
+        default:
+          color = '#8dd1e1'; // Blue
+      }
+      
+      return {
+        name: type,
+        value: projectTypeCount[type],
+        color
+      };
+    });
+    
+    // Get project details by type for more detailed pie chart data
+    const projectDetailsByType = {};
+    
+    // Gather active projects by type
+    activeProjects.forEach(project => {
+      const type = project.projectType;
+      if (!projectDetailsByType[type]) {
+        projectDetailsByType[type] = {
+          active: 0,
+          completed: 0,
+          total: 0,
+          projects: []
+        };
+      }
+      
+      projectDetailsByType[type].active += 1;
+      projectDetailsByType[type].total += 1;
+      projectDetailsByType[type].projects.push({
+        id: project.teamId,
+        title: project.projectTitle,
+        status: 'active',
+        subject: project.subject,
+        teamSize: project.listOfStudents?.length || 0
+      });
+    });
+    
+    // Add completed projects by type
+    completedProjects.forEach(project => {
+      const type = project.projectType;
+      if (!projectDetailsByType[type]) {
+        projectDetailsByType[type] = {
+          active: 0,
+          completed: 0,
+          total: 0,
+          projects: []
+        };
+      }
+      
+      projectDetailsByType[type].completed += 1;
+      projectDetailsByType[type].total += 1;
+      projectDetailsByType[type].projects.push({
+        id: project.teamId,
+        title: project.projectTitle,
+        status: 'completed',
+        completedDate: project.completedDate,
+        subject: project.subject,
+        teamSize: project.listOfStudents?.length || 0
+      });
+    });
+    
+    // Format project type details for the enhanced pie chart
+    const enhancedProjectDistribution = Object.keys(projectDetailsByType).map(type => {
+      let color;
+      switch(type) {
+        case 'Major':
+          color = '#8884d8'; // Purple
+          break;
+        case 'Mini':
+          color = '#82ca9d'; // Green
+          break;
+        case 'CBP':
+          color = '#ffc658'; // Yellow
+          break;
+        case 'FP':
+          color = '#ff8042'; // Orange
+          break;
+        default:
+          color = '#8dd1e1'; // Blue
+      }
+      
+      return {
+        name: type,
+        value: projectDetailsByType[type].total,
+        active: projectDetailsByType[type].active,
+        completed: projectDetailsByType[type].completed,
+        color,
+        details: projectDetailsByType[type].projects.slice(0, 3) // Just include the first 3 for preview
+      };
+    });
+    
+    // Get workload data (monthly distribution)
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const currentYear = new Date().getFullYear();
+    
+    // Initialize workload data for all months
+    const workloadData = months.map(month => ({
+      month,
+      assigned: 0,
+      completed: 0
+    }));
+    
+    // Count assigned projects by month
+    activeProjects.forEach(project => {
+      if (project.createdAt) {
+        const month = new Date(project.createdAt).getMonth();
+        workloadData[month].assigned += 1;
+      }
+    });
+    
+    // Count completed projects by month
+    completedProjects.forEach(project => {
+      if (project.completedDate) {
+        const month = new Date(project.completedDate).getMonth();
+        workloadData[month].completed += 1;
+      }
+    });
+    
+    // Get 5 recent active projects for display
+    const recentActiveProjects = activeProjects
+      .sort((a, b) => new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt))
+      .slice(0, 5)
+      .map(project => {
+        // Calculate progress based on tasks or reviews
+        let progress = 0;
+        const totalTasks = project.tasks?.length || 0;
+        const completedTasks = project.tasks?.filter(task => 
+          task.status === 'done' || task.status === 'approved'
+        ).length || 0;
+        
+        if (totalTasks > 0) {
+          progress = Math.round((completedTasks / totalTasks) * 100);
+        } else if (project.reviews?.length > 0) {
+          // If no tasks, estimate progress based on reviews
+          const reviewCount = project.reviews.length;
+          // Assuming 5 reviews is 100% progress
+          progress = Math.min(Math.round((reviewCount / 5) * 100), 100);
+        }
+        
+        return {
+          id: project.teamId,
+          name: project.projectTitle,
+          class: project.subject || 'Not specified',
+          progress,
+          projectType: project.projectType
+        };
+      });
+    
+    // Get 5 recent archived projects
+    const recentArchivedProjects = completedProjects
+      .sort((a, b) => new Date(b.completedDate || b.updatedAt) - new Date(a.completedDate || a.updatedAt))
+      .slice(0, 5)
+      .map(project => ({
+        id: project.teamId,
+        name: project.projectTitle,
+        class: project.subject || 'Not specified',
+        projectType: project.projectType,
+        completedDate: project.completedDate || project.updatedAt
+      }));
+    
+    // For now, return empty array for forum projects and interested students
+    // In a real implementation, you would fetch this data from the appropriate collection
+    const forumProjects = [];
+    const interestedStudents = [];
+    
+    // Compile all data
+    const dashboardData = {
+      faculty: facultyDetails,
+      stats: {
+        activeProjects: activeProjects.length,
+        projectsCompleted: completedProjects.length,
+        studentsUnderGuidance: studentCount,
+        pendingApprovals,
+        leadedProjects: leadedProjectsCount,
+        guidedProjects: guidedProjectsCount,
+        forumProjects: forumProjects.length
+      },
+      activeProjects: recentActiveProjects,
+      archivedProjects: recentArchivedProjects,
+      workloadData,
+      projectDistributionData,
+      enhancedProjectDistribution,
+      projectDetailsByType,
+      interestedStudents
+    };
+    
+    res.status(200).json({
+      success: true,
+      dashboardData
+    });
+    
+  } catch (error) {
+    console.error('Error fetching faculty dashboard data:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching dashboard data',
+      error: error.message
+    });
+  }
+};

@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { createTeams, getAllFaculty, getLeadedProjects, addTaskToTeam, addReviewToTeam, getTeamTasks, getTeamReviews, getGuidedProjects, getFacultyInfo, updateTaskStatus, completeClass, getFacultyById, updateFacultyData } from "../controllers/facultyController.js";
+import { createTeams, getAllFaculty, getLeadedProjects, addTaskToTeam, addReviewToTeam, getTeamTasks, getTeamReviews, getGuidedProjects, getFacultyInfo, updateTaskStatus, completeClass, getFacultyById, updateFacultyData, getFacultyDashboardData } from "../controllers/facultyController.js";
 import { facultyLogin } from "../controllers/authController.js";
 import { verifyToken } from "../middleware/verifyToken.js";
 
@@ -22,5 +22,6 @@ facultyRoutes.get('/info/:facultyID', verifyToken, getFacultyInfo);
 facultyRoutes.put('/complete-class/:classId', verifyToken, completeClass);
 facultyRoutes.get('/:facultyId', verifyToken, getFacultyById);
 facultyRoutes.put('/update/:facultyId', verifyToken, updateFacultyData);
+facultyRoutes.get('/dashboard/:facultyId', verifyToken, getFacultyDashboardData);
 
 export default facultyRoutes;

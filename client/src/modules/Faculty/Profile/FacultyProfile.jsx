@@ -5,12 +5,10 @@ import ProfileCard from "./ProfileCard";
 import BasicInfo from "./BasicInfo";
 import AdditionalInfo from "./AdditionalInfo";
 import Account from "./Account";
-import { useStore } from "@/store/useStore";
 
 const FacultyProfile = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("basic");
-  const { profileData, setProfileData } = useStore();
 
   // Optional: Load initial data if needed
   useEffect(() => {
@@ -29,7 +27,7 @@ const FacultyProfile = () => {
   }, []);
 
   const handleChangePassword = () => {
-    navigate("/FacultyChangePassword");
+    navigate("/reset-password");
   };
 
   return (

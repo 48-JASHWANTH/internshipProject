@@ -144,3 +144,8 @@ Cookie: jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZWFmNDEzYTUxMTY5Njd
   "vidwanID": "https://vidwan.inflibnet.ac.in/profile/janesmith",
   "linkedInURL": "https://linkedin.com/in/janesmith"
 }
+
+### Get faculty dashboard data (enhanced)
+GET http://localhost:1544/faculty/dashboard/00CSE007
+Content-Type: application/json
+Cookie: jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZWFmNDEzYTUxMTY5NjdlNWZmY2E0NCIsInJvbGUiOiJmYWN1bHR5IiwiZW1haWwiOiIiLCJpYXQiOjE3NDM0OTM3MDMsImV4cCI6MjAwMjY5MzcwM30.nePrOAx7Hmudi2n-pCOMPEANwna2V5k5dBQ4nd9zvnI

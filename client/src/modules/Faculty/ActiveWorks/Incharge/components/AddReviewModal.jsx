@@ -58,10 +58,8 @@ const AddReviewModal = ({ onClose, onAddReview, teamMembers = [], projectId }) =
     reviewName: '',
     dateOfReview: new Date().toISOString().split('T')[0],
     satisfactionLevel: '',
-    remarks: '',
     feedback: '',
     progress: '',
-    changesToBeMade: '',
     presentees: []
   });
   const [isCustomReview, setIsCustomReview] = useState(false);
@@ -87,7 +85,6 @@ const AddReviewModal = ({ onClose, onAddReview, teamMembers = [], projectId }) =
     const newErrors = {};
     if (!formData.reviewName.trim()) newErrors.reviewName = 'Review name is required';
     if (!formData.satisfactionLevel) newErrors.satisfactionLevel = 'Satisfaction level is required';
-    if (!formData.remarks.trim()) newErrors.remarks = 'Remarks are required';
     if (!formData.feedback.trim()) newErrors.feedback = 'Feedback is required';
 
     if (Object.keys(newErrors).length > 0) {
@@ -233,9 +230,7 @@ const AddReviewModal = ({ onClose, onAddReview, teamMembers = [], projectId }) =
           </div>
           
           {renderField('progress', 'Progress')}
-          {renderField('remarks', 'Remarks')}
           {renderField('feedback', 'Detailed Feedback', 'textarea')}
-          {renderField('changesToBeMade', 'Changes To Be Made', 'textarea')}
           
           {/* Presentees Selection */}
           <div>

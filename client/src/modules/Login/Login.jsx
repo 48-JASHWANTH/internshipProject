@@ -33,7 +33,23 @@ function Login() {
       const result = await login(credentials, userType);
       
       if (result.success) {
-        toast.success(`Welcome ${username}!`);
+        // Success toast with custom configuration
+        toast.success(`Welcome ${username}!`, {
+          position: "top-center",
+          autoClose: 4000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "colored",
+          style: {
+            backgroundColor: '#4CAF50',
+            color: 'white',
+            fontWeight: 'bold'
+          }
+        });
+
         // Redirect based on user type
         switch(userType) {
           case 'student':
@@ -49,11 +65,41 @@ function Login() {
             navigate('/');
         }
       } else {
-        toast.error(result.error || 'Login failed');
+        // Error toast with custom configuration
+        toast.error('Invalid username or password', {
+          position: "top-center",
+          autoClose: 4000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "colored",
+          style: {
+            backgroundColor: '#f44336',
+            color: 'white',
+            fontWeight: 'bold'
+          }
+        });
       }
     } catch (error) {
       console.error("Login error:", error);
-      toast.error(error.message || 'An unexpected error occurred');
+      // Error toast for unexpected errors
+      toast.error('An unexpected error occurred. Please try again.', {
+        position: "top-center",
+        autoClose: 4000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "colored",
+        style: {
+          backgroundColor: '#f44336',
+          color: 'white',
+          fontWeight: 'bold'
+        }
+      });
     } finally {
       setIsLoading(false);
     }

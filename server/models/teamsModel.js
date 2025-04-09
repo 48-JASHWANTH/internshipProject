@@ -12,10 +12,8 @@ const reviewSchema = new mongoose.Schema({
     type: String, 
     enum: ['Excellent', 'Very Good', 'Good', 'Fair', 'Poor'] 
   },
-  remarks: { type: String },
   feedback: { type: String },
   progress: { type: String },
-  changesToBeMade: { type: String },
   presentees: { type: [String] },
   reviewStatus: { type: String, enum: ['pending', 'reviewed'], default: 'pending' },
   assignedBy: {
