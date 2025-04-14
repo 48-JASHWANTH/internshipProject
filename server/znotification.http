@@ -1,0 +1,290 @@
+### Variables
+@baseUrl = http://localhost:1544
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZjEzMWIwZWQ3Y2M0YWU4NmNhNjk0YyIsInJvbGUiOiJmYWN1bHR5IiwiZW1haWwiOiJyYXRuYWphc2h3YW50aDIwMjBAZ21haWwuY29tIiwiaWF0IjoxNzQ0NDY4NjA3LCJleHAiOjIwMDM2Njg2MDd9.lxHFJulsNssUE61zUAGn2UprAbePdDeAJC6YxJ6V06I
+@studentToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZjEzMWZhZWQ3Y2M0YWU4NmNhNmQyNiIsInJvbGUiOiJzdHVkZW50IiwiZW1haWwiOiIyMjA3MUEzMjYyQHZucnZqaWV0LmluIiwiaWF0IjoxNzQ0NDY5NTczLCJleHAiOjIwMDM2Njk1NzN9.o4uWiUKoZ4W_wlXJkb1XERAZqBNTrlzsw-tPQ1VYmWQ
+# Set a specific project and team ID for testing
+@projectId = 1744477644911_1
+@facultyId = 00CSE007
+@studentId = 22071A3237
+
+### Register a notification token
+# This endpoint registers a Firebase Cloud Messaging (FCM) token for push notifications
+POST {{baseUrl}}/api/notifications/register
+Content-Type: application/json
+Cookie: jwt={{token}}
+
+{
+  "token": "example_fcm_token_123456789"
+}
+
+### Create a new notification (general)
+# This endpoint creates a new notification for multiple recipients
+POST {{baseUrl}}/api/notifications/create
+Content-Type: application/json
+Cookie: jwt={{token}}
+
+{
+  "title": "System Maintenance",
+  "body": "The system will be down for maintenance on Sunday from 2-4 AM",
+  "type": "general",
+  "recipients": ["00CSE007", "00CSE008"],
+  "recipientModel": "Faculty"
+}
+
+### Create a notification for students
+# This endpoint creates a notification targeted to students
+POST {{baseUrl}}/api/notifications/create
+Content-Type: application/json
+Cookie: jwt={{token}}
+
+{
+  "title": "Assignment Reminder",
+  "body": "Don't forget to submit your reports by Friday",
+  "type": "general",
+  "recipients": ["22071A3262", "22071A3237"],
+  "recipientModel": "Student"
+}
+
+### Create a project notification
+# This automatically creates notifications for all students and faculty involved in a project
+POST {{baseUrl}}/api/notifications/project
+Content-Type: application/json
+Cookie: jwt={{token}}
+
+{
+  "projectTitle": "AI-Based Attendance System",
+  "studentIds": ["20B01A5209", "20B01A5210"],
+  "guideFacultyId": "00CSE008",
+  "inchargeFacultyId": "00CSE007",
+  "projectType": "Main Project"
+}
+
+### Test task notification when faculty adds a new task
+# This endpoint tests if a notification is sent when a faculty (incharge) adds a new task
+POST {{baseUrl}}/api/notifications/task
+Content-Type: application/json
+Cookie: jwt={{token}}
+
+{
+  "title": "Database Design Task",
+  "description": "Create an ER diagram and implement database schema for the project",
+  "dueDate": "2025-05-15",
+  "priority": "High",
+  "projectTitle": "Student Project Management System",
+  "projectId": "team_12345",
+  "studentIds": ["22071A3262", "22071A3237", "22071A3240"]
+}
+
+### Get notifications for a faculty
+# This endpoint retrieves all notifications for a specific faculty
+GET {{baseUrl}}/api/notifications/user/faculty/00CSE007
+Cookie: jwt={{token}}
+
+### Get notifications for a student
+# This endpoint retrieves all notifications for a specific student
+# Check this after sending the task notification to verify it was received
+GET {{baseUrl}}/api/notifications/user/student/22071A3262
+Cookie: jwt={{studentToken}}
+
+### Mark a notification as read for a faculty
+# Replace notification_id with an actual notification ID
+PUT {{baseUrl}}/api/notifications/67fa804faf8ba3611dfbebd6/read
+Content-Type: application/json
+Cookie: jwt={{token}}
+
+{
+  "userId": "00CSE007"
+}
+
+### Mark a notification as read for a student
+# Replace notification_id with an actual notification ID
+PUT {{baseUrl}}/api/notifications/67fa80c4af8ba3611dfbebde/read
+Content-Type: application/json
+Cookie: jwt={{studentToken}}
+
+{
+  "userId": "22071A3237"
+}
+
+### Test error handling - missing fields
+POST {{baseUrl}}/api/notifications/create
+Content-Type: application/json
+Cookie: jwt={{token}}
+
+{
+  "title": "Incomplete Notification",
+  "body": "This notification has missing fields"
+}
+
+### Test error handling - invalid notification ID
+PUT {{baseUrl}}/api/notifications/invalid_id/read
+Content-Type: application/json
+Cookie: jwt={{token}}
+
+{
+  "userId": "00CSE007"
+}
+
+### END-TO-END TESTING SEQUENCE FOR TASK NOTIFICATIONS ###
+
+### Step 1: Create a task for a project (simulating faculty adding a task)
+# This is what happens in the AddTaskModal component
+POST {{baseUrl}}/faculty/team/{{projectId}}/task
+Content-Type: application/json
+Cookie: jwt={{token}}
+
+{
+  "title": "Implement User Authentication",
+  "description": "Create login and registration functionality with proper validation and security measures",
+  "dueDate": "2025-05-20",
+  "priority": "High",
+  "assignedTo": "John Doe, Jane Smith",
+  "assignedBy": {
+    "name": "Dr. Robert Johnson",
+    "type": "Incharge",
+    "facultyID": "{{facultyId}}"
+  }
+}
+
+### Step 2: Send notification for the task
+# This is called right after a successful task creation
+POST {{baseUrl}}/api/notifications/task
+Content-Type: application/json
+Cookie: jwt={{token}}
+
+{
+  "title": "Implement User Authentication",
+  "description": "Create login and registration functionality with proper validation and security measures",
+  "dueDate": "2025-05-20",
+  "priority": "High",
+  "projectTitle": "Web Application Development Project",
+  "projectId": "{{projectId}}",
+  "studentIds": ["{{studentId}}", "22071A3237"],
+  "assignedBy": {
+    "name": "Dr. Robert Johnson",
+    "type": "Incharge",
+    "facultyID": "{{facultyId}}"
+  }
+}
+
+### Step 3: Verify student received the notification
+# Check if the student has received the task notification
+GET {{baseUrl}}/api/notifications/user/student/{{studentId}}
+Cookie: jwt={{studentToken}}
+
+### BEFORE-AFTER VERIFICATION TEST FOR TASK NOTIFICATIONS ###
+
+### BEFORE: Get student notifications before adding the task
+# Use this to establish a baseline of notifications
+GET {{baseUrl}}/api/notifications/user/student/{{studentId}}
+Cookie: jwt={{studentToken}}
+
+### TEST: Add a task and send notification in sequence
+# Step 1: Add the task
+POST {{baseUrl}}/faculty/team/{{projectId}}/task
+Content-Type: application/json
+Cookie: jwt={{token}}
+
+{
+  "title": "Final Project Presentation",
+  "description": "Prepare slides and demo for the final project presentation",
+  "dueDate": "2025-06-01",
+  "priority": "High",
+  "assignedTo": "Student Team 1",
+  "assignedBy": {
+    "name": "Dr. Sarah Wilson",
+    "type": "Incharge",
+    "facultyID": "{{facultyId}}"
+  }
+}
+
+### Step 2: Send the notification for this task
+POST {{baseUrl}}/api/notifications/task
+Content-Type: application/json
+Cookie: jwt={{token}}
+
+{
+  "title": "Final Project Presentation",
+  "description": "Prepare slides and demo for the final project presentation",
+  "dueDate": "2025-06-01",
+  "priority": "High",
+  "projectTitle": "AI-Powered Chat Application",
+  "projectId": "{{projectId}}",
+  "studentIds": ["{{studentId}}"],
+  "assignedBy": {
+    "name": "Dr. Sarah Wilson",
+    "type": "Incharge",
+    "facultyID": "{{facultyId}}"
+  }
+}
+
+### AFTER: Get student notifications after adding the task
+# Compare with the BEFORE result to verify a new notification was added
+GET {{baseUrl}}/api/notifications/user/student/{{studentId}}
+Cookie: jwt={{studentToken}}
+
+### Test task notification for team 1744477644911_1 (non-ObjectID format)
+# This tests the fix for the "Cast to ObjectId failed" error
+POST {{baseUrl}}/api/notifications/task
+Content-Type: application/json
+Cookie: jwt={{token}}
+
+{
+  "title": "Fix Project Database Structure",
+  "description": "Update the database schema to support team IDs in any format",
+  "dueDate": "2025-05-30",
+  "priority": "High",
+  "projectTitle": "Student Project Management System",
+  "projectId": "{{projectId}}",
+  "studentIds": ["{{studentId}}"],
+  "assignedBy": {
+    "name": "Dr. Robert Johnson",
+    "type": "Incharge",
+    "facultyID": "{{facultyId}}"
+  }
+}
+
+### Test forum project notification when a faculty adds a new project
+# This endpoint tests sending notifications to all students when a new project is created
+POST {{baseUrl}}/api/notifications/forum-project
+Content-Type: application/json
+Cookie: jwt={{token}}
+
+{
+  "projectTitle": "AI-Powered Smart Campus Navigation System",
+  "projectId": "sample_project_id_123",
+  "domain": "AI/ML",
+  "techStack": "React, TensorFlow, Node.js, MongoDB",
+  "description": "Develop an intelligent campus navigation system that uses AI to help students find their way around buildings, locate classes, and get estimated travel times between locations.",
+  "faculty": {
+    "name": "Dr. Jane Smith",
+    "department": "Computer Science",
+    "facultyID": "{{facultyId}}"
+  }
+}
+
+### Test task completion notification when student completes a task
+# This endpoint tests sending notifications to faculty when a student completes a task
+POST {{baseUrl}}/api/notifications/task-completion
+Content-Type: application/json
+Cookie: jwt={{studentToken}}
+
+{
+  "taskId": "task_12345",
+  "taskTitle": "Database Schema Implementation",
+  "studentId": "{{studentId}}",
+  "studentName": "John Smith",
+  "projectId": "{{projectId}}",
+  "facultyId": "{{facultyId}}",
+  "completedAt": "2023-08-15T14:30:00.000Z"
+}
+
+### Test direct notification to faculty (for debugging)
+# This is a simple test to verify that faculty notifications work
+POST {{baseUrl}}/api/notifications/test-faculty
+Content-Type: application/json
+Cookie: jwt={{token}}
+
+{
+  "facultyId": "{{facultyId}}"
+} 

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { X, Loader2 } from 'lucide-react';
-import axios from 'axios';
+import { apiClient } from '@/lib/api-client';
 import { useStore } from '@/store/useStore';
 import toast from 'react-hot-toast';
 
@@ -49,14 +49,77 @@ const AddProjectModal = ({ isOpen, onClose, onProjectAdded }) => {
         facultyId: user.facultyID
       };
 
+      console.log('Creating new forum project:', projectData);
+
       // Make API request to create project
-      const response = await axios.post(
-        'http://localhost:1544/forum-projects/create-forum-projects',
+      const response = await apiClient.post(
+        '/forum-projects/create-forum-projects',
         projectData,
         { withCredentials: true }
       );
 
       if (response.data.success) {
+        const newProject = response.data.project;
+        
+        // Send notification to all students
+        try {
+          console.log('Sending forum project creation notification');
+          
+          // Format tech stack for notification
+          const techStackFormatted = formData.techStack
+            .split(',')
+            .map(tech => tech.trim())
+            .join(', ');
+          
+          // Create the notification payload
+          const notificationPayload = {
+            title: 'New Project Opportunity Available',
+            body: `📋 PROJECT DETAILS
+───────────────────
+• Title: ${formData.title}
+• Domain: ${formData.domain}
+• Tech Stack: ${techStackFormatted}
+
+📝 DESCRIPTION
+───────────────────
+${formData.description}
+
+👤 POSTED BY
+───────────────────
+${user.name || 'Faculty'} (${user.department || 'Department'})
+
+⚠️ Check Project Forum for more details and to join this project.`,
+            type: 'forum',
+            recipientModel: 'Student',
+            // We don't specify recipients - the server will fetch all students
+          };
+          
+          console.log('Notification payload:', notificationPayload);
+          
+          // Send notification to all students via API
+          const notificationResponse = await apiClient.post(
+            '/api/notifications/forum-project',
+            {
+              projectTitle: formData.title,
+              projectId: newProject._id,
+              domain: formData.domain,
+              techStack: techStackFormatted,
+              description: formData.description,
+              faculty: {
+                name: user.name || 'Faculty',
+                department: user.department || 'Department',
+                facultyID: user.facultyID
+              }
+            },
+            { withCredentials: true }
+          );
+          
+          console.log('Notification response:', notificationResponse.data);
+        } catch (notificationError) {
+          console.error('Error sending project notification:', notificationError);
+          // Continue with the flow even if notification fails
+        }
+
         toast.success('Project created successfully!');
         // Reset form and close modal
         setFormData({ title: '', domain: '', description: '', techStack: '' });

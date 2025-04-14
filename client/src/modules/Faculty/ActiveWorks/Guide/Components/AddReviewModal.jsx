@@ -158,6 +158,60 @@ const AddReviewModal = ({ onClose, onAddReview, teamMembers = [], projectId }) =
       // Call the onAddReview function with the review data
       if (onAddReview) {
         await onAddReview(reviewData);
+        
+        // After successfully adding the review, send notifications to all team members
+        try {
+          // Get all student IDs for notification
+          const studentIds = teamMembers.map(student => 
+            typeof student === 'object' && student !== null && 'id' in student 
+              ? student.id 
+              : student
+          );
+          
+          console.log('Attempting to send review notification...');
+          console.log('Student IDs for notification:', studentIds);
+          console.log('Project ID for notification:', projectId);
+          
+          // Get project title from props or from activeProjects store
+          let projectTitle = 'your project';
+          
+          // Try to find project title from activeProjects
+          if (activeProjects?.teams) {
+            const team = activeProjects.teams.find(t => t.teamId === projectId);
+            if (team?.projectTitle) {
+              projectTitle = team.projectTitle;
+              console.log('Found project title from activeProjects:', projectTitle);
+            }
+          }
+          
+          // Send notification
+          await apiClient.post(
+            '/api/notifications/review',
+            {
+              reviewName: formData.reviewName,
+              dateOfReview: formData.dateOfReview,
+              satisfactionLevel: formData.satisfactionLevel,
+              feedback: formData.feedback,
+              progress: formData.progress,
+              projectTitle: projectTitle,
+              projectId: projectId,
+              studentIds: studentIds,
+              assignedBy: {
+                name: user?.name || 'Faculty Guide',
+                type: 'Guide',
+                facultyID: user?.facultyID || ''
+              }
+            },
+            { withCredentials: true }
+          );
+          
+          console.log('Review notification sent successfully');
+        } catch (notificationError) {
+          console.error('Error sending review notifications:', notificationError);
+          console.error('Error details:', notificationError.response?.data || 'No response data');
+          // Continue with the flow even if notification fails
+        }
+        
         toast.success('Review added successfully');
       } else {
         toast.error('Error: Review submission handler not provided');

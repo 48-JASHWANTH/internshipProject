@@ -1,6 +1,8 @@
 import React, { useState, useMemo } from 'react';
 import { X } from 'lucide-react';
 import { useStore } from '@/store/useStore';
+import { apiClient } from '@/lib/api-client';
+import toast from 'react-hot-toast';
 
 // Add this constant for review names based on project type
 const REVIEW_NAMES = {
@@ -37,7 +39,7 @@ const REVIEW_NAMES = {
 };
 
 const AddReviewModal = ({ onClose, onAddReview, teamMembers = [], projectId }) => {
-  const { activeProjects } = useStore();
+  const { activeProjects, user } = useStore();
   
   // Find the project type from the store data
   const projectType = useMemo(() => {
@@ -64,23 +66,25 @@ const AddReviewModal = ({ onClose, onAddReview, teamMembers = [], projectId }) =
   });
   const [isCustomReview, setIsCustomReview] = useState(false);
   const [errors, setErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Get the appropriate review names and add "Other" option
   const reviewOptions = [...(REVIEW_NAMES[projectType] || REVIEW_NAMES.CBP), 'Other'];
 
   const handleReviewNameChange = (e) => {
     const value = e.target.value;
-    if (value === 'Other') {
-      setIsCustomReview(true);
-      setFormData({ ...formData, reviewName: '' });
-    } else {
-      setIsCustomReview(false);
-      setFormData({ ...formData, reviewName: value });
-    }
-    setErrors({ ...errors, reviewName: '' });
+    setIsCustomReview(value === 'Other');
+    setFormData(prev => ({
+      ...prev,
+      reviewName: value
+    }));
+    setErrors(prev => ({
+      ...prev,
+      reviewName: ''
+    }));
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     // Validate required fields
     const newErrors = {};
     if (!formData.reviewName.trim()) newErrors.reviewName = 'Review name is required';
@@ -92,17 +96,107 @@ const AddReviewModal = ({ onClose, onAddReview, teamMembers = [], projectId }) =
       return;
     }
 
-    // Create a list of student names for presentees
-    const presenteeNames = formData.presentees.map(studentId => {
-      const student = teamMembers.find(s => s.id === studentId);
-      return student ? student.name : studentId;
-    });
+    setIsSubmitting(true);
 
-    // Call the onAddReview function with the form data and presentee names
-    onAddReview({
-      ...formData,
-      presentees: presenteeNames
-    });
+    try {
+      // Create a list of student names for presentees
+      const presenteeNames = formData.presentees.map(studentId => {
+        const student = teamMembers.find(s => s.id === studentId);
+        return student ? student.name : studentId;
+      });
+
+      // Get student IDs for notification
+      console.log('Team members:', teamMembers);
+      const studentIds = teamMembers.map(student => {
+        // Ensure student is an object with an id property
+        if (typeof student === 'object' && student !== null && 'id' in student) {
+          return student.id;
+        }
+        // If student is a string, assume it's already an ID
+        if (typeof student === 'string') {
+          return student;
+        }
+        // Log warning and return null for invalid students
+        console.warn('Invalid student format:', student);
+        return null;
+      }).filter(id => id !== null); // Remove any null values
+      
+      console.log('Mapped student IDs for notifications:', studentIds);
+
+      // Call the onAddReview function with the form data and presentee names
+      await onAddReview({
+        ...formData,
+        presentees: presenteeNames,
+        remarks: formData.feedback,
+        assignedBy: {
+          name: user?.name || 'Faculty Incharge',
+          type: 'Incharge',
+          facultyID: user?.facultyID || ''
+        },
+        reviewStatus: 'reviewed'
+      });
+
+      // After successfully adding the review, send notifications to the students
+      try {
+        console.log('Attempting to send review notification...');
+        console.log('Student IDs for notification:', studentIds);
+        console.log('Project ID for notification:', projectId);
+        
+        // Get project title from props or from activeProjects
+        let projectTitle = 'your project';
+        
+        // Try to find project title from activeProjects
+        if (activeProjects?.teams) {
+          const team = activeProjects.teams.find(t => t.teamId === projectId);
+          if (team?.projectTitle) {
+            projectTitle = team.projectTitle;
+            console.log('Found project title from activeProjects:', projectTitle);
+          }
+        }
+        
+        // Prepare notification payload
+        const notificationPayload = {
+          reviewName: formData.reviewName,
+          dateOfReview: formData.dateOfReview,
+          satisfactionLevel: formData.satisfactionLevel,
+          feedback: formData.feedback,
+          progress: formData.progress || 'N/A',
+          projectTitle: projectTitle,
+          projectId: projectId,
+          studentIds: studentIds,
+          assignedBy: {
+            name: user?.name || 'Faculty',
+            type: 'Incharge',
+            facultyID: user?.facultyID
+          }
+        };
+        
+        console.log('Sending review notification with payload:', notificationPayload);
+        
+        // Send notification
+        const notificationResponse = await apiClient.post(
+          '/api/notifications/review',
+          notificationPayload,
+          { withCredentials: true }
+        );
+        
+        console.log('Review notification response:', notificationResponse.data);
+        console.log('Review notification sent successfully');
+      } catch (notificationError) {
+        console.error('Error sending review notifications:', notificationError);
+        console.error('Error details:', notificationError.response?.data || 'No response data');
+        // Continue with the flow even if notification fails
+      }
+
+      // Close the modal
+      onClose();
+      toast.success('Review added successfully');
+    } catch (error) {
+      console.error('Error adding review:', error);
+      toast.error('Failed to add review');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handlePresenteeChange = (studentId) => {
@@ -193,7 +287,8 @@ const AddReviewModal = ({ onClose, onAddReview, teamMembers = [], projectId }) =
         </div>
 
         <div className="p-6 space-y-4">
-          {!isCustomReview ? (
+          {/* Review Name Selection */}
+          {reviewOptions.length > 0 ? (
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Review Name <span className="text-red-500">*</span>
@@ -205,11 +300,23 @@ const AddReviewModal = ({ onClose, onAddReview, teamMembers = [], projectId }) =
                   errors.reviewName ? 'border-red-500' : ''
                 }`}
               >
-                <option value="">Select Review Name</option>
-                {reviewOptions.map(opt => (
-                  <option key={opt} value={opt}>{opt}</option>
+                <option value="">Select Review Type</option>
+                {reviewOptions.map(option => (
+                  <option key={option} value={option}>{option}</option>
                 ))}
               </select>
+              {isCustomReview && (
+                <input
+                  type="text"
+                  value={formData.reviewName === 'Other' ? '' : formData.reviewName}
+                  onChange={(e) => {
+                    setFormData({ ...formData, reviewName: e.target.value });
+                    setErrors({ ...errors, reviewName: '' });
+                  }}
+                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#9b1a31] focus:border-[#9b1a31] outline-none mt-2"
+                  placeholder="Enter custom review name"
+                />
+              )}
               {errors.reviewName && (
                 <p className="mt-1 text-sm text-red-500">{errors.reviewName}</p>
               )}

@@ -5,6 +5,7 @@ import ProjectFormConfirmation from "./ProjectFormConfirmation";
 import ConfirmationDialog from "../../common/ConfirmationDialog";
 import { CREATE_TEAMS_ROUTE } from "@/utils/constants";
 import { apiClient } from "@/lib/api-client";
+import { toast } from "react-hot-toast";
 
 const CreateProjectForm = () => {
   const navigate = useNavigate();
@@ -91,12 +92,34 @@ const CreateProjectForm = () => {
         const res = await apiClient.post(CREATE_TEAMS_ROUTE, responseData, { withCredentials: true });
       
         if (res.status === 201) {
+          // Send notifications for each team
+          await Promise.all(Object.keys(teams).map(async (teamId) => {
+            const projectTitle = projectTitles[teamId];
+            const studentIds = teams[teamId];
+            const guideFacultyId = guides[teamId];
+            
+            // Create notification for this team
+            try {
+              await apiClient.post('/api/notifications/project', {
+                projectTitle,
+                studentIds,
+                guideFacultyId,
+                inchargeFacultyId: facultyID,
+                projectType: formData.projectType
+              }, { withCredentials: true });
+            } catch (notificationError) {
+              console.error('Error sending notifications:', notificationError);
+            }
+          }));
+          
+          toast.success("Projects created successfully!");
           navigate("/Faculty/CampusProjects");
-        } else if(res.status===500){
+        } else {
           toast.error("Failed to create teams. Please try again.");
         }
       } catch (error) {
         console.error(error.response?.data?.message || "Failed to create teams. Please try again.");
+        toast.error("Failed to create teams. Please try again.");
       };
     
     // Single console log with the final response only

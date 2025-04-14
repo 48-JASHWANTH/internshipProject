@@ -4,7 +4,7 @@ import { useStore } from '@/store/useStore';
 import { apiClient } from '@/lib/api-client';
 import toast from 'react-hot-toast';
 
-const AddTaskModal = ({ onClose, onAddTask, teamMembers = [] }) => {
+const AddTaskModal = ({ onClose, onAddTask, teamMembers = [], projectId }) => {
   const { user } = useStore();
   const [formData, setFormData] = useState({
     title: '',
@@ -79,7 +79,45 @@ const AddTaskModal = ({ onClose, onAddTask, teamMembers = [] }) => {
 
       // Call the onAddTask function with the task data
       if (onAddTask) {
-        await onAddTask(taskData);
+        const result = await onAddTask(taskData);
+        
+        // Send notification if task was added successfully
+        if (result && projectId) {
+          try {
+            // Get the project title
+            const teamResponse = await apiClient.get(
+              `/faculty/team/${projectId}/tasks`,
+              { withCredentials: true }
+            );
+            
+            const projectTitle = teamResponse.data.projectTitle || 'your project';
+            
+            // Send notifications
+            await apiClient.post(
+              '/api/notifications/task',
+              {
+                title: formData.title,
+                description: formData.description,
+                dueDate: formData.dueDate,
+                priority: formData.priority,
+                projectTitle: projectTitle,
+                projectId: projectId,
+                studentIds: selectedStudents,
+                assignedBy: {
+                  name: user?.name || 'Faculty Guide',
+                  type: 'Guide',
+                  facultyID: user?.facultyID || ''
+                }
+              },
+              { withCredentials: true }
+            );
+          } catch (notificationError) {
+            console.error('Error sending notifications:', notificationError);
+            // Continue with the flow even if notification fails
+          }
+        }
+        
+        // Explicitly show success dialog regardless of notification success
         setShowSuccess(true);
       } else {
         toast.error('Error: Task submission handler not provided');

@@ -38,12 +38,14 @@ const Workboard = ({ projectId }) => {
                   task.status === 'approved' ? 'Done' : 
                   task.status === 'in-progress' ? 'In Progress' : 'To-Do',
           assignedBy: {
-            type: task.assignedBy?.role || 'Guide',
-            name: task.assignedBy?.name || 'Faculty'
+            type: task.assignedBy?.role || task.assignedBy?.type || 'Guide',
+            name: task.assignedBy?.name || 'Faculty',
+            facultyID: task.assignedBy?.facultyID || ''
           },
           assignedTo: Array.isArray(task.assignedTo) 
             ? task.assignedTo.join(', ')
-            : task.assignedTo || ''
+            : task.assignedTo || '',
+          facultyId: task.assignedBy?.facultyID || task.facultyId || ''
         }));
         
         setTasks(transformedTasks);
@@ -106,20 +108,80 @@ const Workboard = ({ projectId }) => {
   const handleConfirmComplete = async () => {
     if (taskToComplete) {
       try {
-        const response = await apiClient.put(
+        console.log('Completing task with ID:', taskToComplete);
+        const completedTask = tasks.find(t => t._id === taskToComplete);
+        console.log('Task details:', completedTask);
+        
+        if (!completedTask) {
+          console.error('Could not find task details for ID:', taskToComplete);
+          toast.error('Could not complete task - task details not found');
+          return;
+        }
+
+        // Update task status in the API
+        const updateResponse = await apiClient.put(
           `/student/project/task/${projectId}/${taskToComplete}`,
           { status: 'Done' },
           { withCredentials: true }
         );
 
-        if (response.data.success) {
+        console.log('Task update response:', updateResponse.data);
+
+        if (updateResponse.data.success) {
+          // Get faculty ID from the task if available
+          const facultyId = completedTask.assignedBy?.facultyID || 
+                          completedTask.facultyId || 
+                          '00CSE007'; // Default fallback 
+          
+          console.log('Faculty ID for notification:', facultyId);
+          
+          // Send notification to the faculty who assigned the task
+          try {
+            console.log('Preparing task completion notification payload');
+            
+            // Create notification payload with all necessary details
+            const notificationPayload = {
+              taskId: taskToComplete,
+              taskTitle: completedTask.title,
+              studentId: user.studentID,
+              studentName: user.name,
+              projectId: projectId,
+              facultyId: facultyId,
+              completedAt: new Date().toISOString()
+            };
+            
+            console.log('Sending notification payload:', notificationPayload);
+            
+            // Send notification to faculty
+            const notificationResponse = await apiClient.post(
+              '/api/notifications/task-completion',
+              notificationPayload,
+              { withCredentials: true }
+            );
+            
+            console.log('Notification response:', notificationResponse.data);
+            
+            if (notificationResponse.data.success) {
+              console.log('Successfully sent task completion notification to faculty');
+            } else {
+              console.error('Error from notification endpoint:', notificationResponse.data);
+            }
+          } catch (notificationError) {
+            console.error('Error sending task completion notification:', notificationError);
+            console.error('Error details:', notificationError.response?.data || 'No response data');
+            // Continue with the flow even if notification fails
+          }
+          
           setTaskToComplete(null);
-          toast.success('Task marked as complete');
+          toast.success('Task marked as complete and faculty notified');
           fetchTasks(); // Refresh tasks after update
+        } else {
+          toast.error(updateResponse.data.message || 'Failed to complete task');
         }
       } catch (error) {
         toast.error('Failed to complete task');
         console.error('Error completing task:', error);
+        console.error('Error details:', error.response?.data || 'No response data');
       }
     }
   };

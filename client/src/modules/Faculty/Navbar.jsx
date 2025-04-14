@@ -7,12 +7,12 @@ import { useStore } from "@/store/useStore";
 const Navbar = ({ isMobileMenuOpen, setIsMobileMenuOpen }) => {
   const { profileData, clearProfileData, fetchProfileData, isLoading } = useStore();
   const { user, logout } = useStore();
-  console.log(user);
+  // console.log(user);
   const [showProfile, setShowProfile] = useState(false);
   const navigate = useNavigate(); 
   const dropdownRef = useRef(null);
 
-  console.log(profileData);
+  // console.log(profileData);
 
   // Fetch profile data when component mounts
   useEffect(() => {

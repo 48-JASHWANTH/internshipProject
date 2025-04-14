@@ -70,7 +70,8 @@ const AddTaskModal = ({ onClose, onAddTask, teamMembers = [], projectId }) => {
         }
       };
 
-      console.log(taskData);
+      console.log('Submitting task data:', taskData); // Debug log
+      
       // Make the API call directly from here
       const response = await apiClient.post(
         `/faculty/team/${projectId}/task`, 
@@ -78,14 +79,54 @@ const AddTaskModal = ({ onClose, onAddTask, teamMembers = [], projectId }) => {
         { withCredentials: true }
       );
 
-
-      console.log(response);
+      console.log('Task API response:', response); // Debug log
       
       if (response.data.success) {
+        // Send notifications to the selected students
+        try {
+          // Get the project title
+          const teamResponse = await apiClient.get(
+            `/faculty/team/${projectId}/tasks`,
+            { withCredentials: true }
+          );
+          
+          const projectTitle = teamResponse.data.projectTitle || 'your project';
+          
+          console.log('Sending notification for project:', projectTitle); // Debug log
+          
+          // Send notifications
+          await apiClient.post(
+            '/api/notifications/task',
+            {
+              title: formData.title,
+              description: formData.description,
+              dueDate: formData.dueDate,
+              priority: formData.priority,
+              projectTitle: projectTitle,
+              projectId: projectId,
+              studentIds: selectedStudents,
+              assignedBy: {
+                name: user?.name || 'Faculty',
+                type: 'Incharge',
+                facultyID: user?.facultyID
+              }
+            },
+            { withCredentials: true }
+          );
+          
+          console.log('Notification sent successfully'); // Debug log
+        } catch (notificationError) {
+          console.error('Error sending notifications:', notificationError);
+          // Continue with the flow even if notification fails
+        }
+        
         // Call the onAddTask function to refresh data in the parent component
         if (onAddTask) {
           await onAddTask(taskData);
         }
+        
+        console.log('Setting showSuccess to true'); // Debug log
+        // Show success dialog
         setShowSuccess(true);
       } else {
         toast.error('Failed to add task');

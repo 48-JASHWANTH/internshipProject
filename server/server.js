@@ -10,6 +10,8 @@ import activityLogRoutes from "./routes/activityLogRoutes.js";
 import passwordResetRoutes from "./routes/passwordResetRoutes.js";
 import fileRoutes from './routes/fileRoutes.js';
 import forumProjectRoutes from './routes/forumProjectRoutes.js';
+// Import notification routes
+import notificationRoutes from './routes/notificationRoutes.js';
 console.log('Student routes:', studentRoutes);
 
 dotenv.config()
@@ -37,6 +39,8 @@ app.use('/admin/activity', activityLogRoutes);
 app.use('/auth', passwordResetRoutes);
 app.use('/files', fileRoutes);
 app.use('/forum-projects', forumProjectRoutes); 
+// Add notification routes
+app.use('/api/notifications', notificationRoutes);
 
 // Add a test route to verify Express is working
 app.get('/test', (req, res) => {

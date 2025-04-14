@@ -121,6 +121,9 @@ const GuideWorkboard = ({ projectId, project }) => {
     
     // Close modal
     setIsAddModalOpen(false);
+    
+    // Return true to indicate success
+    return true;
   };
 
   return (
@@ -171,6 +174,7 @@ const GuideWorkboard = ({ projectId, project }) => {
           onClose={() => setIsAddModalOpen(false)} 
           onAddTask={handleAddTask}
           teamMembers={project?.listOfStudents || []}
+          projectId={projectId}
         />
       )}
     </div>
