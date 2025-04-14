@@ -3,7 +3,7 @@ import { setupNotificationListener, registerForNotifications } from '../../servi
 import { useStore } from '../../store/useStore';
 import './NotificationComponent.css';
 import { apiClient } from '../../lib/api-client';
-import { FaBell, FaCheckCircle, FaRegBell, FaInfo, FaTools, FaClipboardCheck, FaComments, FaTasks } from 'react-icons/fa';
+import { FaBell, FaCheckCircle, FaRegBell, FaInfo, FaTools, FaClipboardCheck, FaComments, FaTasks, FaEllipsisH } from 'react-icons/fa';
 
 const NotificationComponent = ({ inPage = false }) => {
   const { user } = useStore();
@@ -11,6 +11,7 @@ const NotificationComponent = ({ inPage = false }) => {
   const [loading, setLoading] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [isRegistered, setIsRegistered] = useState(false);
+  const [activeTab, setActiveTab] = useState('all');
 
   // Function to fetch notifications from database
   const fetchNotifications = async () => {
@@ -167,7 +168,8 @@ const NotificationComponent = ({ inPage = false }) => {
     }
   };
 
-  const removeNotification = (id) => {
+  const removeNotification = (id, e) => {
+    if (e) e.stopPropagation();
     setNotifications(prev => prev.filter(n => n.id !== id));
   };
 
@@ -180,20 +182,37 @@ const NotificationComponent = ({ inPage = false }) => {
   // Get the count of unread notifications
   const unreadCount = notifications.filter(notification => !notification.isRead).length;
 
+  // Filter notifications based on active tab
+  const filteredNotifications = activeTab === 'unread' 
+    ? notifications.filter(n => !n.isRead)
+    : notifications;
+
   // Get notification icon based on type
   const getNotificationIcon = (type) => {
+    let content = '';
+    
     switch (type) {
       case 'project':
-        return <div className="notification-icon project"><FaTools className="icon" /></div>;
+        content = 'P';
+        break;
       case 'activity':
-        return <div className="notification-icon activity"><FaTasks className="icon" /></div>;
+        content = 'A';
+        break;
       case 'forum':
-        return <div className="notification-icon forum"><FaComments className="icon" /></div>;
+        content = 'F';
+        break;
       case 'review':
-        return <div className="notification-icon review"><FaClipboardCheck className="icon" /></div>;
+        content = 'R';
+        break;
       default:
-        return <div className="notification-icon general"><FaInfo className="icon" /></div>;
+        content = 'N';
     }
+    
+    return (
+      <div className="notification-avatar">
+        {content}
+      </div>
+    );
   };
 
   useEffect(() => {
@@ -228,65 +247,150 @@ const NotificationComponent = ({ inPage = false }) => {
     }
   }, [user]);
 
+  // Group notifications by date for inPage view
+  const groupNotificationsByDate = () => {
+    const groups = {
+      'Today': [],
+      'Yesterday': [],
+      'This Week': [],
+      'Earlier': []
+    };
+    
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    
+    const oneWeekAgo = new Date(today);
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+    
+    filteredNotifications.forEach(notification => {
+      const notifDate = new Date(notification.date);
+      notifDate.setHours(0, 0, 0, 0);
+      
+      if (notifDate.getTime() === today.getTime()) {
+        groups['Today'].push(notification);
+      } else if (notifDate.getTime() === yesterday.getTime()) {
+        groups['Yesterday'].push(notification);
+      } else if (notifDate >= oneWeekAgo) {
+        groups['This Week'].push(notification);
+      } else {
+        groups['Earlier'].push(notification);
+      }
+    });
+    
+    return groups;
+  };
+
   // For in-page display
   if (inPage) {
+    const notificationGroups = groupNotificationsByDate();
+    
     if (notifications.length === 0 && !loading) {
       return (
-        <div className="notification-empty">
-          <FaRegBell className="empty-icon" />
-          <p>No notifications to display</p>
+        <div className="notification-fullpage-wrapper">
+          <div className="notification-container">
+            <div className="notification-header">
+              <h1>Notifications</h1>
+            </div>
+            <div className="notification-tabs">
+              <button 
+                className={`tab-button ${activeTab === 'all' ? 'active' : ''}`}
+                onClick={() => setActiveTab('all')}
+              >
+                All
+              </button>
+              <button 
+                className={`tab-button ${activeTab === 'unread' ? 'active' : ''}`}
+                onClick={() => setActiveTab('unread')}
+              >
+                Unread
+                {unreadCount > 0 && <span className="badge">{unreadCount}</span>}
+              </button>
+            </div>
+            <div className="notification-empty">
+              <FaRegBell className="empty-icon" />
+              <p className="empty-text">No notifications to display</p>
+            </div>
+          </div>
         </div>
       );
     }
 
     return (
-      <div className="notification-page-container">
-        {unreadCount > 0 && (
-          <div className="notification-actions">
-            <button 
-              onClick={markAllAsRead}
-              className="mark-all-read-btn"
-            >
-              <FaCheckCircle className="action-icon" />
-              Mark all as read
-            </button>
-          </div>
-        )}
-        
-        {loading ? (
-          <div className="notification-loading">
-            <div className="loading-spinner"></div>
-            <p>Loading notifications...</p>
-          </div>
-        ) : (
-          <div className="notification-list">
-            {notifications.map((notification) => (
-              <div 
-                key={notification.id} 
-                className={`notification ${notification.isRead ? 'read' : 'unread'}`}
-                onClick={() => !notification.isRead && markAsRead(notification.id)}
-              >
-                {getNotificationIcon(notification.type)}
-                <div className="notification-content">
-                  <div className="notification-header">
-                    <h4>{notification.title}</h4>
-                    <span className="notification-time">{notification.time}</span>
-                  </div>
-                  <p>{notification.body}</p>
-                </div>
-                <button
-                  className="close-button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    removeNotification(notification.id);
-                  }}
+      <div className="notification-fullpage-wrapper">
+        <div className="notification-container">
+          <div className="notification-header">
+            <h1>Notifications</h1>
+            {unreadCount > 0 && (
+              <div className="notification-actions">
+                <button 
+                  onClick={markAllAsRead}
+                  className="action-button"
                 >
-                  ×
+                  <FaCheckCircle />
+                  Mark all as read
                 </button>
               </div>
-            ))}
+            )}
           </div>
-        )}
+          
+          <div className="notification-tabs">
+            <button 
+              className={`tab-button ${activeTab === 'all' ? 'active' : ''}`}
+              onClick={() => setActiveTab('all')}
+            >
+              All
+            </button>
+            <button 
+              className={`tab-button ${activeTab === 'unread' ? 'active' : ''}`}
+              onClick={() => setActiveTab('unread')}
+            >
+              Unread
+              {unreadCount > 0 && <span className="badge">{unreadCount}</span>}
+            </button>
+          </div>
+          
+          {loading ? (
+            <div className="notification-loading">
+              <div className="loading-spinner"></div>
+              <p>Loading notifications...</p>
+            </div>
+          ) : (
+            <div className="notification-list">
+              {Object.entries(notificationGroups).map(([group, groupNotifications]) => {
+                if (groupNotifications.length === 0) return null;
+                
+                return (
+                  <div key={group} className="notification-group">
+                    <h3 className="group-header">{group}</h3>
+                    {groupNotifications.map((notification) => (
+                      <div 
+                        key={notification.id} 
+                        className={`notification ${notification.isRead ? 'read' : 'unread'}`}
+                        onClick={() => !notification.isRead && markAsRead(notification.id)}
+                      >
+                        {getNotificationIcon(notification.type)}
+                        <div className="notification-content">
+                          <div className="notification-title">{notification.title}</div>
+                          <div className="notification-message">{notification.fullBody}</div>
+                          <div className="notification-time">{notification.time}</div>
+                        </div>
+                        <button
+                          className="close-button"
+                          onClick={(e) => removeNotification(notification.id, e)}
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
       </div>
     );
   }
@@ -302,12 +406,29 @@ const NotificationComponent = ({ inPage = false }) => {
       {showNotifications && (
         <div className="notification-dropdown-content">
           <div className="notification-header">
-            <h3>Notifications</h3>
+            <h1>Notifications</h1>
             {unreadCount > 0 && (
-              <button onClick={markAllAsRead} className="mark-all-read-btn">
+              <button onClick={markAllAsRead} className="action-button">
+                <FaCheckCircle />
                 Mark all as read
               </button>
             )}
+          </div>
+
+          <div className="notification-tabs">
+            <button 
+              className={`tab-button ${activeTab === 'all' ? 'active' : ''}`}
+              onClick={() => setActiveTab('all')}
+            >
+              All
+            </button>
+            <button 
+              className={`tab-button ${activeTab === 'unread' ? 'active' : ''}`}
+              onClick={() => setActiveTab('unread')}
+            >
+              Unread
+              {unreadCount > 0 && <span className="badge">{unreadCount}</span>}
+            </button>
           </div>
 
           {loading ? (
@@ -315,10 +436,10 @@ const NotificationComponent = ({ inPage = false }) => {
               <div className="loading-spinner"></div>
               <p>Loading...</p>
             </div>
-          ) : notifications.length > 0 ? (
+          ) : filteredNotifications.length > 0 ? (
             <>
               <div className="notification-list">
-                {notifications.map((notification) => (
+                {filteredNotifications.map((notification) => (
                   <div 
                     key={notification.id} 
                     className={`notification ${notification.isRead ? 'read' : 'unread'}`}
@@ -326,18 +447,13 @@ const NotificationComponent = ({ inPage = false }) => {
                   >
                     {getNotificationIcon(notification.type)}
                     <div className="notification-content">
-                      <div className="notification-header">
-                        <h4>{notification.title}</h4>
-                        <span className="notification-time">{notification.time}</span>
-                      </div>
-                      <p>{notification.body}</p>
+                      <div className="notification-title">{notification.title}</div>
+                      <div className="notification-message">{notification.body}</div>
+                      <div className="notification-time">{notification.time}</div>
                     </div>
                     <button
                       className="close-button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        removeNotification(notification.id);
-                      }}
+                      onClick={(e) => removeNotification(notification.id, e)}
                     >
                       ×
                     </button>
@@ -353,7 +469,7 @@ const NotificationComponent = ({ inPage = false }) => {
           ) : (
             <div className="notification-empty">
               <FaRegBell className="empty-icon" />
-              <p>No notifications</p>
+              <p className="empty-text">No notifications</p>
             </div>
           )}
         </div>
