@@ -15,7 +15,8 @@ import {
   updateProjectOverview,
   updateTaskStatus,
   getTeamReviews,
-  getTeamTasks
+  getTeamTasks,
+  getStudentDashboardData
 } from "../controllers/studentController.js";
 const studentRoutes = Router();
 
@@ -29,6 +30,7 @@ studentRoutes.put('/personal/:studentID',verifyToken ,  updateStudentPersonal);
 studentRoutes.get('/data/:studentID', verifyToken, getStudentData);
 
 // Dashboard related routes
+studentRoutes.get('/dashboard-data/:studentID', verifyToken, getStudentDashboardData);
 studentRoutes.get('/dashboard/:studentID',verifyToken , getStudentDashBoardDetails)
 studentRoutes.get('/activeWorks/:studentID',verifyToken , getStudentActiveWorks)
 studentRoutes.get('/archive/:studentID',verifyToken , getStudentArchive)

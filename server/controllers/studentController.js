@@ -2,6 +2,7 @@ import Student from "../models/studentModel.js";
 import Team from "../models/teamsModel.js";
 import Faculty from "../models/facultyModel.js";
 import SectionTeams from "../models/sectionTeamsModel.js";
+import ProjectForum from "../models/projectForumModel.js";
 
 export const updateStudentAcademicData = async (req, res) => {
     try {
@@ -887,6 +888,158 @@ export const getTeamTasks = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Server Error",
+      error: error.message
+    });
+  }
+};
+
+export const getStudentDashboardData = async (req, res) => {
+  try {
+    const { studentID } = req.params;
+
+    // Get student details
+    const student = await Student.findOne({ studentID }).select("name department studentID");
+    if (!student) {
+      return res.status(404).json({
+        success: false,
+        message: "Student not found"
+      });
+    }
+
+    // Get all teams (both active and completed) where student is a member
+    const teams = await Team.find({
+      'listOfStudents.id': studentID
+    });
+
+    // Calculate stats
+    const stats = {
+      activeProjects: teams.filter(team => !team.status).length,
+      completedProjects: teams.filter(team => team.status).length,
+      pendingTasks: teams.reduce((acc, team) => {
+        return acc + team.tasks.filter(task => task.status !== 'done').length;
+      }, 0),
+    };
+
+    // Get active projects with progress
+    const activeProjects = await Promise.all(teams
+      .filter(team => !team.status)
+      .map(async team => {
+        const guideFaculty = await Faculty.findOne({ facultyID: team.guideFacultyId })
+          .select("name");
+
+        const totalTasks = team.tasks.length;
+        const completedTasks = team.tasks.filter(task => task.status === 'done').length;
+        const progress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+
+        return {
+          id: team.teamId,
+          name: team.projectTitle,
+          facultyGuide: guideFaculty ? guideFaculty.name : 'Not Assigned',
+          progress,
+          projectType: team.projectType
+        };
+      }));
+
+    // Get archived projects
+    const archivedProjects = await Promise.all(teams
+      .filter(team => team.status)
+      .map(async team => {
+        const guideFaculty = await Faculty.findOne({ facultyID: team.guideFacultyId })
+          .select("name");
+
+        return {
+          id: team.teamId,
+          name: team.projectTitle,
+          facultyGuide: guideFaculty ? guideFaculty.name : 'Not Assigned',
+          projectType: team.projectType,
+          completedDate: team.completedDate
+        };
+      }));
+
+    // Get task completion data (last 4 weeks)
+    const fourWeeksAgo = new Date();
+    fourWeeksAgo.setDate(fourWeeksAgo.getDate() - 28);
+
+    const taskCompletionData = await Promise.all([...Array(4)].map(async (_, index) => {
+      const weekStart = new Date(fourWeeksAgo);
+      weekStart.setDate(weekStart.getDate() + (index * 7));
+      const weekEnd = new Date(weekStart);
+      weekEnd.setDate(weekStart.getDate() + 7);
+
+      const weekTasks = teams.flatMap(team => 
+        team.tasks.filter(task => {
+          const taskDate = new Date(task.createdAt);
+          return taskDate >= weekStart && taskDate < weekEnd;
+        })
+      );
+
+      return {
+        week: `Week ${index + 1}`,
+        assigned: weekTasks.length,
+        completed: weekTasks.filter(task => task.status === 'done').length
+      };
+    }));
+
+    // Get project distribution
+    const projectDistribution = teams.reduce((acc, team) => {
+      const type = team.projectType;
+      acc[type] = (acc[type] || 0) + 1;
+      return acc;
+    }, {});
+
+    const projectDistributionData = Object.entries(projectDistribution).map(([name, value]) => ({
+      name,
+      value,
+      color: name === 'Major' ? '#8884d8' : 
+             name === 'Mini' ? '#82ca9d' : 
+             name === 'CBP' ? '#ffc658' : '#ff8042'
+    }));
+
+    // Get forum projects with interest status
+    const forumProjects = await ProjectForum.find()
+      .limit(4)
+      .sort({ createdAt: -1 });
+
+    const forumProjectsWithDetails = await Promise.all(forumProjects.map(async project => {
+      const faculty = await Faculty.findOne({ facultyID: project.facultyId })
+        .select("name");
+
+      const hasExpressedInterest = project.InterestedStudents.some(
+        student => student.studentID === studentID
+      );
+
+      return {
+        id: project.projectId,
+        title: project.Title,
+        faculty: faculty ? faculty.name : 'Not Assigned',
+        domain: project.Domain,
+        status: project.Status,
+        interest: hasExpressedInterest ? 'Applied' : 'None'
+      };
+    }));
+
+    res.status(200).json({
+      success: true,
+      data: {
+        studentInfo: {
+          name: student.name,
+          studentID: student.studentID,
+          department: student.department
+        },
+        stats,
+        activeProjects,
+        archivedProjects,
+        taskCompletionData,
+        projectDistributionData,
+        forumProjects: forumProjectsWithDetails
+      }
+    });
+
+  } catch (error) {
+    console.error('Error fetching dashboard data:', error);
+    res.status(500).json({
+      success: false,
+      message: "Error fetching dashboard data",
       error: error.message
     });
   }

@@ -31,7 +31,7 @@ Cookie: jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZWFmNDEzYTUxMTY5Njd
 }
 
 ### Express interest in a project (replace 1743567890123 with an actual projectId)
-POST http://localhost:1544/forum-projects/1743502424103/express-interest
+POST http://localhost:1544/forum-projects/1743778433831/express-interest
 Content-Type: application/json
 Cookie: jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZWFmNDEzYTUxMTY5NjdlNWZmY2E0NCIsInJvbGUiOiJmYWN1bHR5IiwiZW1haWwiOiIiLCJpYXQiOjE3NDM0OTM3MDMsImV4cCI6MjAwMjY5MzcwM30.nePrOAx7Hmudi2n-pCOMPEANwna2V5k5dBQ4nd9zvnI
 

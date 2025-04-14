@@ -10,20 +10,16 @@ const ReviewBoard = ({ projectId }) => {
   const [error, setError] = useState(null);
   const { user } = useStore();
   
-  // Fetch reviews directly from the API
   useEffect(() => {
     const fetchReviews = async () => {
       if (!projectId) return;
       
       try {
         setLoading(true);
-        console.log(`Fetching reviews for project: ${projectId}`);
         
         const response = await apiClient.get(`/student/team/${projectId}/reviews`, {
           withCredentials: true
         });
-        
-        console.log('Reviews API response:', response.data);
         
         if (response.data.success) {
           setReviews({
@@ -36,7 +32,6 @@ const ReviewBoard = ({ projectId }) => {
           toast.error('Failed to load reviews');
         }
       } catch (err) {
-        console.error('Error fetching reviews:', err);
         setError('Error loading reviews. Please try again later.');
         toast.error('Error loading reviews');
       } finally {
@@ -46,11 +41,6 @@ const ReviewBoard = ({ projectId }) => {
     
     fetchReviews();
   }, [projectId]);
-  
-  // Log reviews state changes for debugging
-  useEffect(() => {
-    console.log('Reviews state changed:', reviews);
-  }, [reviews]);
 
   const satisfactionColors = {
     'Excellent': 'bg-green-100 text-green-800',
@@ -61,9 +51,7 @@ const ReviewBoard = ({ projectId }) => {
   };
 
   const ReviewTable = ({ reviews, title }) => {
-    console.log(`Rendering ${title} table with ${reviews?.length || 0} reviews`);
     if (!reviews) {
-      console.error(`${title} reviews array is undefined`);
       return null;
     }
     

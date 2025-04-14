@@ -12,19 +12,15 @@ const Workboard = ({ projectId }) => {
   const [error, setError] = useState(null);
   const { user } = useStore();
 
-  // Fetch tasks directly from the API
   const fetchTasks = async () => {
     if (!projectId) return;
     
     try {
       setLoading(true);
-      console.log(`Fetching tasks for project: ${projectId}`);
       
       const response = await apiClient.get(`/student/team/${projectId}/tasks`, {
         withCredentials: true
       });
-      
-      console.log('Tasks API response:', response.data);
       
       if (response.data.success) {
         // Transform the tasks for frontend use
@@ -55,7 +51,6 @@ const Workboard = ({ projectId }) => {
         toast.error('Failed to load tasks');
       }
     } catch (err) {
-      console.error('Error fetching tasks:', err);
       setError('Error loading tasks. Please try again later.');
       toast.error('Error loading tasks');
     } finally {
@@ -100,7 +95,6 @@ const Workboard = ({ projectId }) => {
         }
       } catch (error) {
         toast.error('Failed to update task status');
-        console.error('Error updating task status:', error);
       }
     }
   };
@@ -180,7 +174,6 @@ const Workboard = ({ projectId }) => {
         }
       } catch (error) {
         toast.error('Failed to complete task');
-        console.error('Error completing task:', error);
         console.error('Error details:', error.response?.data || 'No response data');
       }
     }

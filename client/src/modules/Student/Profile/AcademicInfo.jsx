@@ -75,21 +75,6 @@ const AcademicInfo = () => {
     );
   }
 
-  if (error) {
-    return (
-      <div className="mt-4 p-4">
-        <div className="bg-red-50 p-4 rounded-lg text-red-800">
-          <p>{error}</p>
-          <button 
-            onClick={() => window.location.reload()}
-            className="mt-2 text-sm underline"
-          >
-            Try again
-          </button>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="mt-4 p-2 md:p-4">
