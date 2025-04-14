@@ -1,118 +1,55 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   BarChart, Bar, PieChart, Pie, Cell, ResponsiveContainer, 
   XAxis, YAxis, CartesianGrid, Tooltip, Legend 
 } from 'recharts';
 import { Link } from 'react-router-dom';
+import { useStore } from '@/store/useStore';
+import { apiClient } from '@/lib/api-client';
+import { toast } from 'react-hot-toast';
 
 const StudentDashboard = () => {
-  // Key metrics
-  const [stats, setStats] = useState({
-    activeProjects: 3,
-    completedProjects: 7,
-    pendingTasks: 5,
-    interestedProjects: 4
+  const { user } = useStore();
+  const [loading, setLoading] = useState(true);
+  const [dashboardData, setDashboardData] = useState({
+    studentInfo: null,
+    stats: {
+      activeProjects: 0,
+      completedProjects: 0,
+      pendingTasks: 0
+    },
+    activeProjects: [],
+    archivedProjects: [],
+    taskCompletionData: [],
+    projectDistributionData: [],
+    forumProjects: []
   });
 
-  const [activeProjects, setActiveProjects] = useState([
-    { 
-      id: 1, 
-      name: 'AI Research Project', 
-      facultyGuide: 'Dr. Sarah Chen', 
-      progress: 65, 
-      projectType: 'Major'
-    },
-    { 
-      id: 2, 
-      name: 'Data Analysis System', 
-      facultyGuide: 'Prof. James Wilson', 
-      progress: 80, 
-      projectType: 'Mini'
-    },
-    { 
-      id: 3, 
-      name: 'ML Model Development', 
-      facultyGuide: 'Dr. Raj Patel', 
-      progress: 30, 
-      projectType: 'CBP'
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        setLoading(true);
+        const response = await apiClient.get(`/student/dashboard-data/${user.studentID}`, {
+          withCredentials: true
+        });
+
+        if (response.data.success) {
+          setDashboardData(response.data.data);
+        } else {
+          toast.error(response.data.message || "Failed to fetch dashboard data");
+        }
+      } catch (error) {
+        console.error("Error fetching dashboard data:", error);
+        toast.error(error.response?.data?.message || "Failed to fetch dashboard data");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (user?.studentID) {
+      fetchDashboardData();
     }
-  ]);
-
-  const [archivedProjects, setArchivedProjects] = useState([
-    {
-      id: 4,
-      name: 'Web Portal Development',
-      facultyGuide: 'Prof. Lisa Wang',
-      projectType: 'Mini',
-      completedDate: '2023-02-10'
-    },
-    {
-      id: 5,
-      name: 'Database Optimization',
-      facultyGuide: 'Dr. Michael Brown',
-      projectType: 'Major',
-      completedDate: '2023-01-20'
-    }
-  ]);
-
-  const [forumProjects, setForumProjects] = useState([
-    {
-      id: 1,
-      title: 'Deep Learning for Medical Imaging',
-      faculty: 'Dr. Maria Rodriguez',
-      domain: 'AI/Healthcare',
-      status: 'Open',
-      interest: 'Applied'
-    },
-    {
-      id: 2,
-      title: 'Sustainable Energy Optimization',
-      faculty: 'Prof. Alan White',
-      domain: 'Energy',
-      status: 'Open',
-      interest: 'None'
-    },
-    {
-      id: 3,
-      title: 'Blockchain for Supply Chain',
-      faculty: 'Dr. Priya Kumar',
-      domain: 'Blockchain',
-      status: 'Closed',
-      interest: 'Accepted'
-    },
-    {
-      id: 4,
-      title: 'Natural Language Processing',
-      faculty: 'Dr. John Davis',
-      domain: 'AI/NLP',
-      status: 'Open',
-      interest: 'None'
-    }
-  ]);
-
-  // Task completion data for visualization
-  const taskCompletionData = [
-    { week: 'Week 1', completed: 5, assigned: 7 },
-    { week: 'Week 2', completed: 8, assigned: 10 },
-    { week: 'Week 3', completed: 12, assigned: 15 },
-    { week: 'Week 4', completed: 7, assigned: 8 }
-  ];
-
-  // Project distribution
-  const projectDistributionData = [
-    { name: 'Major', value: 35, color: '#8884d8' },
-    { name: 'Mini', value: 25, color: '#82ca9d' },
-    { name: 'CBP', value: 20, color: '#ffc658' },
-    { name: 'FP', value: 20, color: '#ff8042' }
-  ];
-
-
-  const getTimeBasedGreeting = () => {
-    const hours = new Date().getHours();
-    if (hours < 12) return "Good Morning";
-    if (hours >= 12 && hours < 17) return "Good Afternoon";
-    return "Good Evening";
-  };
+  }, [user?.studentID]);
 
   // Project type styling
   const getProjectTypeStyle = (type) => {
@@ -125,12 +62,31 @@ const StudentDashboard = () => {
     }
   };
 
+  const getTimeBasedGreeting = () => {
+    const hours = new Date().getHours();
+    if (hours < 12) return "Good Morning";
+    if (hours >= 12 && hours < 17) return "Good Afternoon";
+    return "Good Evening";
+  };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#82001A]"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="bg-gray-50 min-h-screen p-6">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-800">{getTimeBasedGreeting()}, Alex Johnson</h1>
-        <p className="text-gray-500 mt-1">ST2124001 | Computer Science</p>
+        <h1 className="text-2xl font-bold text-gray-800">
+          {getTimeBasedGreeting()}, {dashboardData.studentInfo?.name}
+        </h1>
+        <p className="text-gray-500 mt-1">
+          {dashboardData.studentInfo?.studentID} | {dashboardData.studentInfo?.department}
+        </p>
       </div>
 
       {/* Quick Stats */}
@@ -144,7 +100,7 @@ const StudentDashboard = () => {
             </div>
             <div>
               <p className="text-sm font-medium text-gray-500">Active Projects</p>
-              <p className="text-2xl font-bold text-gray-800">{stats.activeProjects}</p>
+              <p className="text-2xl font-bold text-gray-800">{dashboardData.stats.activeProjects}</p>
             </div>
           </div>
         </div>
@@ -158,7 +114,7 @@ const StudentDashboard = () => {
             </div>
             <div>
               <p className="text-sm font-medium text-gray-500">Completed Projects</p>
-              <p className="text-2xl font-bold text-gray-800">{stats.completedProjects}</p>
+              <p className="text-2xl font-bold text-gray-800">{dashboardData.stats.completedProjects}</p>
             </div>
           </div>
         </div>
@@ -172,7 +128,7 @@ const StudentDashboard = () => {
             </div>
             <div>
               <p className="text-sm font-medium text-gray-500">Pending Tasks</p>
-              <p className="text-2xl font-bold text-gray-800">{stats.pendingTasks}</p>
+              <p className="text-2xl font-bold text-gray-800">{dashboardData.stats.pendingTasks}</p>
             </div>
           </div>
         </div>
@@ -185,8 +141,8 @@ const StudentDashboard = () => {
               </svg>
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-500">Interested Projects</p>
-              <p className="text-2xl font-bold text-gray-800">{stats.interestedProjects}</p>
+              <p className="text-sm font-medium text-gray-500">Forum Projects</p>
+              <p className="text-2xl font-bold text-gray-800">{dashboardData.forumProjects.length}</p>
             </div>
           </div>
         </div>
@@ -198,7 +154,7 @@ const StudentDashboard = () => {
         <div className="bg-white rounded-xl shadow-md p-7 border border-gray-100">
           <h2 className="text-lg font-semibold text-gray-800 mb-6">Task Completion</h2>
           <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={taskCompletionData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
+            <BarChart data={dashboardData.taskCompletionData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
               <XAxis dataKey="week" axisLine={false} tickLine={false} />
               <YAxis axisLine={false} tickLine={false} />
@@ -217,7 +173,7 @@ const StudentDashboard = () => {
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
-                  data={projectDistributionData}
+                  data={dashboardData.projectDistributionData}
                   cx="50%"
                   cy="50%"
                   labelLine={false}
@@ -225,7 +181,7 @@ const StudentDashboard = () => {
                   fill="#8884d8"
                   dataKey="value"
                 >
-                  {projectDistributionData.map((entry, index) => (
+                  {dashboardData.projectDistributionData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Pie>
@@ -247,7 +203,7 @@ const StudentDashboard = () => {
           </div>
           
           <div className="space-y-6">
-            {activeProjects.map(project => (
+            {dashboardData.activeProjects.map(project => (
               <div key={project.id} className="flex flex-col md:flex-row md:items-center justify-between p-4 rounded-lg border border-gray-100 bg-gray-50 hover:bg-white hover:border-blue-100 transition-all duration-200">
                 <div className="mb-3 md:mb-0">
                   <h3 className="font-medium text-gray-800 text-base">{project.name}</h3>
@@ -286,7 +242,7 @@ const StudentDashboard = () => {
           </div>
           
           <div className="space-y-4">
-            {archivedProjects.map(project => (
+            {dashboardData.archivedProjects.map(project => (
               <div key={project.id} className="flex justify-between items-center p-4 rounded-lg border border-gray-100 bg-gray-50 hover:bg-white transition-colors duration-200">
                 <div>
                   <h3 className="font-medium text-gray-800 text-base">{project.name}</h3>
@@ -324,7 +280,7 @@ const StudentDashboard = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 bg-white">
-              {forumProjects.map(project => (
+              {dashboardData.forumProjects.map(project => (
                 <tr key={project.id} className="hover:bg-gray-50 transition-colors duration-150">
                   <td className="py-3 px-4 text-sm font-medium text-gray-800">
                     {project.title}

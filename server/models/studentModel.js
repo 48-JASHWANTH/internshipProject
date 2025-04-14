@@ -119,7 +119,8 @@ const StudentSchema = new mongoose.Schema(
       type: Date,
       default: null
     },
-  
+    
+
   },
   { timestamps: true }
 );
