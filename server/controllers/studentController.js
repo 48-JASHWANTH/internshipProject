@@ -39,9 +39,7 @@ export const updateStudentAdditional = async (req, res) => {
     }
   };
 
-
-
-  export const updateStudentPersonal = async (req, res) => {
+export const updateStudentPersonal = async (req, res) => {
     try {
       const { studentID } = req.params;
       const { name, mail, phone, gender, dateOfBirth } = req.body;
@@ -57,10 +55,69 @@ export const updateStudentAdditional = async (req, res) => {
       res.status(500).json({ error: error.message });
     }
   };
-  
-  
 
-  export const getStudentDashBoardDetails = async (req, res) => {
+export const updateStudentSocial = async (req, res) => {
+  try {
+    const { studentID } = req.params;
+    const { github, linkedin } = req.body;
+
+    // Validate URLs
+    const isValidUrl = (string) => {
+      try {
+        new URL(string);
+        return true;
+      } catch (error) {
+        return false;
+      }
+    };
+
+    if (github && !isValidUrl(github)) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Invalid GitHub URL' 
+      });
+    }
+
+    if (linkedin && !isValidUrl(linkedin)) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Invalid LinkedIn URL' 
+      });
+    }
+
+    // Update student social links with correct field names matching the model
+    const updatedStudent = await Student.findOneAndUpdate(
+      { studentID },
+      { githubURL: github, linkedInURL: linkedin },
+      { new: true }
+    );
+
+    if (!updatedStudent) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Student not found' 
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Social links updated successfully',
+      data: {
+        github: updatedStudent.githubURL,
+        linkedin: updatedStudent.linkedInURL
+      }
+    });
+  } catch (error) {
+    console.error('Error updating student social links:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Server error', 
+      error: error.message 
+    });
+  }
+};
+
+export const getStudentDashBoardDetails = async (req, res) => {
     try {
       const { studentID } = req.params;
   
@@ -529,7 +586,9 @@ export const getStudentData = async (req, res) => {
         mail: student.mail,
         phone: student.phone,
         gender: student.gender,
-        dateOfBirth: student.dateOfBirth
+        dateOfBirth: student.dateOfBirth,
+        github: student.githubURL,
+        linkedin: student.linkedInURL
       },
       // Academic data
       academic: {

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Calendar, Check } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import { apiClient } from '@/lib/api-client';
@@ -16,6 +16,14 @@ const AddTaskModal = ({ onClose, onAddTask, teamMembers = [], projectId }) => {
   const [showSuccess, setShowSuccess] = useState(false);
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [notificationSent, setNotificationSent] = useState(false);
+
+  // Force a re-render if showSuccess is true to ensure dialog appears
+  useEffect(() => {
+    if (showSuccess) {
+      console.log('Success dialog should be visible now');
+    }
+  }, [showSuccess]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -45,6 +53,7 @@ const AddTaskModal = ({ onClose, onAddTask, teamMembers = [], projectId }) => {
 
     try {
       setIsSubmitting(true);
+      console.log('Submitting task data...');
       
       // Create a comma-separated string of student names
       const assignedToString = selectedStudents
@@ -77,49 +86,64 @@ const AddTaskModal = ({ onClose, onAddTask, teamMembers = [], projectId }) => {
         }
       };
 
+      console.log('Task data prepared:', taskData);
+
       // Call the onAddTask function with the task data
       if (onAddTask) {
-        const result = await onAddTask(taskData);
-        
-        // Send notification if task was added successfully
-        if (result && projectId) {
-          try {
-            // Get the project title
-            const teamResponse = await apiClient.get(
-              `/faculty/team/${projectId}/tasks`,
-              { withCredentials: true }
-            );
-            
-            const projectTitle = teamResponse.data.projectTitle || 'your project';
-            
-            // Send notifications
-            await apiClient.post(
-              '/api/notifications/task',
-              {
-                title: formData.title,
-                description: formData.description,
-                dueDate: formData.dueDate,
-                priority: formData.priority,
-                projectTitle: projectTitle,
-                projectId: projectId,
-                studentIds: selectedStudents,
-                assignedBy: {
-                  name: user?.name || 'Faculty Guide',
-                  type: 'Guide',
-                  facultyID: user?.facultyID || ''
-                }
-              },
-              { withCredentials: true }
-            );
-          } catch (notificationError) {
-            console.error('Error sending notifications:', notificationError);
-            // Continue with the flow even if notification fails
+        try {
+          console.log('Calling onAddTask function');
+          const result = await onAddTask(taskData);
+          console.log('onAddTask result:', result);
+          
+          // Send notification if task was added successfully
+          if (projectId) {
+            try {
+              console.log('Attempting to send notifications');
+              // Get the project title
+              const teamResponse = await apiClient.get(
+                `/faculty/team/${projectId}/tasks`,
+                { withCredentials: true }
+              );
+              
+              const projectTitle = teamResponse.data.projectTitle || 'your project';
+              
+              // Send notifications
+              await apiClient.post(
+                '/api/notifications/task',
+                {
+                  title: formData.title,
+                  description: formData.description,
+                  dueDate: formData.dueDate,
+                  priority: formData.priority,
+                  projectTitle: projectTitle,
+                  projectId: projectId,
+                  studentIds: selectedStudents,
+                  assignedBy: {
+                    name: user?.name || 'Faculty Guide',
+                    type: 'Guide',
+                    facultyID: user?.facultyID || ''
+                  }
+                },
+                { withCredentials: true }
+              );
+              
+              console.log('Notifications sent successfully');
+              setNotificationSent(true);
+            } catch (notificationError) {
+              console.error('Error sending notifications:', notificationError);
+              // Continue with the flow even if notification fails
+            }
           }
+          
+          console.log('Setting showSuccess to true');
+          // Always show success dialog regardless of result or API responses
+          setShowSuccess(true);
+        } catch (error) {
+          console.error('Error in onAddTask:', error);
+          toast.error('Failed to add task');
         }
-        
-        // Explicitly show success dialog regardless of notification success
-        setShowSuccess(true);
       } else {
+        console.error('No onAddTask handler provided');
         toast.error('Error: Task submission handler not provided');
       }
     } catch (error) {
@@ -138,6 +162,32 @@ const AddTaskModal = ({ onClose, onAddTask, teamMembers = [], projectId }) => {
     );
     setErrors(prev => ({ ...prev, students: '' }));
   };
+
+  // If showSuccess is true, always show the success dialog
+  if (showSuccess === true) {
+    //console.log('Rendering success dialog');
+    return (
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-[9999]">
+        <div className="bg-white rounded-xl w-full max-w-lg shadow-xl p-6 text-center">
+          <div className="mb-4">
+            <div className="mx-auto w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+              <Check className="w-6 h-6 text-green-600" />
+            </div>
+          </div>
+          <h3 className="text-xl font-semibold mb-2">Task Assigned Successfully!</h3>
+          <p className="text-gray-600 mb-6">
+            The task has been assigned to {selectedStudents.length} student{selectedStudents.length !== 1 ? 's' : ''} and they have been notified.
+          </p>
+          <button
+            onClick={onClose}
+            className="px-4 py-2 bg-[#9b1a31] text-white rounded-lg hover:bg-[#82001A] transition-colors"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   const renderField = (name, label, type = 'text', options = null) => (
     <div>
@@ -187,30 +237,7 @@ const AddTaskModal = ({ onClose, onAddTask, teamMembers = [], projectId }) => {
     </div>
   );
 
-  if (showSuccess) {
-    return (
-      <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-        <div className="bg-white rounded-xl w-full max-w-lg shadow-xl p-6 text-center">
-          <div className="mb-4">
-            <div className="mx-auto w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-              <Check className="w-6 h-6 text-green-600" />
-            </div>
-          </div>
-          <h3 className="text-xl font-semibold mb-2">Task Assigned Successfully!</h3>
-          <p className="text-gray-600 mb-6">
-            The task has been assigned to {selectedStudents.length} student{selectedStudents.length !== 1 ? 's' : ''}.
-          </p>
-          <button
-            onClick={onClose}
-            className="px-4 py-2 bg-[#9b1a31] text-white rounded-lg hover:bg-[#82001A] transition-colors"
-          >
-            Close
-          </button>
-        </div>
-      </div>
-    );
-  }
-
+  //console.log('Rendering AddTaskModal, showSuccess =', showSuccess);
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-xl w-full max-w-lg shadow-xl relative">

@@ -21,10 +21,9 @@ import CreateProjectForm from './modules/Faculty/CreateProject/CreateProjectForm
 import ForumProjectDetails from './modules/Faculty/ProjectForum/ForumProjectDetails';
 import ProjectForum from './modules/Student/ProjectForum/ProjectForum';
 import ActiveWorks from './modules/Student/ActiveWorks/ActiveWorks';
-import CampusProjects from './modules/Student/CampusProjects';
+import CampusProjects from './modules/common/CampusProjects';
 import GuideProjectDetails from './modules/Faculty/ActiveWorks/Guide/GuideProjectDetails';
 import ProjectDetails from './modules/Student/ActiveWorks/ProjectDetails';
-import CampusProject from './modules/Faculty/CampusProjects';
 import { Toaster } from 'react-hot-toast';
 import GuideActiveWorks from "./modules/Faculty/ActiveWorks/Guide/GuideActiveWorks";
 import Student from "./modules/Student/StudentLayout";
@@ -144,7 +143,7 @@ function App() {
               <Route path="ArchivedProjects/Incharge" element={<InchargeArchivedProjects />} />
               <Route path="ArchivedProjects/Incharge/:classSection" element={<InchargeClass />} />
               <Route path="ArchivedProjects/Incharge/:classSection/:projectId" element={<InchargeArchivedProjectDetails />} />
-              <Route path="CampusProjects" element={<CampusProject />} />
+              <Route path="CampusProjects" element={<CampusProjects />} />
               <Route path="ProjectForum" element={<FacultyProjectForum />} />
               <Route path="ProjectForum/:projectId" element={<ForumProjectDetails />} />
               <Route path="Create" element={<CreateProjectForm />} />

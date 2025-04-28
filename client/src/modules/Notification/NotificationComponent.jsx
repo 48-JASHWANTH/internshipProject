@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { setupNotificationListener, registerForNotifications } from '../../services/notificationService';
 import { useStore } from '../../store/useStore';
-import './NotificationComponent.css';
 import { apiClient } from '../../lib/api-client';
 import { FaBell, FaCheckCircle, FaRegBell, FaInfo, FaTools, FaClipboardCheck, FaComments, FaTasks, FaEllipsisH } from 'react-icons/fa';
 
@@ -209,7 +208,7 @@ const NotificationComponent = ({ inPage = false }) => {
     }
     
     return (
-      <div className="notification-avatar">
+      <div className="flex items-center justify-center w-[38px] h-[38px] rounded-full bg-gray-100 text-gray-600 font-semibold text-sm flex-shrink-0">
         {content}
       </div>
     );
@@ -241,7 +240,7 @@ const NotificationComponent = ({ inPage = false }) => {
       // Set up periodic refresh for notifications
       const refreshInterval = setInterval(() => {
         fetchNotifications();
-      }, 60000); // Refresh every minute
+      }, 10000); // Refresh every minute
       
       return () => clearInterval(refreshInterval);
     }
@@ -289,29 +288,33 @@ const NotificationComponent = ({ inPage = false }) => {
     
     if (notifications.length === 0 && !loading) {
       return (
-        <div className="notification-fullpage-wrapper">
-          <div className="notification-container">
-            <div className="notification-header">
-              <h1>Notifications</h1>
+        <div className="w-full p-2 sm:p-5 bg-gray-50">
+          <div className="w-full max-w-[900px] mx-auto bg-white rounded-lg shadow-sm overflow-hidden">
+            <div className="flex justify-between items-center px-3 sm:px-6 py-3 sm:py-4 bg-white border-b border-gray-100">
+              <h1 className="text-lg sm:text-xl font-semibold text-gray-800">Notifications</h1>
             </div>
-            <div className="notification-tabs">
+            <div className="flex bg-white border-b border-gray-100">
               <button 
-                className={`tab-button ${activeTab === 'all' ? 'active' : ''}`}
+                className={`flex-1 py-2 sm:py-3 px-2 sm:px-4 text-xs sm:text-sm font-medium transition-colors ${activeTab === 'all' ? 'text-[#9b1a31] font-semibold relative after:content-[""] after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-[#9b1a31]' : 'text-gray-600'}`}
                 onClick={() => setActiveTab('all')}
               >
                 All
               </button>
               <button 
-                className={`tab-button ${activeTab === 'unread' ? 'active' : ''}`}
+                className={`flex-1 py-2 sm:py-3 px-2 sm:px-4 text-xs sm:text-sm font-medium transition-colors ${activeTab === 'unread' ? 'text-[#9b1a31] font-semibold relative after:content-[""] after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-[#9b1a31]' : 'text-gray-600'}`}
                 onClick={() => setActiveTab('unread')}
               >
                 Unread
-                {unreadCount > 0 && <span className="badge">{unreadCount}</span>}
+                {unreadCount > 0 && (
+                  <span className="inline-flex items-center justify-center ml-1 sm:ml-2 min-w-[16px] sm:min-w-[20px] h-4 sm:h-5 px-1 sm:px-1.5 py-0.5 bg-[#9b1a31] text-white text-[10px] sm:text-xs font-medium rounded-full">
+                    {unreadCount}
+                  </span>
+                )}
               </button>
             </div>
-            <div className="notification-empty">
-              <FaRegBell className="empty-icon" />
-              <p className="empty-text">No notifications to display</p>
+            <div className="flex flex-col items-center justify-center py-8 sm:py-10 px-4 sm:px-5 text-center bg-white">
+              <FaRegBell className="text-3xl sm:text-4xl text-gray-300 mb-3" />
+              <p className="text-xs sm:text-sm text-gray-500">No notifications to display</p>
             </div>
           </div>
         </div>
@@ -319,66 +322,71 @@ const NotificationComponent = ({ inPage = false }) => {
     }
 
     return (
-      <div className="notification-fullpage-wrapper">
-        <div className="notification-container">
-          <div className="notification-header">
-            <h1>Notifications</h1>
+      <div className="w-full p-2 sm:p-5 bg-gray-50">
+        <div className="w-full max-w-[900px] mx-auto bg-white rounded-lg shadow-sm overflow-hidden">
+          <div className="flex justify-between items-center px-3 sm:px-6 py-3 sm:py-4 bg-white border-b border-gray-100">
+            <h1 className="text-lg sm:text-xl font-semibold text-gray-800">Notifications</h1>
             {unreadCount > 0 && (
-              <div className="notification-actions">
+              <div className="flex gap-1">
                 <button 
                   onClick={markAllAsRead}
-                  className="action-button"
+                  className="px-2 sm:px-3 py-1.5 sm:py-2 flex items-center gap-1 sm:gap-1.5 text-xs sm:text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-[#9b1a31] rounded transition-colors"
                 >
-                  <FaCheckCircle />
-                  Mark all as read
+                  <FaCheckCircle className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                  <span className="hidden xs:inline">Mark all as read</span>
+                  <span className="xs:hidden">Mark all</span>
                 </button>
               </div>
             )}
           </div>
           
-          <div className="notification-tabs">
+          <div className="flex bg-white border-b border-gray-100">
             <button 
-              className={`tab-button ${activeTab === 'all' ? 'active' : ''}`}
+              className={`flex-1 py-2 sm:py-3 px-2 sm:px-4 text-xs sm:text-sm font-medium transition-colors ${activeTab === 'all' ? 'text-[#9b1a31] font-semibold relative after:content-[""] after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-[#9b1a31]' : 'text-gray-600'}`}
               onClick={() => setActiveTab('all')}
             >
               All
             </button>
             <button 
-              className={`tab-button ${activeTab === 'unread' ? 'active' : ''}`}
+              className={`flex-1 py-2 sm:py-3 px-2 sm:px-4 text-xs sm:text-sm font-medium transition-colors ${activeTab === 'unread' ? 'text-[#9b1a31] font-semibold relative after:content-[""] after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-[#9b1a31]' : 'text-gray-600'}`}
               onClick={() => setActiveTab('unread')}
             >
               Unread
-              {unreadCount > 0 && <span className="badge">{unreadCount}</span>}
+              {unreadCount > 0 && (
+                <span className="inline-flex items-center justify-center ml-1 sm:ml-2 min-w-[16px] sm:min-w-[20px] h-4 sm:h-5 px-1 sm:px-1.5 py-0.5 bg-[#9b1a31] text-white text-[10px] sm:text-xs font-medium rounded-full">
+                  {unreadCount}
+                </span>
+              )}
             </button>
           </div>
           
           {loading ? (
-            <div className="notification-loading">
-              <div className="loading-spinner"></div>
-              <p>Loading notifications...</p>
+            <div className="flex flex-col items-center justify-center py-8 sm:py-10 bg-white">
+              <div className="w-6 sm:w-8 h-6 sm:h-8 border-2 border-gray-200 border-t-[#9b1a31] rounded-full animate-spin mb-3"></div>
+              <p className="text-xs sm:text-sm text-gray-600">Loading notifications...</p>
             </div>
           ) : (
-            <div className="notification-list">
+            <div className="p-2 sm:p-4 overflow-y-auto max-h-[400px] sm:max-h-[500px] scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
               {Object.entries(notificationGroups).map(([group, groupNotifications]) => {
                 if (groupNotifications.length === 0) return null;
                 
                 return (
-                  <div key={group} className="notification-group">
-                    <h3 className="group-header">{group}</h3>
+                  <div key={group} className="mb-3 sm:mb-4">
+                    <h3 className="text-[10px] sm:text-xs font-semibold text-gray-600 uppercase tracking-wider px-2 sm:px-4 py-1 sm:py-2">{group}</h3>
                     {groupNotifications.map((notification) => (
                       <div 
                         key={notification.id} 
-                        className={`notification ${notification.isRead ? 'read' : 'unread'}`}
+                        className={`flex items-start gap-2 sm:gap-3 p-3 sm:p-4 bg-white rounded-lg shadow-sm mb-2 cursor-pointer hover:-translate-y-0.5 hover:shadow-md transition-all ${notification.isRead ? '' : 'border-l-[3px] border-l-[#9b1a31] bg-rose-50'}`}
                         onClick={() => !notification.isRead && markAsRead(notification.id)}
                       >
                         {getNotificationIcon(notification.type)}
-                        <div className="notification-content">
-                          <div className="notification-title">{notification.title}</div>
-                          <div className="notification-message">{notification.fullBody}</div>
-                          <div className="notification-time">{notification.time}</div>
+                        <div className="flex-1 min-w-0">
+                          <div className="text-xs sm:text-sm font-medium text-gray-800">{notification.title}</div>
+                          <div className="text-xs sm:text-sm text-gray-600 mt-1 line-clamp-2">{notification.fullBody}</div>
+                          <div className="text-[10px] sm:text-xs text-gray-500 mt-1">{notification.time}</div>
                         </div>
                         <button
-                          className="close-button"
+                          className="p-1 sm:p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-full transition-colors"
                           onClick={(e) => removeNotification(notification.id, e)}
                         >
                           ×
@@ -397,62 +405,73 @@ const NotificationComponent = ({ inPage = false }) => {
 
   // For dropdown notification display (not in-page)
   return (
-    <div className="notification-dropdown">
-      <div className="notification-bell" onClick={toggleNotificationsPanel}>
-        <FaBell />
-        {unreadCount > 0 && <span className="notification-badge">{unreadCount}</span>}
+    <div className="relative inline-block">
+      <div className="relative p-2 rounded-full hover:bg-white/10 transition-colors cursor-pointer text-white" onClick={toggleNotificationsPanel}>
+        <FaBell className="text-xl" />
+        {unreadCount > 0 && (
+          <span className="absolute top-0 right-0 flex items-center justify-center w-[18px] h-[18px] bg-[#9b1a31] text-white text-xs font-bold rounded-full shadow">
+            {unreadCount}
+          </span>
+        )}
       </div>
 
       {showNotifications && (
-        <div className="notification-dropdown-content">
-          <div className="notification-header">
-            <h1>Notifications</h1>
+        <div className="absolute right-0 mt-2.5 w-[280px] sm:w-[320px] bg-white rounded-lg shadow-lg z-[1000] overflow-hidden animate-fadeIn origin-top-right">
+          <div className="flex justify-between items-center px-3 sm:px-4 py-2 sm:py-3 bg-white border-b border-gray-100">
+            <h1 className="text-base sm:text-lg font-semibold text-gray-800">Notifications</h1>
             {unreadCount > 0 && (
-              <button onClick={markAllAsRead} className="action-button">
-                <FaCheckCircle />
-                Mark all as read
+              <button 
+                onClick={markAllAsRead} 
+                className="px-2 py-1.5 flex items-center gap-1 text-xs font-medium text-gray-600 hover:bg-gray-50 hover:text-[#9b1a31] rounded transition-colors"
+              >
+                <FaCheckCircle className="w-3 h-3" />
+                <span>Clear</span>
               </button>
             )}
           </div>
 
-          <div className="notification-tabs">
+          <div className="flex bg-white border-b border-gray-100">
             <button 
-              className={`tab-button ${activeTab === 'all' ? 'active' : ''}`}
+              className={`flex-1 py-2 px-2 text-xs font-medium transition-colors ${activeTab === 'all' ? 'text-[#9b1a31] font-semibold relative after:content-[""] after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-[#9b1a31]' : 'text-gray-600'}`}
               onClick={() => setActiveTab('all')}
             >
               All
             </button>
             <button 
-              className={`tab-button ${activeTab === 'unread' ? 'active' : ''}`}
+              className={`flex-1 py-2 px-2 text-xs font-medium transition-colors ${activeTab === 'unread' ? 'text-[#9b1a31] font-semibold relative after:content-[""] after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-[#9b1a31]' : 'text-gray-600'}`}
               onClick={() => setActiveTab('unread')}
             >
               Unread
-              {unreadCount > 0 && <span className="badge">{unreadCount}</span>}
+              {unreadCount > 0 && (
+                <span className="inline-flex items-center justify-center ml-1 min-w-[16px] h-4 px-1 py-0.5 bg-[#9b1a31] text-white text-[10px] font-medium rounded-full">
+                  {unreadCount}
+                </span>
+              )}
             </button>
           </div>
 
           {loading ? (
-            <div className="notification-loading">
-              <div className="loading-spinner"></div>
-              <p>Loading...</p>
+            <div className="flex flex-col items-center justify-center py-8 bg-white">
+              <div className="w-6 h-6 border-2 border-gray-200 border-t-[#9b1a31] rounded-full animate-spin mb-2"></div>
+              <p className="text-xs text-gray-600">Loading...</p>
             </div>
           ) : filteredNotifications.length > 0 ? (
             <>
-              <div className="notification-list">
+              <div className="p-2 overflow-y-auto max-h-[300px] scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
                 {filteredNotifications.map((notification) => (
                   <div 
                     key={notification.id} 
-                    className={`notification ${notification.isRead ? 'read' : 'unread'}`}
+                    className={`flex items-start gap-2 p-2 bg-white rounded-lg shadow-sm mb-2 cursor-pointer hover:-translate-y-0.5 hover:shadow-md transition-all ${notification.isRead ? '' : 'border-l-[3px] border-l-[#9b1a31] bg-rose-50'}`}
                     onClick={() => !notification.isRead && markAsRead(notification.id)}
                   >
                     {getNotificationIcon(notification.type)}
-                    <div className="notification-content">
-                      <div className="notification-title">{notification.title}</div>
-                      <div className="notification-message">{notification.body}</div>
-                      <div className="notification-time">{notification.time}</div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-xs font-medium text-gray-800 truncate">{notification.title}</div>
+                      <div className="text-xs text-gray-600 mt-0.5 line-clamp-1">{notification.body}</div>
+                      <div className="text-[10px] text-gray-500 mt-1">{notification.time}</div>
                     </div>
                     <button
-                      className="close-button"
+                      className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-full transition-colors"
                       onClick={(e) => removeNotification(notification.id, e)}
                     >
                       ×
@@ -460,16 +479,16 @@ const NotificationComponent = ({ inPage = false }) => {
                   </div>
                 ))}
               </div>
-              <div className="notification-footer">
-                <a href={user?.role === 'student' ? '/student/notifications' : '/faculty/Notifications'}>
+              <div className="py-2 px-4 border-t border-gray-100 text-center bg-white">
+                <a href={user?.role === 'student' ? '/student/notifications' : '/faculty/Notifications'} className="text-xs font-medium text-[#9b1a31] hover:underline">
                   View all notifications
                 </a>
               </div>
             </>
           ) : (
-            <div className="notification-empty">
-              <FaRegBell className="empty-icon" />
-              <p className="empty-text">No notifications</p>
+            <div className="flex flex-col items-center justify-center py-6 px-4 text-center bg-white">
+              <FaRegBell className="text-2xl text-gray-300 mb-2" />
+              <p className="text-xs text-gray-500">No notifications</p>
             </div>
           )}
         </div>

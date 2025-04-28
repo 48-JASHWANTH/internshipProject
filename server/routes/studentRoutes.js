@@ -16,7 +16,8 @@ import {
   updateTaskStatus,
   getTeamReviews,
   getTeamTasks,
-  getStudentDashboardData
+  getStudentDashboardData,
+  updateStudentSocial
 } from "../controllers/studentController.js";
 const studentRoutes = Router();
 
@@ -26,6 +27,7 @@ studentRoutes.post('/login', studentLogin);
 studentRoutes.put('/academic/:studentID', verifyToken , updateStudentAcademicData);
 studentRoutes.put('/additional/:studentID',verifyToken ,  updateStudentAdditional);
 studentRoutes.put('/personal/:studentID',verifyToken ,  updateStudentPersonal);
+studentRoutes.put('/social/:studentID',verifyToken ,  updateStudentSocial);
 // Combined route for getting student data
 studentRoutes.get('/data/:studentID', verifyToken, getStudentData);
 

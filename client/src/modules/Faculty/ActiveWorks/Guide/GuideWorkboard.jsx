@@ -2,7 +2,8 @@ import React, { useState, useMemo } from 'react';
 import { Plus, Calendar, User, CheckCircle, Clock, XCircle, AlertCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { useStore } from '@/store/useStore';
-import AddTaskModal from './components/AddTaskModal';
+import AddTaskModal from './Components/AddTaskModal';
+import toast from 'react-hot-toast';
 
 const TaskCard = ({ task, onApprove }) => {
   const priorityColors = {
@@ -39,12 +40,12 @@ const TaskCard = ({ task, onApprove }) => {
 
   return (
     <div className="bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-all border border-gray-100 mb-4">
-      <div className="flex justify-between items-start mb-4">
-        <div>
+      <div className="flex flex-col sm:flex-row justify-between items-start gap-3 mb-4">
+        <div className="w-full sm:w-auto">
           <h4 className="font-medium text-gray-900 text-lg mb-1">{task.title}</h4>
           <p className="text-sm text-gray-600 line-clamp-2">{task.description}</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center self-start sm:self-auto mt-2 sm:mt-0">
           <span className={`px-3 py-1.5 rounded-full text-sm font-medium flex items-center gap-2 ${statusConfig[task.status]?.color || 'text-gray-500'}`}>
             <StatusIcon className="w-4 h-4" />
             {statusConfig[task.status]?.label || 'To Do'}
@@ -52,7 +53,7 @@ const TaskCard = ({ task, onApprove }) => {
         </div>
       </div>
 
-      <div className="flex flex-wrap gap-3 items-center mb-4">
+      <div className="flex flex-wrap gap-2 items-center mb-4">
         <span className={`text-xs px-2 py-1 rounded-full border ${priorityColors[task.priority] || 'bg-gray-100 text-gray-800 border-gray-200'}`}>
           {task.priority || 'Medium'}
         </span>
@@ -104,33 +105,42 @@ const GuideWorkboard = ({ projectId, project }) => {
     updateGuidedProjectTask(projectId, taskId, { status: 'approved' });
   };
 
-  const handleAddTask = (newTask) => {
-    // Add faculty information to the task
-    const taskWithFaculty = {
-      ...newTask,
-      assignedBy: {
-        name: user?.name || 'Faculty',
-        type: 'Guide',
-        facultyID: user?.facultyID || ''
-      },
-      createdAt: new Date().toISOString()
-    };
-    
-    // Add to store
-    addGuidedProjectTask(projectId, taskWithFaculty);
-    
-    // Close modal
-    setIsAddModalOpen(false);
-    
-    // Return true to indicate success
-    return true;
+  const handleAddTask = async (newTask) => {
+    try {
+      console.log('Guide - handleAddTask called with:', newTask);
+      
+      // Add faculty information to the task
+      const taskWithFaculty = {
+        ...newTask,
+        assignedBy: {
+          name: user?.name || 'Faculty',
+          type: 'Guide',
+          facultyID: user?.facultyID || ''
+        },
+        createdAt: new Date().toISOString()
+      };
+      
+      // Add to store
+      await addGuidedProjectTask(projectId, taskWithFaculty);
+      console.log('Guide - Task added to store successfully');
+      
+      toast.success('Task added successfully');
+      
+      // Return true to indicate success and trigger the success dialog in AddTaskModal
+      // DO NOT close modal here - let the dialog in AddTaskModal handle that
+      return true;
+    } catch (error) {
+      console.error('Guide - Error adding task:', error);
+      toast.error('Failed to add task');
+      return false;
+    }
   };
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
-      <div className="flex justify-between items-center mb-8">
+    <div className="p-2 sm:p-6 bg-gray-50 min-h-screen">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Project Workboard</h2>
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Project Workboard</h2>
           <p className="text-gray-500">Manage and track student tasks</p>
         </div>
         <button 
@@ -138,20 +148,20 @@ const GuideWorkboard = ({ projectId, project }) => {
           className="flex items-center gap-2 px-4 py-2 bg-[#9b1a31] text-white rounded-lg hover:bg-[#82001A] transition-colors"
         >
           <Plus className="w-4 h-4" />
-          Add Task
+          <span className="whitespace-nowrap">Add Task</span>
         </button>
       </div>
 
       {tasks.length === 0 ? (
-        <div className="bg-white rounded-xl p-8 shadow-sm text-center">
-          <AlertCircle className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No tasks yet</h3>
-          <p className="text-gray-500 max-w-md mx-auto mb-6">
+        <div className="bg-white rounded-xl p-4 sm:p-8 shadow-sm text-center">
+          <AlertCircle className="w-10 h-10 sm:w-12 sm:h-12 text-gray-400 mx-auto mb-3 sm:mb-4" />
+          <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-2">No tasks yet</h3>
+          <p className="text-gray-500 max-w-md mx-auto mb-4 sm:mb-6 text-sm sm:text-base">
             This project doesn't have any tasks yet. Add a task to help the team organize their work.
           </p>
           <button
             onClick={() => setIsAddModalOpen(true)}
-            className="px-4 py-2 bg-[#9b1a31] text-white rounded-lg hover:bg-[#82001A] transition-colors"
+            className="px-3 py-1.5 sm:px-4 sm:py-2 bg-[#9b1a31] text-white rounded-lg hover:bg-[#82001A] transition-colors text-sm sm:text-base"
           >
             Add First Task
           </button>

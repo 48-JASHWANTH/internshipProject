@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { X } from 'lucide-react';
+import { X, Check } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import { apiClient } from '@/lib/api-client';
 import toast from 'react-hot-toast';
@@ -60,15 +60,14 @@ const AddReviewModal = ({ onClose, onAddReview, teamMembers = [], projectId }) =
     reviewName: '',
     dateOfReview: new Date().toISOString().split('T')[0],
     satisfactionLevel: '',
-    remarks: '',
     feedback: '',
     progress: '',
-    changesToBeMade: '',
     presentees: []
   });
   const [isCustomReview, setIsCustomReview] = useState(false);
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
 
   // Get the appropriate review names and add "Other" option
   const reviewOptions = [...(REVIEW_NAMES[projectType] || REVIEW_NAMES.CBP), 'Other'];
@@ -111,9 +110,7 @@ const AddReviewModal = ({ onClose, onAddReview, teamMembers = [], projectId }) =
     const newErrors = {};
     if (!formData.reviewName.trim()) newErrors.reviewName = 'Review name is required';
     if (!formData.satisfactionLevel) newErrors.satisfactionLevel = 'Satisfaction level is required';
-    if (!formData.remarks.trim()) newErrors.remarks = 'Remarks are required';
     if (!formData.feedback.trim()) newErrors.feedback = 'Feedback is required';
-    if (!formData.progress.trim()) newErrors.progress = 'Progress is required';
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -142,10 +139,9 @@ const AddReviewModal = ({ onClose, onAddReview, teamMembers = [], projectId }) =
         reviewName: formData.reviewName,
         dateOfReview: formData.dateOfReview,
         satisfactionLevel: formData.satisfactionLevel,
-        remarks: formData.remarks,
+        remarks: formData.feedback, // Use feedback for remarks field for API compatibility
         feedback: formData.feedback,
         progress: formData.progress,
-        changesToBeMade: formData.changesToBeMade,
         presentees: formData.presentees, // Keep IDs for database
         assignedBy: {
           name: user?.name || 'Faculty Guide',
@@ -155,72 +151,82 @@ const AddReviewModal = ({ onClose, onAddReview, teamMembers = [], projectId }) =
         reviewStatus: 'reviewed'
       };
 
+      console.log('Submitting review data:', reviewData);
+      
       // Call the onAddReview function with the review data
       if (onAddReview) {
-        await onAddReview(reviewData);
-        
-        // After successfully adding the review, send notifications to all team members
         try {
-          // Get all student IDs for notification
-          const studentIds = teamMembers.map(student => 
-            typeof student === 'object' && student !== null && 'id' in student 
-              ? student.id 
-              : student
-          );
+          await onAddReview(reviewData);
           
-          console.log('Attempting to send review notification...');
-          console.log('Student IDs for notification:', studentIds);
-          console.log('Project ID for notification:', projectId);
-          
-          // Get project title from props or from activeProjects store
-          let projectTitle = 'your project';
-          
-          // Try to find project title from activeProjects
-          if (activeProjects?.teams) {
-            const team = activeProjects.teams.find(t => t.teamId === projectId);
-            if (team?.projectTitle) {
-              projectTitle = team.projectTitle;
-              console.log('Found project title from activeProjects:', projectTitle);
+          // After successfully adding the review, send notifications to all team members
+          try {
+            // Get all student IDs for notification
+            const studentIds = teamMembers.map(student => 
+              typeof student === 'object' && student !== null && 'id' in student 
+                ? student.id 
+                : student
+            );
+            
+            console.log('Attempting to send review notification...');
+            console.log('Student IDs for notification:', studentIds);
+            console.log('Project ID for notification:', projectId);
+            
+            // Get project title from props or from activeProjects store
+            let projectTitle = 'your project';
+            
+            // Try to find project title from activeProjects
+            if (activeProjects?.teams) {
+              const team = activeProjects.teams.find(t => t.teamId === projectId);
+              if (team?.projectTitle) {
+                projectTitle = team.projectTitle;
+                console.log('Found project title from activeProjects:', projectTitle);
+              }
             }
+            
+            // Send notification
+            await apiClient.post(
+              '/api/notifications/review',
+              {
+                reviewName: formData.reviewName,
+                dateOfReview: formData.dateOfReview,
+                satisfactionLevel: formData.satisfactionLevel,
+                feedback: formData.feedback,
+                progress: formData.progress,
+                projectTitle: projectTitle,
+                projectId: projectId,
+                studentIds: studentIds,
+                assignedBy: {
+                  name: user?.name || 'Faculty Guide',
+                  type: 'Guide',
+                  facultyID: user?.facultyID || ''
+                }
+              },
+              { withCredentials: true }
+            );
+            
+            console.log('Review notification sent successfully');
+          } catch (notificationError) {
+            console.error('Error sending review notifications:', notificationError);
+            console.error('Error details:', notificationError.response?.data || 'No response data');
+            // Continue with the flow even if notification fails
           }
           
-          // Send notification
-          await apiClient.post(
-            '/api/notifications/review',
-            {
-              reviewName: formData.reviewName,
-              dateOfReview: formData.dateOfReview,
-              satisfactionLevel: formData.satisfactionLevel,
-              feedback: formData.feedback,
-              progress: formData.progress,
-              projectTitle: projectTitle,
-              projectId: projectId,
-              studentIds: studentIds,
-              assignedBy: {
-                name: user?.name || 'Faculty Guide',
-                type: 'Guide',
-                facultyID: user?.facultyID || ''
-              }
-            },
-            { withCredentials: true }
-          );
-          
-          console.log('Review notification sent successfully');
-        } catch (notificationError) {
-          console.error('Error sending review notifications:', notificationError);
-          console.error('Error details:', notificationError.response?.data || 'No response data');
-          // Continue with the flow even if notification fails
+          console.log('Setting showSuccess to true');
+          // Always show success dialog
+          setShowSuccess(true);
+        } catch (addError) {
+          console.error('Error in onAddReview callback:', addError);
+          toast.error('Failed to add review');
+          onClose();
         }
-        
-        toast.success('Review added successfully');
       } else {
         toast.error('Error: Review submission handler not provided');
+        onClose();
       }
-      
-      onClose();
     } catch (error) {
       console.error('Error submitting review:', error);
       toast.error('Failed to add review');
+      onClose();
     } finally {
       setIsSubmitting(false);
     }
@@ -280,10 +286,35 @@ const AddReviewModal = ({ onClose, onAddReview, teamMembers = [], projectId }) =
     </div>
   );
 
+  // Show success dialog when showSuccess is true
+  if (showSuccess) {
+    return (
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+        <div className="bg-white rounded-xl w-full max-w-lg shadow-xl p-6 text-center">
+          <div className="mb-4">
+            <div className="mx-auto w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+              <Check className="w-6 h-6 text-green-600" />
+            </div>
+          </div>
+          <h3 className="text-xl font-semibold mb-2">Review Added Successfully!</h3>
+          <p className="text-gray-600 mb-6">
+            The review has been added and {teamMembers.length} student{teamMembers.length !== 1 ? 's have' : ' has'} been notified.
+          </p>
+          <button
+            onClick={onClose}
+            className="px-4 py-2 bg-[#9b1a31] text-white rounded-lg hover:bg-[#82001A] transition-colors"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-xl w-full max-w-lg shadow-xl">
-        <div className="flex justify-between items-center p-6 border-b">
+      <div className="bg-white rounded-xl w-full max-w-lg shadow-xl max-h-[90vh] overflow-y-auto">
+        <div className="flex justify-between items-center p-6 border-b sticky top-0 bg-white">
           <h3 className="text-xl font-semibold">Add New Review</h3>
           <button 
             onClick={onClose}
@@ -293,7 +324,7 @@ const AddReviewModal = ({ onClose, onAddReview, teamMembers = [], projectId }) =
           </button>
         </div>
 
-        <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
+        <div className="p-6 space-y-4">
           {/* Review Name Selection */}
           {reviewOptions.length > 0 ? (
             <div>
@@ -344,9 +375,7 @@ const AddReviewModal = ({ onClose, onAddReview, teamMembers = [], projectId }) =
           </div>
           
           {renderField('progress', 'Progress')}
-          {renderField('remarks', 'Remarks')}
           {renderField('feedback', 'Detailed Feedback', 'textarea')}
-          {renderField('changesToBeMade', 'Changes To Be Made', 'textarea')}
           
           {/* Presentees Selection */}
           <div>

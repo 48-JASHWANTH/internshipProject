@@ -214,9 +214,9 @@ const Workboard = ({ projectId }) => {
       <div className="w-full max-w-6xl">
         <h1 className="text-2xl font-bold text-gray-800 mb-6 text-center">Workboard</h1>
         
-        <div className="flex gap-6">
+        <div className="flex flex-col lg:flex-row gap-6">
           {Object.entries(columns).map(([columnId, column]) => (
-            <div key={columnId} className="flex flex-col w-1/3">
+            <div key={columnId} className="flex flex-col w-full lg:w-1/3 mb-6 lg:mb-0">
               <h2 className="font-semibold mb-4 text-gray-700 text-center">
                 {column.title} 
                 <span className="ml-2 px-2 py-1 bg-gray-200 rounded-full text-xs">
@@ -224,7 +224,7 @@ const Workboard = ({ projectId }) => {
                 </span>
               </h2>
               
-              <div className="min-h-[500px] rounded-lg p-4 bg-gray-100">
+              <div className="min-h-[300px] lg:min-h-[500px] rounded-lg p-4 bg-gray-100">
                 {column.items.map((task) => (
                   <div
                     key={task._id}
@@ -238,7 +238,7 @@ const Workboard = ({ projectId }) => {
                             <path fillRule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clipRule="evenodd"/>
                           </svg>
                         </span>
-                        <h3 className="font-medium text-gray-800">{task.title}</h3>
+                        <h3 className="font-medium text-gray-800 truncate">{task.title}</h3>
                       </div>
                       {task.status !== 'Done' && (
                         <button
@@ -256,7 +256,7 @@ const Workboard = ({ projectId }) => {
                     </p>
                     
                     <div className="flex flex-col gap-2">
-                      <div className="flex items-center gap-2 text-xs">
+                      <div className="flex flex-wrap items-center gap-2 text-xs">
                         <div className="flex items-center gap-2">
                           <Calendar className="w-3 h-3 text-gray-500" />
                           <span className="text-gray-500">Deadline:</span>
@@ -264,7 +264,7 @@ const Workboard = ({ projectId }) => {
                             {task.dueDate}
                           </span>
                         </div>
-                        <div className="flex items-center gap-2 ml-2">
+                        <div className="flex items-center gap-2 mt-1 sm:mt-0 sm:ml-2">
                           <span className={`px-2 py-1 rounded ${priorityColors[task.priority]}`}>
                             {task.priority} 
                           </span>

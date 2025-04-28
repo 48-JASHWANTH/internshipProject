@@ -56,12 +56,12 @@ const TaskCard = ({ task, onStatusChange, onApprove }) => {
 
   return (
     <div className="bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-all border border-gray-100 mb-4">
-      <div className="flex justify-between items-start mb-4">
-        <div>
+      <div className="flex flex-col sm:flex-row justify-between items-start gap-3 mb-4">
+        <div className="w-full sm:w-auto">
           <h4 className="font-medium text-gray-900 text-lg mb-1">{task.title}</h4>
           <p className="text-sm text-gray-600 line-clamp-2">{task.description}</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center self-start sm:self-auto mt-2 sm:mt-0">
           <span className={`px-3 py-1.5 rounded-full text-sm font-medium flex items-center gap-2 ${statusColor}`}>
             <StatusIcon className="w-4 h-4" />
             {statusLabel}
@@ -69,7 +69,7 @@ const TaskCard = ({ task, onStatusChange, onApprove }) => {
         </div>
       </div>
 
-      <div className="flex flex-wrap gap-3 items-center mb-4">
+      <div className="flex flex-wrap gap-2 items-center mb-4">
         <span className={`text-xs px-2 py-1 rounded-full border ${priorityColors[task.priority] || 'bg-gray-100 text-gray-800 border-gray-200'}`}>
           {task.priority || 'Medium'}
         </span>
@@ -198,10 +198,10 @@ const InchargeWorkboard = ({ projectId }) => {
   }
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
-      <div className="flex justify-between items-center mb-8">
+    <div className="p-2 sm:p-6 bg-gray-50 min-h-screen">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Project Workboard</h2>
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Project Workboard</h2>
           <p className="text-gray-500">Manage and track student tasks</p>
         </div>
         <button 
@@ -209,7 +209,7 @@ const InchargeWorkboard = ({ projectId }) => {
           className="flex items-center gap-2 px-4 py-2 bg-[#9b1a31] text-white rounded-lg hover:bg-[#82001A] transition-colors"
         >
           <Plus className="w-4 h-4" />
-          Add Task
+          <span className="whitespace-nowrap">Add Task</span>
         </button>
       </div>
 

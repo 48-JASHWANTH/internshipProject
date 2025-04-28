@@ -13,20 +13,20 @@ const Navbar = ({ isMobileMenuOpen, setIsMobileMenuOpen }) => {
   };
 
   const [showProfile, setShowProfile] = useState(false);
-  const [showNotifications, setShowNotifications] = useState(false);
+  // const [showNotifications, setShowNotifications] = useState(false);
   const navigate = useNavigate(); 
 
   const dropdownRef = useRef(null);
 
   const toggleProfile = () => {
     setShowProfile((prev) => !prev);
-    setShowNotifications(false);
+    // setShowNotifications(false);
   };
 
-  const toggleNotifications = () => {
-    setShowNotifications((prev) => !prev);
-    setShowProfile(false);
-  };
+  // const toggleNotifications = () => {
+  //   setShowNotifications((prev) => !prev);
+  //   setShowProfile(false);
+  // };
 
   const handleLogout = () => {
     setShowProfile(false);
@@ -49,7 +49,7 @@ const Navbar = ({ isMobileMenuOpen, setIsMobileMenuOpen }) => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setShowProfile(false);
-        setShowNotifications(false);
+        // setShowNotifications(false);
       }
     };
 
@@ -69,13 +69,13 @@ const Navbar = ({ isMobileMenuOpen, setIsMobileMenuOpen }) => {
 
         <div className="flex items-center gap-4">
           {/* Notification Icon */}
-          <div
-            onClick={toggleNotifications}
+          {/* <div
+            // onClick={toggleNotifications}
             className="cursor-pointer flex items-center justify-center w-8 h-8 bg-gray-200 rounded-full relative"
           >
             <FaBell className="text-gray-700 text-xl" />
             <span className="absolute -top-1 -right-1 bg-red-600 text-white text-xs px-1 rounded-full">3</span>
-          </div>
+          </div> */}
 
           {/* Profile Icon */}
           <div
@@ -107,7 +107,7 @@ const Navbar = ({ isMobileMenuOpen, setIsMobileMenuOpen }) => {
       {/* Dropdowns */}
       <div>
         {/* Notifications Dropdown */}
-        {showNotifications && (
+        {/* {showNotifications && (
           <div className="absolute top-14 right-16 w-64 bg-white border border-gray-300 rounded-lg shadow-lg">
             <div className="p-2 font-bold border-b">Notifications</div>
             <div className="flex flex-col">
@@ -116,7 +116,7 @@ const Navbar = ({ isMobileMenuOpen, setIsMobileMenuOpen }) => {
               <p className="px-4 py-2 text-sm hover:bg-gray-100 cursor-pointer">✅ Project Approved</p>
             </div>
           </div>
-        )}
+        )} */}
 
         {/* Profile Dropdown */}
         {showProfile && (

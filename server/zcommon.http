@@ -1,0 +1,7 @@
+### Get all projects with basic details
+GET http://localhost:1544/common/projects
+Content-Type: application/json
+
+### Get project by ID (replace with an actual teamId)
+GET http://localhost:1544/common/projects/TEAM_ID_HERE
+Content-Type: application/json 

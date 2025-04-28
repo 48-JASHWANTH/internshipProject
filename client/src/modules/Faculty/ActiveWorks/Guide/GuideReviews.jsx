@@ -6,8 +6,10 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { format } from 'date-fns';
-import AddReviewModal from './components/AddReviewModal';
+import AddReviewModal from './Components/AddReviewModal';
 import { useStore } from '@/store/useStore';
+import { apiClient } from '@/lib/api-client';
+import toast from 'react-hot-toast';
 
 const ReviewCard = ({ review }) => {
   const satisfactionColors = {
@@ -95,23 +97,36 @@ const GuideReviews = ({ projectId, project }) => {
     });
   }, [project]);
 
-  const handleAddReview = (newReview) => {
-    // Add faculty information to the review
-    const reviewWithFaculty = {
-      ...newReview,
-      assignedBy: {
-        name: user?.name || 'Faculty',
-        type: 'Guide',
-        facultyID: user?.facultyID || ''
-      },
-      reviewStatus: 'reviewed'
-    };
-    
-    // Add to store
-    addGuidedProjectReview(projectId, reviewWithFaculty);
-    
-    // Close modal
-    setIsAddModalOpen(false);
+  const handleAddReview = async (newReview) => {
+    try {
+      // Add faculty information to the review
+      const reviewWithFaculty = {
+        ...newReview,
+        assignedBy: {
+          name: user?.name || 'Faculty',
+          type: 'Guide',
+          facultyID: user?.facultyID || ''
+        },
+        reviewStatus: 'reviewed'
+      };
+      
+      // First send to API if needed
+      if (projectId) {
+        console.log('Sending review to API for project:', projectId);
+        // You might need to implement this API call if needed
+      }
+      
+      // Add to store
+      await addGuidedProjectReview(projectId, reviewWithFaculty);
+      
+      console.log('Review added successfully, returning true');
+      // Return a success value to trigger the success dialog in AddReviewModal
+      return true;
+    } catch (error) {
+      console.error('Error adding review in GuideReviews:', error);
+      toast.error('Failed to add review');
+      return false;
+    }
   };
 
   return (

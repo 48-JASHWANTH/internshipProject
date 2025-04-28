@@ -10,6 +10,7 @@ import activityLogRoutes from "./routes/activityLogRoutes.js";
 import passwordResetRoutes from "./routes/passwordResetRoutes.js";
 import fileRoutes from './routes/fileRoutes.js';
 import forumProjectRoutes from './routes/forumProjectRoutes.js';
+import commonRoutes from './routes/commonRoute.js';
 // Import notification routes
 import notificationRoutes from './routes/notificationRoutes.js';
 console.log('Student routes:', studentRoutes);
@@ -39,6 +40,7 @@ app.use('/admin/activity', activityLogRoutes);
 app.use('/auth', passwordResetRoutes);
 app.use('/files', fileRoutes);
 app.use('/forum-projects', forumProjectRoutes); 
+app.use('/common', commonRoutes);
 // Add notification routes
 app.use('/api/notifications', notificationRoutes);
 

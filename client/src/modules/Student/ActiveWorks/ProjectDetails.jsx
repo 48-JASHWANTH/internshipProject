@@ -318,7 +318,7 @@ const ProjectDetails = () => {
       </nav>
 
       {/* Toggle Buttons */}
-      <div className="flex gap-1">
+      <div className="flex flex-wrap gap-1">
         <button
           onClick={() => setActiveView('details')}
           className={`px-4 py-2 rounded-l-md text-sm font-medium transition-all ${
@@ -335,7 +335,7 @@ const ProjectDetails = () => {
             activeView === 'workboard'
               ? 'bg-yellow-500 text-white shadow-md'
               : 'bg-white text-gray-600 border border-gray-300 hover:bg-gray-100'
-          }`}
+          } ${activeView === 'details' ? 'rounded-tl-none rounded-bl-none' : ''} ${activeView === 'reviews' ? 'rounded-tr-none rounded-br-none' : ''}`}
         >
           Workboard
         </button>
@@ -354,10 +354,10 @@ const ProjectDetails = () => {
       {/* Project Header */}
       {activeView === 'details' && (
         <div className="bg-white rounded-xl shadow-sm p-6">
-          <div className="flex justify-between items-start mb-4">
-            <div className="space-y-2">
+          <div className="flex flex-col sm:flex-row justify-between items-start mb-4 gap-4">
+            <div className="space-y-2 w-full sm:w-auto">
               <h1 className="text-2xl font-bold text-gray-900">{project?.projectDetails?.projectTitle || 'Loading...'}</h1>
-              <div className="flex gap-3 items-center">
+              <div className="flex flex-wrap gap-3 items-center">
                 <span className="px-3 py-1 text-sm font-medium text-purple-700 bg-purple-50 rounded-full">
                   {project?.projectDetails?.projectType || 'Unknown Type'}
                 </span>
@@ -370,11 +370,11 @@ const ProjectDetails = () => {
                 </span>
               </div>
             </div>
-            <div className="flex flex-col items-end">
+            <div className="flex flex-col items-start sm:items-end self-stretch sm:self-auto w-full sm:w-auto mt-2 sm:mt-0">
               <div className="text-lg font-bold text-gray-900 mb-1">
                 {calculateProgress(project?.workDetails?.tasks || [])}%
               </div>
-              <div className="w-32 bg-gray-100 rounded-full h-2">
+              <div className="w-full sm:w-32 bg-gray-100 rounded-full h-2">
                 <div 
                   className="bg-[#9b1a31] rounded-full h-2 transition-all duration-300"
                   style={{ width: `${calculateProgress(project?.workDetails?.tasks || [])}%` }}
@@ -436,18 +436,18 @@ const ProjectDetails = () => {
             {/* Resources */}
             <div className="bg-white rounded-xl shadow-sm p-6 mt-6">
               <h2 className="text-lg font-semibold text-gray-900 mb-4">Resources</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {/* Abstract PDF */}
                 <div className="p-4 bg-gray-50 rounded-lg">
                   <h3 className="font-medium text-gray-900 mb-2">Abstract PDF</h3>
                   {abstractPdf ? (
                     <div className="space-y-2">
                       <div 
-                        className="text-sm text-[#9b1a31] hover:underline flex items-center gap-2 cursor-pointer"
+                        className="text-sm text-[#9b1a31] hover:underline flex items-center gap-2 cursor-pointer truncate"
                         onClick={() => setShowPdfPreview(true)}
                       >
-                        <File className="w-4 h-4" />
-                        {abstractPdf.name}
+                        <File className="w-4 h-4 flex-shrink-0" />
+                        <span className="truncate">{abstractPdf.name}</span>
                       </div>
                       <div className="flex gap-2">
                         <button
@@ -492,10 +492,10 @@ const ProjectDetails = () => {
                         href={project.projectDetails.githubURL}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-sm text-[#9b1a31] hover:underline flex items-center gap-2"
+                        className="text-sm text-[#9b1a31] hover:underline flex items-center gap-2 truncate"
                       >
-                        <Github className="w-4 h-4" />
-                        View Repository
+                        <Github className="w-4 h-4 flex-shrink-0" />
+                        <span className="truncate">View Repository</span>
                       </a>
                       <button
                         onClick={() => setIsGithubModalOpen(true)}
@@ -523,10 +523,10 @@ const ProjectDetails = () => {
                         href={project.projectDetails.googleDriveLink}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-sm text-[#9b1a31] hover:underline flex items-center gap-2"
+                        className="text-sm text-[#9b1a31] hover:underline flex items-center gap-2 truncate"
                       >
-                        <File className="w-4 h-4" />
-                        View Drive Folder
+                        <File className="w-4 h-4 flex-shrink-0" />
+                        <span className="truncate">View Drive Folder</span>
                       </a>
                       <button
                         onClick={() => setIsDriveModalOpen(true)}
@@ -675,17 +675,17 @@ const ProjectDetails = () => {
       {/* PDF Preview Modal */}
       {showPdfPreview && abstractPdf && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-2 md:p-4">
-          <div className="bg-white rounded-lg w-full h-full max-w-4xl max-h-[90vh] flex flex-col">
+          <div className="bg-white rounded-lg w-full h-full md:max-w-4xl md:max-h-[90vh] flex flex-col overflow-hidden">
             <div className="flex justify-between items-center p-3 md:p-4 border-b">
-              <h3 className="text-base md:text-lg font-semibold truncate">{abstractPdf.name}</h3>
+              <h3 className="text-base md:text-lg font-semibold truncate flex-1 pr-2">{abstractPdf.name}</h3>
               <button 
                 onClick={() => setShowPdfPreview(false)}
-                className="text-gray-500 hover:text-gray-700 p-1"
+                className="text-gray-500 hover:text-gray-700 p-1 flex-shrink-0"
               >
-                <X className="text-xl" />
+                <X className="w-5 h-5" />
               </button>
             </div>
-            <div className="flex-1 p-2 md:p-4">
+            <div className="flex-1 p-2 md:p-4 overflow-hidden">
               <iframe
                 src={`${apiClient.defaults.baseURL}${abstractPdf.url}`}
                 className="w-full h-full rounded border"

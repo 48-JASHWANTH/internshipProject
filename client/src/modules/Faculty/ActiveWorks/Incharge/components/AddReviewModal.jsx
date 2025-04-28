@@ -190,7 +190,6 @@ const AddReviewModal = ({ onClose, onAddReview, teamMembers = [], projectId }) =
 
       // Close the modal
       onClose();
-      toast.success('Review added successfully');
     } catch (error) {
       console.error('Error adding review:', error);
       toast.error('Failed to add review');
