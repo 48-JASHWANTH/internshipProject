@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+  <!-- Bridge base -->
+  <path d="M2 16h20" stroke="white" stroke-width="3" fill="none"/>
+  <!-- Support pillars -->
+  <path d="M4 16v-4 M8 16v-4 M12 16v-4 M16 16v-4 M20 16v-4" stroke="white" stroke-width="2" fill="none"/>
+  <!-- Connection line -->
+  <path d="M4 12h16" stroke="white" stroke-width="1" stroke-dasharray="2 2" fill="none"/>
+  <!-- Student and Faculty symbols -->
+  <circle cx="4" cy="8" r="2" fill="white"/>
+  <circle cx="20" cy="8" r="2" fill="white"/>
+</svg> 
