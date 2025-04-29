@@ -9,7 +9,8 @@ import {
   File,
   Edit2,
   X,
-  Trash2
+  Trash2,
+  Check
 } from 'lucide-react';
 import { Dialog } from '@headlessui/react';
 import Workboard from './Workboard';
@@ -45,6 +46,8 @@ const ProjectDetails = () => {
   const [project, setProject] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isEditingTitle, setIsEditingTitle] = useState(false);
+  const [editedTitle, setEditedTitle] = useState('');
 
   // Fetch project details directly from API
   useEffect(() => {
@@ -278,6 +281,36 @@ const ProjectDetails = () => {
     }
   };
 
+  const handleTitleSave = async () => {
+    if (!editedTitle.trim()) {
+      toast.error('Please enter a valid project title');
+      return;
+    }
+    try {
+      const response = await apiClient.put(
+        `/student/project/title/${projectId}`,
+        { projectTitle: editedTitle },
+        { withCredentials: true }
+      );
+
+      if (response.data.success) {
+        setIsEditingTitle(false);
+        toast.success('Project title updated successfully');
+        // Update local state
+        setProject(prev => ({
+          ...prev,
+          projectDetails: {
+            ...prev.projectDetails,
+            projectTitle: editedTitle
+          }
+        }));
+      }
+    } catch (error) {
+      console.error('Error updating project title:', error);
+      toast.error(error.response?.data?.message || 'Failed to update project title');
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-[60vh]">
@@ -356,7 +389,49 @@ const ProjectDetails = () => {
         <div className="bg-white rounded-xl shadow-sm p-6">
           <div className="flex flex-col sm:flex-row justify-between items-start mb-4 gap-4">
             <div className="space-y-2 w-full sm:w-auto">
-              <h1 className="text-2xl font-bold text-gray-900">{project?.projectDetails?.projectTitle || 'Loading...'}</h1>
+              <div className="flex items-center gap-2">
+                {isEditingTitle ? (
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      value={editedTitle}
+                      onChange={(e) => setEditedTitle(e.target.value)}
+                      className="text-2xl font-bold text-gray-900 border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-[#9b1a31]"
+                      placeholder="Enter project title"
+                    />
+                    <button
+                      onClick={handleTitleSave}
+                      className="text-green-600 hover:text-green-700"
+                    >
+                      <Check className="w-5 h-5" />
+                    </button>
+                    <button
+                      onClick={() => {
+                        setIsEditingTitle(false);
+                        setEditedTitle(project?.projectDetails?.projectTitle || '');
+                      }}
+                      className="text-red-600 hover:text-red-700"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <h1 className="text-2xl font-bold text-gray-900">
+                      {project?.projectDetails?.projectTitle || 'Loading...'}
+                    </h1>
+                    <button
+                      onClick={() => {
+                        setEditedTitle(project?.projectDetails?.projectTitle || '');
+                        setIsEditingTitle(true);
+                      }}
+                      className="text-gray-600 hover:text-[#9b1a31]"
+                    >
+                      <Edit2 className="w-4 h-4" />
+                    </button>
+                  </>
+                )}
+              </div>
               <div className="flex flex-wrap gap-3 items-center">
                 <span className="px-3 py-1 text-sm font-medium text-purple-700 bg-purple-50 rounded-full">
                   {project?.projectDetails?.projectType || 'Unknown Type'}

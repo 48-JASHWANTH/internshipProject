@@ -113,7 +113,7 @@ const CreateProjectForm = () => {
           }));
           
           toast.success("Projects created successfully!");
-          navigate("/Faculty/ActiveWorks");
+          navigate("/Faculty/ActiveWorks/Incharge");
         } else {
           toast.error("Failed to create teams. Please try again.");
         }

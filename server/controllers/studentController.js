@@ -1203,3 +1203,44 @@ export const getStudentDashboardData = async (req, res) => {
     });
   }
 };
+
+export const updateProjectTitle = async (req, res) => {
+  try {
+    const { teamId } = req.params;
+    const { projectTitle } = req.body;
+
+    if (!projectTitle) {
+      return res.status(400).json({
+        success: false,
+        message: "Project title is required"
+      });
+    }
+
+    const team = await Team.findOneAndUpdate(
+      { teamId },
+      { $set: { projectTitle } },
+      { new: true }
+    );
+
+    if (!team) {
+      return res.status(404).json({
+        success: false,
+        message: "Project not found"
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Project title updated successfully",
+      projectTitle: team.projectTitle
+    });
+
+  } catch (error) {
+    console.error('Error updating project title:', error);
+    res.status(500).json({
+      success: false,
+      message: "Server Error",
+      error: error.message
+    });
+  }
+};
