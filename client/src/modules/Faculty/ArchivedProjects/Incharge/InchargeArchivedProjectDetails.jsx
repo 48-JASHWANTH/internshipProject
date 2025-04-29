@@ -86,8 +86,16 @@ const InchargeArchivedProjectDetails = () => {
       technologies: team.technologies || 
         (typeof team.techStack === 'string' ? team.techStack.split(',').map(tech => tech.trim()) : 
         Array.isArray(team.techStack) ? team.techStack : ["Not specified"]),
-      objectives: team.objectives?.split('\n').filter(obj => obj.trim()) || ["Not specified"],
-      outcomes: team.outcomes?.split('\n').filter(out => out.trim()) || ["Project completed successfully"],
+      objectives: Array.isArray(team.objectives) 
+        ? team.objectives.filter(obj => obj && obj.trim()) 
+        : (typeof team.objectives === 'string' 
+          ? team.objectives.split('\n').filter(obj => obj.trim()) 
+          : ["Not specified"]),
+      outcomes: Array.isArray(team.outcomes) 
+        ? team.outcomes.filter(out => out && out.trim()) 
+        : (typeof team.outcomes === 'string' 
+          ? team.outcomes.split('\n').filter(out => out.trim()) 
+          : ["Project completed successfully"]),
       reviews: team.reviews?.map((review, index) => ({
         id: review._id || index,
         reviewName: review.title || `Review ${index + 1}`,

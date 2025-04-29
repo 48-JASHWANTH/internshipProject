@@ -2,7 +2,8 @@ import React, { useState, useEffect } from "react";
 import { FaSearch, FaFilter, FaPlus, FaArrowRight } from "react-icons/fa";
 import AddProjectModal from './AddProjectModal';
 import { useNavigate, useLocation } from 'react-router-dom';
-import axios from 'axios';
+// import axios from 'axios';
+import { apiClient } from '@/lib/api-client';
 import { useStore } from '@/store/useStore';
 import { Loader2, BookOpen, Tag, Users, Award, CheckCircle, XCircle, Filter, X } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -49,8 +50,8 @@ const ProjectForum = () => {
     
     setLoading(true);
     try {
-      const response = await axios.get(
-        `http://localhost:1544/forum-projects/${user.facultyID}`,
+      const response = await apiClient.get(
+        `forum-projects/${user.facultyID}`,
         { withCredentials: true }
       );
       
@@ -78,8 +79,8 @@ const ProjectForum = () => {
 
   const handleStatusChange = async (projectId, newStatus) => {
     try {
-      const response = await axios.put(
-        `http://localhost:1544/forum-projects/${projectId}/status`,
+      const response = await apiClient.put(
+        `forum-projects/${projectId}/status`,
         { status: newStatus },
         { withCredentials: true }
       );

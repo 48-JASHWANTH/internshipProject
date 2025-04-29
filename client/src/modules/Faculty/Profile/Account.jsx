@@ -3,7 +3,8 @@ import { useState, useEffect } from "react";
 import { FaLock, FaLinkedin, FaGraduationCap, FaUserTie } from "react-icons/fa";
 import { Edit, X, Check } from "lucide-react";
 import { useStore } from "@/store/useStore";
-import axios from 'axios';
+// import axios from 'axios';
+import { apiClient } from '@/lib/api-client';
 import { toast } from 'react-hot-toast';
 
 const Account = ({ handleChangePassword }) => {
@@ -49,8 +50,8 @@ const Account = ({ handleChangePassword }) => {
       };
       
       // Make API call to update faculty data
-      const response = await axios.put(
-        `http://localhost:1544/faculty/update/${facultyId}`,
+      const response = await apiClient.put(
+        `faculty/update/${facultyId}`,
         updateData,
         { withCredentials: true }
       );

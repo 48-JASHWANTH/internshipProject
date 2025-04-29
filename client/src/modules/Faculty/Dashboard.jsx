@@ -4,7 +4,8 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip, Legend 
 } from 'recharts';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
+// import axios from 'axios';
+import { apiClient } from '@/lib/api-client';
 import { toast } from 'react-hot-toast';
 import { useStore } from '@/store/useStore';
 
@@ -38,7 +39,7 @@ const FacultyDashboard = () => {
       setIsLoading(true);
       try {
         //console.log("Requesting dashboard data for faculty:", facultyId);
-        const response = await axios.get(`http://localhost:1544/faculty/dashboard/${facultyId}`, {withCredentials: true});
+        const response = await apiClient.get(`faculty/dashboard/${facultyId}`, {withCredentials: true});
         
         // Log the entire response for debugging
         //console.log("Full API Response:", response);

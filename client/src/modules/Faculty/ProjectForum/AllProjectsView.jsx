@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+// import axios from 'axios';
+import { apiClient } from '@/lib/api-client';
 import { Loader2, BookOpen, Tag, Users, Award, CheckCircle, XCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -21,8 +22,8 @@ const AllProjectsView = ({ searchQuery, filters }) => {
     const fetchAllProjects = async () => {
       setLoading(true);
       try {
-        const response = await axios.get(
-          'http://localhost:1544/forum-projects/get-all-forumProjects',
+        const response = await apiClient.get(
+          'forum-projects/get-all-forumProjects',
           { withCredentials: true }
         );
         

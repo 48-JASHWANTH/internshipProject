@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { FaArrowLeft, FaKey, FaEye, FaEyeSlash } from 'react-icons/fa';
-import axios from 'axios';
+// import axios from 'axios';
+import { apiClient } from '@/lib/api-client';
 
 function ResetPassword() {
   const navigate = useNavigate();
@@ -40,7 +41,7 @@ function ResetPassword() {
 
   const verifyToken = async (tokenValue, userTypeValue) => {
     try {
-      const response = await axios.get(`http://localhost:1544/auth/verify-token?token=${tokenValue}&userType=${userTypeValue || userType}`);
+      const response = await apiClient.get(`auth/verify-token?token=${tokenValue}&userType=${userTypeValue || userType}`);
       if (response.data.success) {
         setMessage('Please enter your new password');
         setMessageType('success');
@@ -60,7 +61,7 @@ function ResetPassword() {
     setMessage('');
 
     try {
-      const response = await axios.post('http://localhost:1544/auth/request-reset', {
+      const response = await apiClient.post('auth/request-reset', {
         email,
         userType
       });
@@ -98,7 +99,7 @@ function ResetPassword() {
     setMessage('');
 
     try {
-      const response = await axios.post('http://localhost:1544/auth/reset-password', {
+      const response = await apiClient.post('auth/reset-password', {
         token,
         userType,
         password

@@ -211,12 +211,12 @@ export const getStudentDashBoardDetails = async (req, res) => {
           // First classify reviews based on explicit faculty ID matches
           const matchedGuideReviews = team.reviews.filter(review => 
             review.assignedBy?.facultyID === team.guideFacultyId || 
-            (review.assignedBy?.type === 'Guide' && !review.assignedBy?.facultyID)
+            (review.assignedBy?.type === 'Guide' && review.assignedBy?.facultyID)
           );
           
           const matchedInchargeReviews = team.reviews.filter(review => 
             review.assignedBy?.facultyID === team.inchargefacultyId || 
-            (review.assignedBy?.type === 'Incharge' && !review.assignedBy?.facultyID)
+            (review.assignedBy?.type === 'Incharge' && review.assignedBy?.facultyID)
           );
           
           // Find any unmatched reviews
@@ -249,14 +249,40 @@ export const getStudentDashBoardDetails = async (req, res) => {
           const inchargeReviews = [...matchedInchargeReviews, ...additionalInchargeReviews]
             .sort((a, b) => new Date(b.dateOfReview) - new Date(a.dateOfReview));
           
-          // Any remaining unmatched reviews that couldn't be categorized go to incharge
+          // Any remaining unmatched reviews that couldn't be categorized
           const reallyUnmatched = unmatchedReviews.filter(r => 
             !additionalGuideReviews.includes(r) && !additionalInchargeReviews.includes(r)
           );
           
           if (reallyUnmatched.length > 0) {
-            console.log(`Adding ${reallyUnmatched.length} uncategorized reviews to incharge reviews`);
-            inchargeReviews.push(...reallyUnmatched);
+            console.log(`Found ${reallyUnmatched.length} truly uncategorized reviews`);
+            
+            // Try to categorize based on faculty ID comparison if possible
+            for (const review of reallyUnmatched) {
+              if (review.assignedBy?.facultyID) {
+                if (review.assignedBy.facultyID === team.guideFacultyId) {
+                  console.log(`Assigning review ${review._id} to guide based on facultyID match`);
+                  guideReviews.push(review);
+                } else if (review.assignedBy.facultyID === team.inchargefacultyId) {
+                  console.log(`Assigning review ${review._id} to incharge based on facultyID match`);
+                  inchargeReviews.push(review);
+                } else {
+                  // Default uncategorized reviews to incharge since that was the previous behavior
+                  console.log(`Defaulting review ${review._id} to incharge (faculty ID doesn't match either)`);
+                  inchargeReviews.push(review);
+                }
+              } else {
+                // If no assignedBy.facultyID, check type one more time
+                if (review.assignedBy?.type === 'Guide') {
+                  console.log(`Assigning review ${review._id} to guide based on type`);
+                  guideReviews.push(review);
+                } else {
+                  // Default to incharge as before
+                  console.log(`Defaulting review ${review._id} to incharge (no faculty ID)`);
+                  inchargeReviews.push(review);
+                }
+              }
+            }
           }
   
           // Get last review date
@@ -391,15 +417,6 @@ export const getStudentDashBoardDetails = async (req, res) => {
     try {
       const { studentID } = req.params;
   
-      // Get student details first to get department
-      const student = await Student.findOne({ studentID }).select("department");
-      if (!student) {
-        return res.status(404).json({
-          success: false,
-          message: "Student not found"
-        });
-      }
-  
       // Get teams where student is a member and status is true (Completed)
       const teams = await Team.find({ 
         listOfStudents: { 
@@ -413,7 +430,7 @@ export const getStudentDashBoardDetails = async (req, res) => {
       if (!teams.length) {
         return res.status(404).json({ 
           success: false,
-          message: "No completed projects found" 
+          message: "No archived projects found" 
         });
       }
   
@@ -431,13 +448,71 @@ export const getStudentDashBoardDetails = async (req, res) => {
           }).select("name facultyID email");
   
           // Separate guide and incharge reviews
-          const guideReviews = team.reviews.filter(
-            review => review.assignedBy?.facultyID === team.guideFacultyId
-          ).sort((a, b) => new Date(b.dateOfReview) - new Date(a.dateOfReview));
-  
-          const inchargeReviews = team.reviews.filter(
-            review => review.assignedBy?.facultyID === team.inchargefacultyId
-          ).sort((a, b) => new Date(b.dateOfReview) - new Date(a.dateOfReview));
+          // First classify reviews based on explicit faculty ID matches
+          const matchedGuideReviews = team.reviews.filter(review => 
+            review.assignedBy?.facultyID === team.guideFacultyId || 
+            (review.assignedBy?.type === 'Guide' && review.assignedBy?.facultyID)
+          );
+          
+          const matchedInchargeReviews = team.reviews.filter(review => 
+            review.assignedBy?.facultyID === team.inchargefacultyId || 
+            (review.assignedBy?.type === 'Incharge' && review.assignedBy?.facultyID)
+          );
+          
+          // Find any unmatched reviews
+          const matchedReviewIds = [...matchedGuideReviews, ...matchedInchargeReviews]
+            .map(r => r._id.toString());
+          
+          const unmatchedReviews = team.reviews.filter(review => 
+            !matchedReviewIds.includes(review._id.toString())
+          );
+          
+          // Categorize the unmatched reviews based on type if available
+          const additionalGuideReviews = unmatchedReviews.filter(r => 
+            r.assignedBy?.type === 'Guide' || 
+            r.reviewName?.toLowerCase().includes('guide')
+          );
+          
+          const additionalInchargeReviews = unmatchedReviews.filter(r => 
+            r.assignedBy?.type === 'Incharge' || 
+            r.reviewName?.toLowerCase().includes('incharge')
+          );
+          
+          // Combine all reviews
+          const guideReviews = [...matchedGuideReviews, ...additionalGuideReviews]
+            .sort((a, b) => new Date(b.dateOfReview) - new Date(a.dateOfReview));
+          
+          const inchargeReviews = [...matchedInchargeReviews, ...additionalInchargeReviews]
+            .sort((a, b) => new Date(b.dateOfReview) - new Date(a.dateOfReview));
+          
+          // Any remaining unmatched reviews that couldn't be categorized
+          const reallyUnmatched = unmatchedReviews.filter(r => 
+            !additionalGuideReviews.includes(r) && !additionalInchargeReviews.includes(r)
+          );
+          
+          if (reallyUnmatched.length > 0) {
+            // Try to categorize based on faculty ID comparison if possible
+            for (const review of reallyUnmatched) {
+              if (review.assignedBy?.facultyID) {
+                if (review.assignedBy.facultyID === team.guideFacultyId) {
+                  guideReviews.push(review);
+                } else if (review.assignedBy.facultyID === team.inchargefacultyId) {
+                  inchargeReviews.push(review);
+                } else {
+                  // Default uncategorized reviews to incharge since that was the previous behavior
+                  inchargeReviews.push(review);
+                }
+              } else {
+                // If no assignedBy.facultyID, check type one more time
+                if (review.assignedBy?.type === 'Guide') {
+                  guideReviews.push(review);
+                } else {
+                  // Default to incharge as before
+                  inchargeReviews.push(review);
+                }
+              }
+            }
+          }
   
           // Get last review date
           const lastReview = team.reviews.length > 0 
@@ -472,7 +547,7 @@ export const getStudentDashBoardDetails = async (req, res) => {
               techStack: team.techStack || [],
               abstractPdfId: team.abstractPdfId,
               subject: team.subject || null,
-              department: student.department
+              department: team.branch || team.department || "Not Specified"
             },
             facultyDetails: {
               guide: guideFaculty ? {
@@ -798,12 +873,12 @@ export const getTeamReviews = async (req, res) => {
     // First classify reviews based on explicit faculty ID matches
     const matchedGuideReviews = team.reviews.filter(review => 
       review.assignedBy?.facultyID === team.guideFacultyId || 
-      (review.assignedBy?.type === 'Guide' && !review.assignedBy?.facultyID)
+      (review.assignedBy?.type === 'Guide' && review.assignedBy?.facultyID)
     );
     
     const matchedInchargeReviews = team.reviews.filter(review => 
       review.assignedBy?.facultyID === team.inchargefacultyId || 
-      (review.assignedBy?.type === 'Incharge' && !review.assignedBy?.facultyID)
+      (review.assignedBy?.type === 'Incharge' && review.assignedBy?.facultyID)
     );
     
     // Find any unmatched reviews
@@ -836,14 +911,40 @@ export const getTeamReviews = async (req, res) => {
     const inchargeReviews = [...matchedInchargeReviews, ...additionalInchargeReviews]
       .sort((a, b) => new Date(b.dateOfReview) - new Date(a.dateOfReview));
     
-    // Any remaining unmatched reviews that couldn't be categorized go to incharge
+    // Any remaining unmatched reviews that couldn't be categorized
     const reallyUnmatched = unmatchedReviews.filter(r => 
       !additionalGuideReviews.includes(r) && !additionalInchargeReviews.includes(r)
     );
     
     if (reallyUnmatched.length > 0) {
-      console.log(`Adding ${reallyUnmatched.length} uncategorized reviews to incharge reviews`);
-      inchargeReviews.push(...reallyUnmatched);
+      console.log(`Found ${reallyUnmatched.length} truly uncategorized reviews`);
+      
+      // Try to categorize based on faculty ID comparison if possible
+      for (const review of reallyUnmatched) {
+        if (review.assignedBy?.facultyID) {
+          if (review.assignedBy.facultyID === team.guideFacultyId) {
+            console.log(`Assigning review ${review._id} to guide based on facultyID match`);
+            guideReviews.push(review);
+          } else if (review.assignedBy.facultyID === team.inchargefacultyId) {
+            console.log(`Assigning review ${review._id} to incharge based on facultyID match`);
+            inchargeReviews.push(review);
+          } else {
+            // Default uncategorized reviews to incharge since that was the previous behavior
+            console.log(`Defaulting review ${review._id} to incharge (faculty ID doesn't match either)`);
+            inchargeReviews.push(review);
+          }
+        } else {
+          // If no assignedBy.facultyID, check type one more time
+          if (review.assignedBy?.type === 'Guide') {
+            console.log(`Assigning review ${review._id} to guide based on type`);
+            guideReviews.push(review);
+          } else {
+            // Default to incharge as before
+            console.log(`Defaulting review ${review._id} to incharge (no faculty ID)`);
+            inchargeReviews.push(review);
+          }
+        }
+      }
     }
 
     // Get last review date
@@ -898,11 +999,10 @@ export const getTeamReviews = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Error fetching team reviews:', error);
+    console.error('Error getting team reviews:', error);
     res.status(500).json({
-      success: false,
-      message: "Server Error",
-      error: error.message
+      success: false, 
+      message: 'Error getting team reviews'
     });
   }
 };

@@ -1,4 +1,5 @@
-import axios from 'axios';
+// import axios from 'axios';
+import { apiClient } from '@/lib/api-client';
 
 const createFacultyProfileSlice = (set, get) => ({
     profileData: null,
@@ -9,8 +10,8 @@ const createFacultyProfileSlice = (set, get) => ({
         try {
             set({ isLoading: true, error: null });
             
-            const response = await axios.get(
-                `http://localhost:1544/faculty/${facultyId}`,
+            const response = await apiClient.get(
+                `faculty/${facultyId}`,
                 { withCredentials: true }
             );
             

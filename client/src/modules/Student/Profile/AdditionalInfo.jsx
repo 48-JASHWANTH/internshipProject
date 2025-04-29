@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Edit, X } from 'lucide-react';
-import axios from 'axios';
+// import axios from 'axios';
 import { toast } from 'react-toastify';
 import { useStore } from '@/store/useStore';
 import { apiClient } from '@/lib/api-client';

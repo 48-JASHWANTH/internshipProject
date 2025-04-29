@@ -113,7 +113,17 @@ const GuideReviews = ({ projectId, project }) => {
       // First send to API if needed
       if (projectId) {
         console.log('Sending review to API for project:', projectId);
-        // You might need to implement this API call if needed
+        const response = await apiClient.post(
+          `/faculty/team/${projectId}/review`,
+          reviewWithFaculty,
+          { withCredentials: true }
+        );
+        
+        if (!response.data.success) {
+          console.error('API error adding review:', response.data);
+          toast.error('Failed to add review');
+          return false;
+        }
       }
       
       // Add to store

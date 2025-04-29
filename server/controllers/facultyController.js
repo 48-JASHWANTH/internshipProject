@@ -403,6 +403,37 @@ export const addReviewToTeam = async (req, res) => {
     
     // Create new review with timestamp-based ID
     const reviewId = `review_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+    
+    // Determine the correct facultyID based on the faculty type
+    let reviewAssignedBy;
+    
+    if (assignedBy && assignedBy.type) {
+      if (assignedBy.type === 'Guide') {
+        reviewAssignedBy = {
+          ...assignedBy,
+          facultyID: team.guideFacultyId // Use the team's guideFacultyId
+        };
+      } else if (assignedBy.type === 'Incharge') {
+        reviewAssignedBy = {
+          ...assignedBy,
+          facultyID: team.inchargefacultyId // Use the team's inchargefacultyId
+        };
+      } else {
+        // For other types, use the faculty from token
+        reviewAssignedBy = {
+          ...assignedBy,
+          facultyID: facultyID
+        };
+      }
+    } else {
+      // Default case if no assignedBy is provided
+      reviewAssignedBy = {
+        name: "System",
+        type: "Incharge",
+        facultyID: team.inchargefacultyId || facultyID
+      };
+    }
+    
     const newReview = {
       reviewId,
       reviewNo: reviewNo || team.reviews.length + 1,
@@ -416,14 +447,7 @@ export const addReviewToTeam = async (req, res) => {
       changesToBeMade,
       presentees,
       reviewStatus: 'reviewed',
-      assignedBy: assignedBy ? {
-        ...assignedBy,
-        facultyID: facultyID
-      } : {
-        name: "System",
-        type: "Incharge",
-        facultyID: facultyID
-      }
+      assignedBy: reviewAssignedBy
     };
     
     // Add review to team

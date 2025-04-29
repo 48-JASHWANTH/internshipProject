@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Edit, X } from 'lucide-react';
 import { useStore } from '@/store/useStore';
-import axios from 'axios';
+// import axios from 'axios';
+import { apiClient } from '@/lib/api-client';
 import { toast } from 'react-hot-toast';
 
 const BasicInfo = () => {
@@ -53,8 +54,8 @@ const BasicInfo = () => {
       }
       
       // Make API call to update faculty data
-      const response = await axios.put(
-        `http://localhost:1544/faculty/update/${facultyId}`,
+      const response = await apiClient.put(
+        `faculty/update/${facultyId}`,
         employeeData,
         { withCredentials: true }
       );

@@ -1,7 +1,8 @@
 import { useState, useCallback, useEffect } from 'react';
 import { FaFileUpload, FaFileDownload, FaFilePdf, FaTimes } from 'react-icons/fa';
-import axios from 'axios';
+// import axios from 'axios';
 import { useStore } from '@/store/useStore';
+import { apiClient } from '@/lib/api-client';
 
 
 const Resume = () => {
@@ -19,7 +20,7 @@ const Resume = () => {
 
   const fetchStudentResume = async () => {
     try {
-      const response = await axios.get(`http://localhost:1544/files/resume/${studentID}`, {
+      const response = await apiClient.get(`files/resume/${studentID}`, {
         withCredentials: true
       });
       if (response.data) {
@@ -62,7 +63,7 @@ const Resume = () => {
       formData.append('studentID', studentID);
       formData.append('projectID', 'RESUME');
 
-      const response = await axios.post('http://localhost:1544/files/upload', formData, {
+      const response = await apiClient.post('files/upload', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -106,7 +107,7 @@ const Resume = () => {
   const handleDownload = async () => {
     if (resume) {
       try {
-        const response = await axios.get(`http://localhost:1544/files/download/${resume.fileId}`, {
+        const response = await apiClient.get(`files/download/${resume.fileId}`, {
           responseType: 'blob',
           withCredentials: true
         });

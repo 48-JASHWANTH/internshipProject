@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+// import axios from 'axios';
 import { useStore } from '../../store/useStore';
 import { FaSearch, FaSpinner, FaFilter } from 'react-icons/fa';
+import { apiClient } from '@/lib/api-client';
 
 function CampusProjects() {
   const [projects, setProjects] = useState([]);
@@ -27,7 +28,7 @@ function CampusProjects() {
     const fetchProjects = async () => {
       try {
         setLoading(true);
-        const response = await axios.get('http://localhost:1544/common/projects');
+        const response = await apiClient.get('common/projects');
         if (response.data.success) {
           setProjects(response.data.projects);
         } else {

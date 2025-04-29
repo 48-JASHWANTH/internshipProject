@@ -3,7 +3,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Search, Calendar, User, ArrowLeft, ChevronRight, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import { format } from 'date-fns';
-import axios from 'axios';
+// import axios from 'axios';
+import { apiClient } from '@/lib/api-client';
 import toast from 'react-hot-toast';
 
 const InchargeClassTeams = () => {
@@ -97,8 +98,8 @@ const InchargeClassTeams = () => {
     setIsSubmitting(true);
     
     try {
-      const response = await axios.put(
-        `http://localhost:1544/faculty/complete-class/${classSection}`,
+      const response = await apiClient.put(
+        `faculty/complete-class/${classSection}`,
         {
           facultyID: user.facultyID,
           completionDate: new Date().toISOString().split('T')[0]

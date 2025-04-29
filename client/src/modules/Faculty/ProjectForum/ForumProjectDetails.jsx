@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+// import axios from 'axios';
+import { apiClient } from '@/lib/api-client';
 import { Loader2, ArrowLeft, Tag, Users, Calendar, CheckCircle, XCircle, Award, BookOpen, Layers, FileText } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { format } from 'date-fns';
@@ -28,8 +29,8 @@ const ForumProjectDetails = () => {
     const fetchProjectDetails = async () => {
       setLoading(true);
       try {
-        const response = await axios.get(
-          `http://localhost:1544/forum-projects/project/${projectId}`,
+        const response = await apiClient.get(
+          `forum-projects/project/${projectId}`,
           { withCredentials: true }
         );
         
@@ -59,8 +60,8 @@ const ForumProjectDetails = () => {
 
   const fetchFacultyData = async (facultyId) => {
     try {
-      const response = await axios.get(
-        `http://localhost:1544/faculty/${facultyId}`,
+      const response = await apiClient.get(
+        `faculty/${facultyId}`,
         { withCredentials: true }
       );
       
