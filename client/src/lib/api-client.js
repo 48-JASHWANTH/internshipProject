@@ -3,7 +3,7 @@ import { HOST } from "@/utils/constants";
 
 // Create the API client instance
 export const apiClient = axios.create({
-    baseURL: "http://localhost:1544"
+    baseURL: "https://edu-bridge-backend.onrender.com"
 });
 
 // Add response interceptor for better error handling
