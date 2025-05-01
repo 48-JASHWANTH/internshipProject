@@ -40,6 +40,11 @@ const TaskCard = ({ task, onStatusChange, onApprove }) => {
   const statusLabel = statusConfig[task.status]?.label || 'Unknown';
   const statusColor = statusConfig[task.status]?.color || 'text-gray-500';
 
+  // Determine if task was added by guide or incharge
+  const isGuideTask = task.assignedBy?.type === 'Guide';
+  const taskTypeColor = isGuideTask ? 'border-l-4 border-l-[#9b1a31]' : 'border-l-4 border-l-blue-500';
+  const taskTypeLabel = isGuideTask ? 'Guide Task' : 'Incharge Task';
+
   // Format date or provide a default
   const formatDate = (dateString) => {
     if (!dateString) return "N/A";
@@ -55,10 +60,15 @@ const TaskCard = ({ task, onStatusChange, onApprove }) => {
   };
 
   return (
-    <div className="bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-all border border-gray-100 mb-4">
+    <div className={`bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-all border border-gray-100 mb-4 ${taskTypeColor}`}>
       <div className="flex flex-col sm:flex-row justify-between items-start gap-3 mb-4">
         <div className="w-full sm:w-auto">
-          <h4 className="font-medium text-gray-900 text-lg mb-1">{task.title}</h4>
+          <div className="flex items-center gap-2 mb-1">
+            <h4 className="font-medium text-gray-900 text-lg">{task.title}</h4>
+            <span className={`text-xs px-2 py-0.5 rounded-full ${isGuideTask ? 'bg-[#9b1a31]/10 text-[#9b1a31]' : 'bg-blue-100 text-blue-800'}`}>
+              {taskTypeLabel}
+            </span>
+          </div>
           <p className="text-sm text-gray-600 line-clamp-2">{task.description}</p>
         </div>
         <div className="flex items-center self-start sm:self-auto mt-2 sm:mt-0">
@@ -80,6 +90,9 @@ const TaskCard = ({ task, onStatusChange, onApprove }) => {
         <span className="text-xs flex items-center gap-1 text-gray-500">
           <User className="w-3 h-3" />
           Assigned to: {task.assignedTo || 'Team'}
+        </span>
+        <span className="text-xs flex items-center gap-1 text-gray-500">
+          Assigned by: {task.assignedBy?.name || 'Faculty'}
         </span>
       </div>
 

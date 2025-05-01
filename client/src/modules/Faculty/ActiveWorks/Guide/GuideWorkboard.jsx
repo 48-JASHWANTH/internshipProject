@@ -4,6 +4,7 @@ import { format } from 'date-fns';
 import { useStore } from '@/store/useStore';
 import AddTaskModal from './Components/AddTaskModal';
 import toast from 'react-hot-toast';
+import { apiClient } from '@/lib/api-client';
 
 const TaskCard = ({ task, onApprove }) => {
   const priorityColors = {
@@ -38,11 +39,21 @@ const TaskCard = ({ task, onApprove }) => {
   const StatusIcon = statusConfig[task.status]?.icon || XCircle;
   const dueDate = task.dueDate ? new Date(task.dueDate) : null;
 
+  // Determine if task was added by guide or incharge
+  const isGuideTask = task.assignedBy?.type === 'Guide';
+  const taskTypeColor = isGuideTask ? 'border-l-4 border-l-[#9b1a31]' : 'border-l-4 border-l-blue-500';
+  const taskTypeLabel = isGuideTask ? 'Guide Task' : 'Incharge Task';
+
   return (
-    <div className="bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-all border border-gray-100 mb-4">
+    <div className={`bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-all border border-gray-100 mb-4 ${taskTypeColor}`}>
       <div className="flex flex-col sm:flex-row justify-between items-start gap-3 mb-4">
         <div className="w-full sm:w-auto">
-          <h4 className="font-medium text-gray-900 text-lg mb-1">{task.title}</h4>
+          <div className="flex items-center gap-2 mb-1">
+            <h4 className="font-medium text-gray-900 text-lg">{task.title}</h4>
+            <span className={`text-xs px-2 py-0.5 rounded-full ${isGuideTask ? 'bg-[#9b1a31]/10 text-[#9b1a31]' : 'bg-blue-100 text-blue-800'}`}>
+              {taskTypeLabel}
+            </span>
+          </div>
           <p className="text-sm text-gray-600 line-clamp-2">{task.description}</p>
         </div>
         <div className="flex items-center self-start sm:self-auto mt-2 sm:mt-0">
@@ -65,9 +76,12 @@ const TaskCard = ({ task, onApprove }) => {
           <User className="w-3 h-3" />
           Assigned to: {task.assignedTo || 'Unassigned'}
         </span>
+        <span className="text-xs flex items-center gap-1 text-gray-500">
+          Assigned by: {task.assignedBy?.name || 'Faculty'}
+        </span>
       </div>
 
-      <div >
+      <div>
         {task.status === 'done' && (
           <button
             onClick={() => onApprove(task._id)}
@@ -101,8 +115,38 @@ const GuideWorkboard = ({ projectId, project }) => {
     updateGuidedProjectTask(projectId, taskId, { status: newStatus });
   };
 
-  const handleApprove = (taskId) => {
-    updateGuidedProjectTask(projectId, taskId, { status: 'approved' });
+  const handleApprove = async (taskId) => {
+    try {
+      // Make sure taskId is properly defined and not undefined
+      if (!taskId) {
+        console.error('Task ID is undefined or empty');
+        toast.error('Invalid task ID');
+        return;
+      }
+      
+      console.log('Approving task with ID:', taskId);
+      
+      // Find the task to get its taskId
+      const task = tasks.find(t => t._id === taskId);
+      if (!task || !task.taskId) {
+        console.error('Task not found or missing taskId');
+        toast.error('Task not found');
+        return;
+      }
+      
+      // Update on server using task.taskId
+      await apiClient.put(`/faculty/team/${projectId}/task/${task.taskId}`, {
+        status: 'approved'
+      }, { withCredentials: true });
+      
+      // Update in store
+      updateGuidedProjectTask(projectId, taskId, { status: 'approved' });
+      
+      toast.success('Task approved');
+    } catch (error) {
+      console.error('Error approving task:', error);
+      toast.error('Failed to approve task');
+    }
   };
 
   const handleAddTask = async (newTask) => {
@@ -120,6 +164,15 @@ const GuideWorkboard = ({ projectId, project }) => {
         createdAt: new Date().toISOString()
       };
       
+      // Make API call to save task to database
+      const response = await apiClient.post(
+        `/faculty/team/${projectId}/task`,
+        taskWithFaculty,
+        { withCredentials: true }
+      );
+      
+      console.log('Guide - Task saved to database:', response.data);
+      
       // Add to store
       await addGuidedProjectTask(projectId, taskWithFaculty);
       console.log('Guide - Task added to store successfully');
@@ -127,7 +180,6 @@ const GuideWorkboard = ({ projectId, project }) => {
       toast.success('Task added successfully');
       
       // Return true to indicate success and trigger the success dialog in AddTaskModal
-      // DO NOT close modal here - let the dialog in AddTaskModal handle that
       return true;
     } catch (error) {
       console.error('Guide - Error adding task:', error);
