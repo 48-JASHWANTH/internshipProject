@@ -6,7 +6,7 @@ import ConfirmationDialog from "../../common/ConfirmationDialog";
 import { CREATE_TEAMS_ROUTE } from "@/utils/constants";
 import { apiClient } from "@/lib/api-client";
 import { toast } from "react-hot-toast";
-import { useStore } from "@/contexts/StoreContext";
+import { useStore } from "@/store/useStore";
 
 const CreateProjectForm = () => {
   const navigate = useNavigate();
