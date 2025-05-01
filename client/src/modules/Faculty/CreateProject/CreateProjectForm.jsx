@@ -10,6 +10,7 @@ import { useStore } from "@/store/useStore";
 
 const CreateProjectForm = () => {
   const navigate = useNavigate();
+  const { user } = useStore();
   const [phase, setPhase] = useState(1);
   const [formData, setFormData] = useState({
     year: "",
@@ -37,7 +38,6 @@ const CreateProjectForm = () => {
   };
 
   const handleFinalSubmit = async() => {
-    const { user } = useStore();
     const facultyID = user?.facultyID;
     
     if (!facultyID) {
