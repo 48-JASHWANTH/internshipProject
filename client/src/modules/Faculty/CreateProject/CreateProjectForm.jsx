@@ -6,6 +6,7 @@ import ConfirmationDialog from "../../common/ConfirmationDialog";
 import { CREATE_TEAMS_ROUTE } from "@/utils/constants";
 import { apiClient } from "@/lib/api-client";
 import { toast } from "react-hot-toast";
+import { useStore } from "@/contexts/StoreContext";
 
 const CreateProjectForm = () => {
   const navigate = useNavigate();
@@ -36,7 +37,14 @@ const CreateProjectForm = () => {
   };
 
   const handleFinalSubmit = async() => {
-    const facultyID = "00CSE007";
+    const { user } = useStore();
+    const facultyID = user?.facultyID;
+    
+    if (!facultyID) {
+      toast.error('Faculty ID not found. Please log in again.');
+      return;
+    }
+
     const classID = Date.now().toString();
     
     // Build teams, projectTitles and guides objects in one pass
@@ -87,7 +95,6 @@ const CreateProjectForm = () => {
       }))
     };
 
-    
     try {
         const res = await apiClient.post(CREATE_TEAMS_ROUTE, responseData, { withCredentials: true });
       
@@ -124,8 +131,6 @@ const CreateProjectForm = () => {
     
     // Single console log with the final response only
     console.log("Final Response:", responseData);
-
-    
   };
 
   return (
