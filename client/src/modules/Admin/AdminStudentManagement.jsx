@@ -3,6 +3,8 @@ import { FaSearch, FaPlus, FaTrash, FaEye, FaUndo, FaChevronLeft, FaChevronRight
 import { useNavigate } from 'react-router-dom';
 import { apiClient } from '@/lib/api-client';
 import toast from 'react-hot-toast';
+import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const AdminStudentManagement = () => {
   const navigate = useNavigate();
@@ -12,6 +14,11 @@ const AdminStudentManagement = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [students, setStudents] = useState([]);
   const [deletedStudents, setDeletedStudents] = useState([]);
+  const [filters, setFilters] = useState({
+    department: 'all',
+    batch: 'all',
+    status: 'all'
+  });
   const studentsPerPage = 10;
   
   // Add new state for confirmation dialog
@@ -19,6 +26,23 @@ const AdminStudentManagement = () => {
     show: false,
     studentId: null
   });
+
+  // Get unique departments and batches from students list
+  const departments = React.useMemo(() => {
+    const depts = new Set();
+    students.forEach(student => {
+      if (student.department) depts.add(student.department);
+    });
+    return Array.from(depts);
+  }, [students]);
+
+  const batches = React.useMemo(() => {
+    const batchSet = new Set();
+    students.forEach(student => {
+      if (student.batch) batchSet.add(student.batch);
+    });
+    return Array.from(batchSet).sort((a, b) => b - a); // Sort in descending order
+  }, [students]);
 
   // Fetch students data
   const fetchStudents = async () => {
@@ -115,15 +139,34 @@ const AdminStudentManagement = () => {
     fetchStudents();
   }, []); // Remove showDeleted from dependency array since we're now fetching both lists at once
 
-  // Filter students based on search term and active/deleted status
+  // Filter students based on search term, active/deleted status, and filters
   const filteredStudents = React.useMemo(() => {
-    const list = showDeleted ? deletedStudents : students;
-    return list.filter(student => 
+    let list = showDeleted ? deletedStudents : students;
+    
+    // Apply search filter
+    list = list.filter(student => 
       (student.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       student.studentID?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       student.department?.toLowerCase().includes(searchTerm.toLowerCase()))
     );
-  }, [showDeleted, students, deletedStudents, searchTerm]);
+
+    // Apply department filter
+    if (filters.department !== 'all') {
+      list = list.filter(student => student.department === filters.department);
+    }
+
+    // Apply batch filter
+    if (filters.batch !== 'all') {
+      list = list.filter(student => student.batch === filters.batch);
+    }
+
+    // Apply status filter
+    if (filters.status !== 'all') {
+      list = list.filter(student => student.status === filters.status);
+    }
+
+    return list;
+  }, [showDeleted, students, deletedStudents, searchTerm, filters]);
 
   // Pagination logic
   const totalPages = Math.ceil(filteredStudents.length / studentsPerPage);
@@ -141,42 +184,89 @@ const AdminStudentManagement = () => {
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-800">Student Management</h1>
-        <button 
+        <Button 
           onClick={() => navigate('/Admin/AddStudent')}
-          className="bg-[#9b1a31] text-white px-4 py-2 rounded-md flex items-center gap-2"
+          className="bg-[#9b1a31] text-white flex items-center gap-2"
         >
           <FaPlus /> Add Student
-        </button>
+        </Button>
       </div>
       
       <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-        <div className="flex justify-between items-center mb-4">
-          <div className="relative w-64">
-            <input
-              type="text"
-              placeholder="Search students..."
-              className="w-full pl-10 pr-4 py-2 border rounded-md"
-              value={searchTerm}
-              onChange={(e) => {
-                setSearchTerm(e.target.value);
-                setCurrentPage(1); // Reset to first page on search
-              }}
-            />
-            <FaSearch className="absolute left-3 top-3 text-gray-400" />
+        <div className="flex flex-col md:flex-row justify-between gap-4 mb-4">
+          <div className="flex flex-col md:flex-row gap-4 w-full">
+            <div className="relative flex-1">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <FaSearch className="text-gray-400" />
+              </div>
+              <input
+                type="text"
+                placeholder="Search students..."
+                className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#9b1a31]"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+            
+            <div className="flex gap-4">
+              <Select
+                value={filters.department}
+                onValueChange={(value) => setFilters(prev => ({ ...prev, department: value }))}
+              >
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Department" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Departments</SelectItem>
+                  {departments.map((dept) => (
+                    <SelectItem key={dept} value={dept}>{dept}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <Select
+                value={filters.batch}
+                onValueChange={(value) => setFilters(prev => ({ ...prev, batch: value }))}
+              >
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Batch" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Batches</SelectItem>
+                  {batches.map((batch) => (
+                    <SelectItem key={batch} value={batch}>{batch}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <Select
+                value={filters.status}
+                onValueChange={(value) => setFilters(prev => ({ ...prev, status: value }))}
+              >
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value="Active">Active</SelectItem>
+                  <SelectItem value="Inactive">Inactive</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
           
           <div className="flex items-center">
-            <label className="flex items-center cursor-pointer">
+            <label className="inline-flex items-center cursor-pointer">
               <input
                 type="checkbox"
-                className="form-checkbox h-5 w-5 text-[#9b1a31]"
+                className="sr-only peer"
                 checked={showDeleted}
-                onChange={() => {
-                  setShowDeleted(!showDeleted);
-                  setCurrentPage(1); // Reset to first page when toggling
-                }}
+                onChange={() => setShowDeleted(!showDeleted)}
               />
-              <span className="ml-2 text-gray-700">Show Deleted</span>
+              <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#9b1a31]/20 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#9b1a31]"></div>
+              <span className="ml-3 text-sm font-medium text-gray-900">
+                {showDeleted ? 'Showing Deleted Students' : 'Showing Active Students'}
+              </span>
             </label>
           </div>
         </div>

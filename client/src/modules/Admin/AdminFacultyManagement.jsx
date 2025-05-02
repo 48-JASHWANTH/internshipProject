@@ -3,6 +3,8 @@ import { FaSearch, FaPlus, FaTrash, FaEye, FaUndo, FaChevronLeft, FaChevronRight
 import { useNavigate } from 'react-router-dom';
 import { apiClient } from '@/lib/api-client';
 import toast from 'react-hot-toast';
+import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const AdminFacultyManagement = () => {
   const navigate = useNavigate();
@@ -12,6 +14,10 @@ const AdminFacultyManagement = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [faculty, setFaculty] = useState([]);
   const [deletedFaculty, setDeletedFaculty] = useState([]);
+  const [filters, setFilters] = useState({
+    department: 'all',
+    status: 'all'
+  });
   const facultyPerPage = 10;
   
   // Add state for confirmation dialog
@@ -19,6 +25,15 @@ const AdminFacultyManagement = () => {
     show: false,
     facultyId: null
   });
+
+  // Get unique departments from faculty list
+  const departments = React.useMemo(() => {
+    const depts = new Set();
+    faculty.forEach(member => {
+      if (member.department) depts.add(member.department);
+    });
+    return Array.from(depts);
+  }, [faculty]);
 
   // Fetch faculty data
   const fetchFaculty = async () => {
@@ -110,20 +125,29 @@ const AdminFacultyManagement = () => {
     }
   };
 
-  // Fetch data when component mounts
-  useEffect(() => {
-    fetchFaculty();
-  }, []);
-
-  // Filter faculty based on search term and active/deleted status
+  // Filter faculty based on search term, active/deleted status, and filters
   const filteredFaculty = React.useMemo(() => {
-    const list = showDeleted ? deletedFaculty : faculty;
-    return list.filter(member => 
+    let list = showDeleted ? deletedFaculty : faculty;
+    
+    // Apply search filter
+    list = list.filter(member => 
       (member.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       member.facultyID?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       member.department?.toLowerCase().includes(searchTerm.toLowerCase()))
     );
-  }, [showDeleted, faculty, deletedFaculty, searchTerm]);
+
+    // Apply department filter
+    if (filters.department !== 'all') {
+      list = list.filter(member => member.department === filters.department);
+    }
+
+    // Apply status filter
+    if (filters.status !== 'all') {
+      list = list.filter(member => member.status === filters.status);
+    }
+
+    return list;
+  }, [showDeleted, faculty, deletedFaculty, searchTerm, filters]);
 
   // Pagination logic
   const totalPages = Math.ceil(filteredFaculty.length / facultyPerPage);
@@ -137,31 +161,69 @@ const AdminFacultyManagement = () => {
     }
   };
 
+  // Fetch data when component mounts
+  useEffect(() => {
+    fetchFaculty();
+  }, []);
+
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-800">Faculty Management</h1>
-        <button 
+        <Button 
           onClick={() => navigate('/Admin/AddFaculty')}
-          className="bg-[#9b1a31] text-white px-4 py-2 rounded-md flex items-center gap-2"
+          className="bg-[#9b1a31] text-white flex items-center gap-2"
         >
           <FaPlus /> Add Faculty
-        </button>
+        </Button>
       </div>
       
       <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-        <div className="flex flex-col md:flex-row justify-between mb-4">
-          <div className="relative mb-4 md:mb-0 md:w-1/3">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <FaSearch className="text-gray-400" />
+        <div className="flex flex-col md:flex-row justify-between gap-4 mb-4">
+          <div className="flex flex-col md:flex-row gap-4 w-full">
+            <div className="relative flex-1">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <FaSearch className="text-gray-400" />
+              </div>
+              <input
+                type="text"
+                placeholder="Search faculty..."
+                className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#9b1a31]"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
             </div>
-            <input
-              type="text"
-              placeholder="Search faculty..."
-              className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#9b1a31]"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
+            
+            <div className="flex gap-4">
+              <Select
+                value={filters.department}
+                onValueChange={(value) => setFilters(prev => ({ ...prev, department: value }))}
+              >
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Department" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Departments</SelectItem>
+                  {departments.map((dept) => (
+                    <SelectItem key={dept} value={dept}>{dept}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <Select
+                value={filters.status}
+                onValueChange={(value) => setFilters(prev => ({ ...prev, status: value }))}
+              >
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value="Active">Active</SelectItem>
+                  <SelectItem value="Inactive">Inactive</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
           
           <div className="flex items-center">

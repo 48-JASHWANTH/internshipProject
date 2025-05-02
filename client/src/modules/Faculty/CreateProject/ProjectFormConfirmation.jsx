@@ -3,6 +3,8 @@ import { FaEdit, FaSave } from "react-icons/fa";
 import SearchableDropdown from "../../common/SearchableDropdown";
 import { apiClient } from "@/lib/api-client";
 import toast from "react-hot-toast";
+import { Button } from "@/components/ui/button";
+import { Loader2 } from "lucide-react";
 
 const branches = [
   "Computer Science & Engineering(CSE)",
@@ -27,6 +29,7 @@ const ProjectFormConfirmation = ({
   setExcelData,
   setPhase,
   handleSubmit,
+  isSubmitting,
 }) => {
   const [isEditingBasic, setIsEditingBasic] = useState(false);
   const [isEditingExcel, setIsEditingExcel] = useState(false);
@@ -548,20 +551,26 @@ const ProjectFormConfirmation = ({
       </div>
 
       <div className="flex justify-end gap-3 mt-8">
-        <button
-          type="button"
+        <Button
+          variant="outline"
           onClick={() => setPhase(1)}
-          className="px-6 py-2.5 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors duration-200"
+          disabled={isSubmitting}
         >
           Back
-        </button>
-        <button
-          type="button"
+        </Button>
+        <Button
           onClick={handleSubmitWrapper}
-          className="px-6 py-2.5 bg-[#82001A] text-white font-medium rounded-lg hover:bg-[#9b1a31] transition-colors duration-200"
+          disabled={isSubmitting}
         >
-          Submit
-        </button>
+          {isSubmitting ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Submitting...
+            </>
+          ) : (
+            "Submit"
+          )}
+        </Button>
       </div>
     </div>
   );

@@ -7,11 +7,13 @@ import { CREATE_TEAMS_ROUTE } from "@/utils/constants";
 import { apiClient } from "@/lib/api-client";
 import { toast } from "react-hot-toast";
 import { useStore } from "@/store/useStore";
+import { Loader2 } from "lucide-react";
 
 const CreateProjectForm = () => {
   const navigate = useNavigate();
   const { user } = useStore();
   const [phase, setPhase] = useState(1);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     year: "",
     semester: "",
@@ -38,10 +40,14 @@ const CreateProjectForm = () => {
   };
 
   const handleFinalSubmit = async() => {
+    if (isSubmitting) return; // Prevent multiple submissions
+    
+    setIsSubmitting(true);
     const facultyID = user?.facultyID;
     
     if (!facultyID) {
       toast.error('Faculty ID not found. Please log in again.');
+      setIsSubmitting(false);
       return;
     }
 
@@ -127,6 +133,8 @@ const CreateProjectForm = () => {
       } catch (error) {
         console.error(error.response?.data?.message || "Failed to create teams. Please try again.");
         toast.error("Failed to create teams. Please try again.");
+      } finally {
+        setIsSubmitting(false);
       };
     
     // Single console log with the final response only
@@ -152,6 +160,7 @@ const CreateProjectForm = () => {
             setExcelData={setExcelData}
             setPhase={setPhase}
             handleSubmit={handleSubmitAttempt}
+            isSubmitting={isSubmitting}
           />
         )}
       </form>
@@ -177,6 +186,7 @@ const CreateProjectForm = () => {
             handleFinalSubmit();
           }}
           onCancel={() => setShowFinalConfirmation(false)}
+          isSubmitting={isSubmitting}
         />
       )}
     </div>
