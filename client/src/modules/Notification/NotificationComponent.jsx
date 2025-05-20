@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { setupNotificationListener, registerForNotifications } from '../../services/notificationService';
 import { useStore } from '../../store/useStore';
 import { apiClient } from '../../lib/api-client';
-import { FaBell, FaCheckCircle, FaRegBell, FaInfo, FaTools, FaClipboardCheck, FaComments, FaTasks, FaEllipsisH } from 'react-icons/fa';
+import { FaBell, FaCheckCircle, FaRegBell, FaInfo, FaTools, FaClipboardCheck, FaComments, FaTasks, FaEllipsisH, FaExternalLinkAlt } from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom';
 
 const NotificationComponent = ({ inPage = false }) => {
   const { user } = useStore();
@@ -11,6 +12,86 @@ const NotificationComponent = ({ inPage = false }) => {
   const [showNotifications, setShowNotifications] = useState(false);
   const [isRegistered, setIsRegistered] = useState(false);
   const [activeTab, setActiveTab] = useState('all');
+  const navigate = useNavigate();
+
+  // Function to determine where to navigate based on notification type
+  const getNotificationRedirectUrl = (notification) => {
+    // Extract any IDs from the notification body using regex
+    const teamIdMatch = notification.fullBody.match(/teamId: ([A-Za-z0-9_]+)/);
+    const projectIdMatch = notification.fullBody.match(/projectId: ([A-Za-z0-9_]+)/);
+    const reviewIdMatch = notification.fullBody.match(/reviewId: ([A-Za-z0-9_]+)/);
+    const taskIdMatch = notification.fullBody.match(/taskId: ([A-Za-z0-9_]+)/);
+    
+    const teamId = teamIdMatch ? teamIdMatch[1] : null;
+    const projectId = projectIdMatch ? projectIdMatch[1] : null;
+    const reviewId = reviewIdMatch ? reviewIdMatch[1] : null;
+    const taskId = taskIdMatch ? taskIdMatch[1] : null;
+    
+    const isStudent = user?.role === 'student';
+    const prefix = isStudent ? '/Student' : '/faculty';
+    
+    // Handle task notifications as a special case regardless of type
+    if (notification.title.toLowerCase().includes('task') || 
+        notification.fullBody.toLowerCase().includes('task') || 
+        notification.type === 'task') {
+      if (teamId) {
+        return `${prefix}/${isStudent ? 'ActiveWorks' : 'ActiveProject'}/${teamId}?tab=tasks`;
+      }
+      return `${prefix}/${isStudent ? 'ActiveWorks' : 'AllTasks'}`;
+    }
+    
+    switch (notification.type) {
+      case 'project':
+        if (teamId) {
+          return `${prefix}/${isStudent ? 'ActiveProjects' : 'ActiveProject'}/${teamId}`;
+        }
+        return `${prefix}/${isStudent ? 'ActiveProjects' : 'ActiveProject'}`;
+        
+      case 'review':
+        if (teamId) {
+          return `${prefix}/${isStudent ? 'ActiveWorks' : 'ActiveProject'}/${teamId}?tab=reviews`;
+        }
+        return `${prefix}/${isStudent ? 'ActiveWorks' : 'AllReviews'}`;
+        
+      case 'task':
+        // This is a fallback, but the special case above should handle most task notifications
+        if (teamId) {
+          return `${prefix}/${isStudent ? 'ActiveWorks' : 'ActiveProject'}/${teamId}?tab=tasks`;
+        }
+        return `${prefix}/${isStudent ? 'ActiveWorks' : 'AllTasks'}`;
+        
+      case 'forum':
+        if (projectId) {
+          return `${prefix}/ProjectForum/${projectId}`;
+        }
+        return `${prefix}/ProjectForum`;
+        
+      case 'activity':
+        return `${prefix}/${isStudent ? 'Dashboard' : 'Dashboard'}`;
+        
+      default:
+        return `${prefix}/${isStudent ? 'Dashboard' : 'Dashboard'}`;
+    }
+  };
+
+  // Function to navigate to the relevant content
+  const handleNotificationAction = (notification, e) => {
+    if (e) e.stopPropagation();
+    
+    // Mark as read if not already
+    if (!notification.isRead) {
+      markAsRead(notification.id);
+    }
+    
+    // Close notification panel if in dropdown mode
+    if (!inPage) {
+      setShowNotifications(false);
+    }
+    
+    // Navigate to the relevant page
+    const redirectUrl = getNotificationRedirectUrl(notification);
+    navigate(redirectUrl);
+  };
 
   // Function to fetch notifications from database
   const fetchNotifications = async () => {
@@ -282,6 +363,70 @@ const NotificationComponent = ({ inPage = false }) => {
     return groups;
   };
 
+  // Update notification item in dropdown view
+  const renderNotificationItem = (notification) => (
+    <div 
+      key={notification.id} 
+      className={`flex items-start gap-2 p-2 bg-white rounded-lg shadow-sm mb-2 cursor-pointer hover:-translate-y-0.5 hover:shadow-md transition-all ${notification.isRead ? '' : 'border-l-[3px] border-l-[#9b1a31] bg-rose-50'}`}
+      onClick={() => !notification.isRead && markAsRead(notification.id)}
+    >
+      {getNotificationIcon(notification.type)}
+      <div className="flex-1 min-w-0">
+        <div className="text-xs font-medium text-gray-800 truncate">{notification.title}</div>
+        <div className="text-xs text-gray-600 mt-0.5 line-clamp-1">{notification.body}</div>
+        <div className="flex justify-between items-center mt-1">
+          <div className="text-[10px] text-gray-500">{notification.time}</div>
+          <button
+            onClick={(e) => handleNotificationAction(notification, e)} 
+            className="text-[10px] text-[#9b1a31] flex items-center gap-0.5 hover:text-[#82001A] hover:underline transition-colors"
+            title="Go to related content"
+          >
+            <span>View</span>
+            <FaExternalLinkAlt size={8} />
+          </button>
+        </div>
+      </div>
+      <button
+        className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-full transition-colors"
+        onClick={(e) => removeNotification(notification.id, e)}
+      >
+        ×
+      </button>
+    </div>
+  );
+
+  // Update the in-page notification rendering
+  const renderInPageNotificationItem = (notification) => (
+    <div 
+      key={notification.id} 
+      className={`flex items-start gap-2 sm:gap-3 p-3 sm:p-4 bg-white rounded-lg shadow-sm mb-2 cursor-pointer hover:-translate-y-0.5 hover:shadow-md transition-all ${notification.isRead ? '' : 'border-l-[3px] border-l-[#9b1a31] bg-rose-50'}`}
+      onClick={() => !notification.isRead && markAsRead(notification.id)}
+    >
+      {getNotificationIcon(notification.type)}
+      <div className="flex-1 min-w-0">
+        <div className="text-xs sm:text-sm font-medium text-gray-800">{notification.title}</div>
+        <div className="text-xs sm:text-sm text-gray-600 mt-1 line-clamp-2">{notification.fullBody}</div>
+        <div className="flex justify-between items-center mt-1">
+          <div className="text-[10px] sm:text-xs text-gray-500">{notification.time}</div>
+          <button
+            onClick={(e) => handleNotificationAction(notification, e)} 
+            className="text-[10px] sm:text-xs text-[#9b1a31] flex items-center gap-0.5 hover:text-[#82001A] hover:underline transition-colors"
+            title="Go to related content"
+          >
+            <span>Go to related content</span>
+            <FaExternalLinkAlt size={10} />
+          </button>
+        </div>
+      </div>
+      <button
+        className="p-1 sm:p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-full transition-colors"
+        onClick={(e) => removeNotification(notification.id, e)}
+      >
+        ×
+      </button>
+    </div>
+  );
+
   // For in-page display
   if (inPage) {
     const notificationGroups = groupNotificationsByDate();
@@ -373,26 +518,7 @@ const NotificationComponent = ({ inPage = false }) => {
                 return (
                   <div key={group} className="mb-3 sm:mb-4">
                     <h3 className="text-[10px] sm:text-xs font-semibold text-gray-600 uppercase tracking-wider px-2 sm:px-4 py-1 sm:py-2">{group}</h3>
-                    {groupNotifications.map((notification) => (
-                      <div 
-                        key={notification.id} 
-                        className={`flex items-start gap-2 sm:gap-3 p-3 sm:p-4 bg-white rounded-lg shadow-sm mb-2 cursor-pointer hover:-translate-y-0.5 hover:shadow-md transition-all ${notification.isRead ? '' : 'border-l-[3px] border-l-[#9b1a31] bg-rose-50'}`}
-                        onClick={() => !notification.isRead && markAsRead(notification.id)}
-                      >
-                        {getNotificationIcon(notification.type)}
-                        <div className="flex-1 min-w-0">
-                          <div className="text-xs sm:text-sm font-medium text-gray-800">{notification.title}</div>
-                          <div className="text-xs sm:text-sm text-gray-600 mt-1 line-clamp-2">{notification.fullBody}</div>
-                          <div className="text-[10px] sm:text-xs text-gray-500 mt-1">{notification.time}</div>
-                        </div>
-                        <button
-                          className="p-1 sm:p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-full transition-colors"
-                          onClick={(e) => removeNotification(notification.id, e)}
-                        >
-                          ×
-                        </button>
-                      </div>
-                    ))}
+                    {groupNotifications.map((notification) => renderInPageNotificationItem(notification))}
                   </div>
                 );
               })}
@@ -458,26 +584,7 @@ const NotificationComponent = ({ inPage = false }) => {
           ) : filteredNotifications.length > 0 ? (
             <>
               <div className="p-2 overflow-y-auto max-h-[300px] scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
-                {filteredNotifications.map((notification) => (
-                  <div 
-                    key={notification.id} 
-                    className={`flex items-start gap-2 p-2 bg-white rounded-lg shadow-sm mb-2 cursor-pointer hover:-translate-y-0.5 hover:shadow-md transition-all ${notification.isRead ? '' : 'border-l-[3px] border-l-[#9b1a31] bg-rose-50'}`}
-                    onClick={() => !notification.isRead && markAsRead(notification.id)}
-                  >
-                    {getNotificationIcon(notification.type)}
-                    <div className="flex-1 min-w-0">
-                      <div className="text-xs font-medium text-gray-800 truncate">{notification.title}</div>
-                      <div className="text-xs text-gray-600 mt-0.5 line-clamp-1">{notification.body}</div>
-                      <div className="text-[10px] text-gray-500 mt-1">{notification.time}</div>
-                    </div>
-                    <button
-                      className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-full transition-colors"
-                      onClick={(e) => removeNotification(notification.id, e)}
-                    >
-                      ×
-                    </button>
-                  </div>
-                ))}
+                {filteredNotifications.map((notification) => renderNotificationItem(notification))}
               </div>
               <div className="py-2 px-4 border-t border-gray-100 text-center bg-white">
                 <a href={user?.role === 'student' ? '/student/notifications' : '/faculty/Notifications'} className="text-xs font-medium text-[#9b1a31] hover:underline">

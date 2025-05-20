@@ -37,6 +37,8 @@ import AddStudent from './modules/Admin/AddStudent';
 import AddFaculty from './modules/Admin/AddFaculty';
 import StudentView from './modules/Admin/StudentView';
 import ViewFaculty from './modules/Admin/ViewFaculty';
+import EditStudent from './modules/Admin/EditStudent';
+import EditFaculty from './modules/Admin/EditFaculty';
 import { useStore } from "./store/useStore";
 import ProjectForumDetails from './modules/Student/ProjectForum/ProjectForumDetails';
 import Notifications from './modules/Faculty/Notifications';
@@ -122,8 +124,10 @@ function App() {
               <Route path="CampusProjects" element={<CampusProjects />} />
               <Route path="Faculty" element={<AdminFacultyManagement />} />
               <Route path="Faculty/:facultyId" element={<ViewFaculty />} />
+              <Route path="EditFaculty/:facultyId" element={<EditFaculty />} />
               <Route path="Students" element={<AdminStudentManagement />} />
               <Route path="Students/:studentId" element={<StudentView />} />
+              <Route path="EditStudent/:studentId" element={<EditStudent />} />
               <Route path="AddStudent" element={<AddStudent />} />
               <Route path="AddFaculty" element={<AddFaculty />} />
             </Route>

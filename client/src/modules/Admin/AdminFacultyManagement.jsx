@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FaSearch, FaPlus, FaTrash, FaEye, FaUndo, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
+import { FaSearch, FaPlus, FaTrash, FaEye, FaUndo, FaChevronLeft, FaChevronRight, FaEdit } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { apiClient } from '@/lib/api-client';
 import toast from 'react-hot-toast';
@@ -313,6 +313,7 @@ const AdminFacultyManagement = () => {
                             <button 
                               className="text-blue-600 hover:text-blue-900"
                               onClick={() => navigate(`/Admin/Faculty/${member.facultyID}`)}
+                              title="View faculty details (edit option available in detail view)"
                             >
                               <FaEye className="w-5 h-5" />
                             </button>

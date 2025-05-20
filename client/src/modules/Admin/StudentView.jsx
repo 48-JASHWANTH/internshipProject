@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { FaArrowLeft } from 'react-icons/fa';
+import { FaArrowLeft, FaEdit } from 'react-icons/fa';
 import { apiClient } from '@/lib/api-client';
 import toast from 'react-hot-toast';
 
@@ -43,14 +43,23 @@ const StudentView = () => {
   return (
     <div className="p-6">
       {/* Header */}
-      <div className="flex items-center mb-6">
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center">
+          <button 
+            onClick={() => navigate('/Admin/Students')}
+            className="mr-4 text-gray-600 hover:text-gray-900"
+          >
+            <FaArrowLeft size={20} />
+          </button>
+          <h1 className="text-2xl font-bold text-gray-800">Student Information</h1>
+        </div>
+        
         <button 
-          onClick={() => navigate('/Admin/Students')}
-          className="mr-4 text-gray-600 hover:text-gray-900"
+          onClick={() => navigate(`/Admin/EditStudent/${studentId}`)}
+          className="bg-[#9b1a31] text-white px-4 py-2 rounded-md flex items-center gap-2 hover:bg-[#7b1426] transition-colors"
         >
-          <FaArrowLeft size={20} />
+          <FaEdit /> Edit Student
         </button>
-        <h1 className="text-2xl font-bold text-gray-800">Student Information</h1>
       </div>
 
       {/* Student Profile Card */}

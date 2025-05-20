@@ -264,4 +264,94 @@ export const listDeletedFaculty = async (req, res) => {
       error: error.message
     });
   }
+};
+
+// Function to bulk update multiple faculty members
+export const bulkUpdateFaculty = async (req, res) => {
+  try {
+    const { faculty } = req.body;
+    
+    if (!faculty || !Array.isArray(faculty) || faculty.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid input. Please provide an array of faculty updates."
+      });
+    }
+    
+    // Fields that cannot be updated
+    const restrictedFields = ['password', 'facultyID', 'softDeleted', 'deletedAt'];
+    
+    // Process each faculty update
+    const updateResults = await Promise.all(
+      faculty.map(async (facultyUpdate) => {
+        const { facultyID, ...updates } = facultyUpdate;
+        
+        if (!facultyID) {
+          return { 
+            success: false, 
+            facultyID: null, 
+            message: "Missing facultyID" 
+          };
+        }
+        
+        // Remove restricted fields
+        restrictedFields.forEach(field => {
+          if (updates[field] !== undefined) {
+            delete updates[field];
+          }
+        });
+        
+        try {
+          // Find and verify faculty exists and is not soft-deleted
+          const existingFaculty = await Faculty.findOne({ 
+            facultyID, 
+            softDeleted: false 
+          });
+          
+          if (!existingFaculty) {
+            return { 
+              success: false, 
+              facultyID, 
+              message: "Faculty not found or has been deactivated" 
+            };
+          }
+          
+          // Update the faculty
+          const updatedFaculty = await Faculty.findOneAndUpdate(
+            { facultyID, softDeleted: false },
+            { $set: updates },
+            { new: true, runValidators: true }
+          );
+          
+          return { 
+            success: true, 
+            facultyID, 
+            message: "Updated successfully" 
+          };
+        } catch (error) {
+          return { 
+            success: false, 
+            facultyID, 
+            message: error.message 
+          };
+        }
+      })
+    );
+    
+    const successful = updateResults.filter(result => result.success);
+    const failed = updateResults.filter(result => !result.success);
+    
+    res.status(200).json({
+      success: true,
+      message: `Updated ${successful.length} faculty members, ${failed.length} failed`,
+      results: updateResults
+    });
+    
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error performing bulk faculty update",
+      error: error.message
+    });
+  }
 }; 

@@ -296,3 +296,87 @@ export const getDashboardStats = async (req, res) => {
     });
   }
 };
+
+// Function to bulk update multiple students
+export const bulkUpdateStudents = async (req, res) => {
+  try {
+    const { students } = req.body;
+    
+    if (!students || !Array.isArray(students) || students.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid input. Please provide an array of student updates."
+      });
+    }
+    
+    // Fields that cannot be updated
+    const restrictedFields = ['password', 'studentID', 'isActive', 'deletedAt'];
+    
+    // Process each student update
+    const updateResults = await Promise.all(
+      students.map(async (studentUpdate) => {
+        const { studentID, ...updates } = studentUpdate;
+        
+        if (!studentID) {
+          return { 
+            success: false, 
+            studentID: null, 
+            message: "Missing studentID" 
+          };
+        }
+        
+        // Remove restricted fields
+        restrictedFields.forEach(field => {
+          if (updates[field] !== undefined) {
+            delete updates[field];
+          }
+        });
+        
+        try {
+          // Find and update the student
+          const updatedStudent = await Student.findOneAndUpdate(
+            { studentID },
+            { $set: updates },
+            { new: true, runValidators: true }
+          );
+          
+          if (!updatedStudent) {
+            return { 
+              success: false, 
+              studentID, 
+              message: "Student not found" 
+            };
+          }
+          
+          return { 
+            success: true, 
+            studentID, 
+            message: "Updated successfully" 
+          };
+        } catch (error) {
+          return { 
+            success: false, 
+            studentID, 
+            message: error.message 
+          };
+        }
+      })
+    );
+    
+    const successful = updateResults.filter(result => result.success);
+    const failed = updateResults.filter(result => !result.success);
+    
+    res.status(200).json({
+      success: true,
+      message: `Updated ${successful.length} students, ${failed.length} failed`,
+      results: updateResults
+    });
+    
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error performing bulk update",
+      error: error.message
+    });
+  }
+};

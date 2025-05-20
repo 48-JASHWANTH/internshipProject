@@ -1244,3 +1244,154 @@ export const updateProjectTitle = async (req, res) => {
     });
   }
 };
+
+export const updateProjectOutcomes = async (req, res) => {
+  try {
+    const { teamId } = req.params;
+    const { techStack, objectives, outcomes } = req.body;
+
+    // Create update object based on provided fields
+    const updateFields = {};
+    if (techStack) updateFields.techStack = techStack;
+    if (objectives) updateFields.objectives = objectives;
+    if (outcomes) updateFields.outcomes = outcomes;
+
+    // Only proceed if at least one field is provided
+    if (Object.keys(updateFields).length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "No valid fields provided for update"
+      });
+    }
+
+    const team = await Team.findOneAndUpdate(
+      { teamId },
+      { $set: updateFields },
+      { new: true }
+    );
+
+    if (!team) {
+      return res.status(404).json({ 
+        success: false,
+        message: "Project not found" 
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Project details updated successfully",
+      data: {
+        techStack: team.techStack,
+        objectives: team.objectives,
+        outcomes: team.outcomes
+      }
+    });
+
+  } catch (error) {
+    console.error('Error updating project details:', error);
+    res.status(500).json({ 
+      success: false,
+      message: "Server Error",
+      error: error.message 
+    });
+  }
+};
+
+export const getProjectOutcomes = async (req, res) => {
+  try {
+    const { teamId } = req.params;
+
+    const team = await Team.findOne({ teamId }).select("projectTitle techStack objectives outcomes");
+
+    if (!team) {
+      return res.status(404).json({ 
+        success: false,
+        message: "Project not found" 
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: {
+        projectTitle: team.projectTitle,
+        techStack: team.techStack || [],
+        objectives: team.objectives || [],
+        outcomes: team.outcomes || []
+      }
+    });
+
+  } catch (error) {
+    console.error('Error fetching project outcomes:', error);
+    res.status(500).json({ 
+      success: false,
+      message: "Server Error",
+      error: error.message 
+    });
+  }
+};
+
+export const deleteProjectOutcomeItem = async (req, res) => {
+  try {
+    const { teamId, type, index } = req.params;
+
+    // Validate request parameters
+    if (!['techStack', 'objectives', 'outcomes'].includes(type)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid type. Must be 'techStack', 'objectives', or 'outcomes'"
+      });
+    }
+
+    if (isNaN(parseInt(index))) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid index. Must be a number"
+      });
+    }
+
+    // Find the team
+    const team = await Team.findOne({ teamId });
+    if (!team) {
+      return res.status(404).json({
+        success: false,
+        message: "Project not found"
+      });
+    }
+
+    // Check if array exists and if index is valid
+    if (!team[type] || !Array.isArray(team[type])) {
+      return res.status(400).json({
+        success: false,
+        message: `Project does not have a valid ${type} array`
+      });
+    }
+
+    const itemIndex = parseInt(index);
+    if (itemIndex < 0 || itemIndex >= team[type].length) {
+      return res.status(400).json({
+        success: false,
+        message: `Index out of bounds for ${type} array`
+      });
+    }
+
+    // Remove item at specified index
+    team[type].splice(itemIndex, 1);
+    await team.save();
+
+    res.status(200).json({
+      success: true,
+      message: `Item removed from ${type} successfully`,
+      data: {
+        [type]: team[type]
+      }
+    });
+
+  } catch (error) {
+    console.error(`Error deleting item from project ${type}:`, error);
+    res.status(500).json({
+      success: false,
+      message: "Server Error",
+      error: error.message
+    });
+  }
+};

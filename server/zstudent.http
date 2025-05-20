@@ -149,3 +149,67 @@ Cookie: jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZGE5Nzc1NzdjNjI3ZWU
 ###
 GET http://localhost:1544/files/resume/22071A3262
 Cookie: jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZGE5Nzc1NzdjNjI3ZWU3OWExZDU0MyIsInJvbGUiOiJzdHVkZW50IiwiZW1haWwiOiIyMjA3MUEzMjU1QHZucnZqaWV0LmluIiwiaWF0IjoxNzQyNTc0MzgxLCJleHAiOjIwMDE3NzQzODF9.Qz7a3JQ_H1VHu4LZKTyunu2G66twCd4nQ2_jxqUAuj0
+
+### Update Project Outcomes
+PUT http://localhost:1544/student/project/outcomes/1746203515576_10
+Content-Type: application/json
+Cookie: jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZGE5Nzc1NzdjNjI3ZWU3OWExZDU0MyIsInJvbGUiOiJzdHVkZW50IiwiZW1haWwiOiJiaGFyZ2F2dHR5bEBnbWFpbC5jb20iLCJpYXQiOjE3NDI4MTA5MDAsImV4cCI6MjAwMjAxMDkwMH0.vmUq30PZgZCuDJt0rs_46XORbQxibTdGRw5EmiRvZnU
+
+{
+  "techStack": ["React", "Node.js", "MongoDB", "Express", "TailwindCSS"],
+  "objectives": [
+    "Create a user-friendly interface for project management",
+    "Implement secure authentication system",
+    "Develop real-time notification system"
+  ],
+  "outcomes": [
+    "Successfully implemented all core features",
+    "Achieved 95% test coverage",
+    "Reduced loading time by 40%"
+  ]
+}
+
+### Update Only Tech Stack
+PUT http://localhost:1544/student/project/outcomes/1746203515576_10
+Content-Type: application/json
+Cookie: jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZGE5Nzc1NzdjNjI3ZWU3OWExZDU0MyIsInJvbGUiOiJzdHVkZW50IiwiZW1haWwiOiJiaGFyZ2F2dHR5bEBnbWFpbC5jb20iLCJpYXQiOjE3NDI4MTA5MDAsImV4cCI6MjAwMjAxMDkwMH0.vmUq30PZgZCuDJt0rs_46XORbQxibTdGRw5EmiRvZnU
+
+{
+  "techStack": ["React", "Node.js", "MongoDB", "Firebase", "Redux"]
+}
+
+### Update Only Objectives
+PUT http://localhost:1544/student/project/outcomes/1746203515576_10
+Content-Type: application/json
+Cookie: jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZGE5Nzc1NzdjNjI3ZWU3OWExZDU0MyIsInJvbGUiOiJzdHVkZW50IiwiZW1haWwiOiJiaGFyZ2F2dHR5bEBnbWFpbC5jb20iLCJpYXQiOjE3NDI4MTA5MDAsImV4cCI6MjAwMjAxMDkwMH0.vmUq30PZgZCuDJt0rs_46XORbQxibTdGRw5EmiRvZnU
+
+{
+  "objectives": ["Develop intuitive UI", "Implement secure database", "Create responsive design"]
+}
+
+### Update Only Outcomes
+PUT http://localhost:1544/student/project/outcomes/1746203515576_10
+Content-Type: application/json
+Cookie: jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4MTRmMjZiNGNkMWZlMzMzNTczOWYyOCIsInJvbGUiOiJzdHVkZW50IiwiZW1haWwiOiIyMjA3MUEzMjU1QHZucnZqaWV0LmluIiwiaWF0IjoxNzQ3NDg5NzQzLCJleHAiOjIwMDY2ODk3NDN9.Coh532RVUpzl6bK2v7G_lJ84fXMZY5tTi0h65i1cpME
+
+{
+  "outcomes": ["Completed all features", "Achieved high user satisfaction"]
+}
+
+### Get Project Outcomes
+GET http://localhost:1544/student/project/outcomes/1746203515576_10
+Cookie: jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4MTRmMjZiNGNkMWZlMzMzNTczOWYyOCIsInJvbGUiOiJzdHVkZW50IiwiZW1haWwiOiIyMjA3MUEzMjU1QHZucnZqaWV0LmluIiwiaWF0IjoxNzQ3NDg5NzQzLCJleHAiOjIwMDY2ODk3NDN9.Coh532RVUpzl6bK2v7G_lJ84fXMZY5tTi0h65i1cpME
+
+### Delete Project Outcome Item (Delete a techStack item at index 0)
+DELETE http://localhost:1544/student/project/outcomes/1746203515576_10/techStack/0
+Cookie: jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4MTRmMjZiNGNkMWZlMzMzNTczOWYyOCIsInJvbGUiOiJzdHVkZW50IiwiZW1haWwiOiIyMjA3MUEzMjU1QHZucnZqaWV0LmluIiwiaWF0IjoxNzQ3NDg5NzQzLCJleHAiOjIwMDY2ODk3NDN9.Coh532RVUpzl6bK2v7G_lJ84fXMZY5tTi0h65i1cpME
+
+### Delete Project Objective (Delete an objective at index 0)
+DELETE http://localhost:1544/student/project/outcomes/1746203515576_10/objectives/0
+Cookie: jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4MTRmMjZiNGNkMWZlMzMzNTczOWYyOCIsInJvbGUiOiJzdHVkZW50IiwiZW1haWwiOiIyMjA3MUEzMjU1QHZucnZqaWV0LmluIiwiaWF0IjoxNzQ3NDg5NzQzLCJleHAiOjIwMDY2ODk3NDN9.Coh532RVUpzl6bK2v7G_lJ84fXMZY5tTi0h65i1cpME
+
+### Delete Project Outcome (Delete an outcome at index 0)
+DELETE http://localhost:1544/student/project/outcomes/1746203515576_10/outcomes/0
+Cookie: jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4MTRmMjZiNGNkMWZlMzMzNTczOWYyOCIsInJvbGUiOiJzdHVkZW50IiwiZW1haWwiOiIyMjA3MUEzMjU1QHZucnZqaWV0LmluIiwiaWF0IjoxNzQ3NDg5NzQzLCJleHAiOjIwMDY2ODk3NDN9.Coh532RVUpzl6bK2v7G_lJ84fXMZY5tTi0h65i1cpME
+
+### Get Project Outcomes

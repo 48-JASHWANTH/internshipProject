@@ -18,7 +18,10 @@ import {
   getTeamReviews,
   getTeamTasks,
   getStudentDashboardData,
-  updateStudentSocial
+  updateStudentSocial,
+  updateProjectOutcomes,
+  getProjectOutcomes,
+  deleteProjectOutcomeItem
 } from "../controllers/studentController.js";
 const studentRoutes = Router();
 
@@ -48,6 +51,9 @@ studentRoutes.put('/project/github/:teamId', verifyToken, updateProjectGithub);
 studentRoutes.put('/project/drive/:teamId', verifyToken, updateProjectDrive);
 studentRoutes.put('/project/overview/:teamId', verifyToken, updateProjectOverview);
 studentRoutes.put('/project/title/:teamId', verifyToken, updateProjectTitle);
+studentRoutes.put('/project/outcomes/:teamId', verifyToken, updateProjectOutcomes);
+studentRoutes.get('/project/outcomes/:teamId', verifyToken, getProjectOutcomes);
+studentRoutes.delete('/project/outcomes/:teamId/:type/:index', verifyToken, deleteProjectOutcomeItem);
 studentRoutes.put('/project/task/:teamId/:taskId', verifyToken, updateTaskStatus);
 
 export default studentRoutes;

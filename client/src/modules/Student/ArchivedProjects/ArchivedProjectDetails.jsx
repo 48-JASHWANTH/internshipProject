@@ -1,8 +1,11 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { FaGithub, FaGoogleDrive, FaUsers, FaClipboardCheck, FaArrowLeft } from 'react-icons/fa';
-import { Calendar, CheckCircle } from 'lucide-react';
+import { FaGithub, FaGoogleDrive, FaUsers, FaClipboardCheck, FaArrowLeft, FaPen, FaTimes, FaPlus, FaTrash } from 'react-icons/fa';
+import { Calendar, CheckCircle, Save } from 'lucide-react';
 import { useStore } from '../../../store/useStore';
+import axios from 'axios';
+import toast from 'react-hot-toast';
+import { apiClient } from '@/lib/api-client';
 
 const satisfactionColors = {
   'Excellent': 'bg-purple-100 text-purple-800',
@@ -15,6 +18,24 @@ const satisfactionColors = {
 const ArchivedProjectDetails = () => {
   const { projectId } = useParams();
   const [activeTab, setActiveTab] = useState('overview');
+  
+  // Add loading state for outcomes data
+  const [outcomesLoading, setOutcomesLoading] = useState(false);
+  
+  // Edit states
+  const [editMode, setEditMode] = useState({
+    techStack: false,
+    objectives: false,
+    outcomes: false
+  });
+  
+  // Form data states
+  const [techInput, setTechInput] = useState('');
+  const [techStack, setTechStack] = useState([]);
+  const [objectives, setObjectives] = useState([]);
+  const [objectiveInput, setObjectiveInput] = useState('');
+  const [outcomes, setOutcomes] = useState([]);
+  const [outcomeInput, setOutcomeInput] = useState('');
 
   // Get archived projects and fetch function from store
   const { archivedProjects, loading, error, fetchArchivedProjects, user } = useStore();
@@ -32,6 +53,170 @@ const ArchivedProjectDetails = () => {
     return archivedProjects.find(p => p.teamId === projectId);
   }, [archivedProjects, projectId]);
 
+  // Function to fetch project outcomes directly
+  const fetchProjectOutcomes = async () => {
+    if (!projectId) return;
+    
+    setOutcomesLoading(true);
+    try {
+      const response = await apiClient.get(`/student/project/outcomes/${projectId}`, {
+        withCredentials: true
+      });
+      
+      if (response.data.success) {
+        const { techStack: fetchedTechStack, objectives: fetchedObjectives, outcomes: fetchedOutcomes } = response.data.data;
+        setTechStack(fetchedTechStack || []);
+        setObjectives(fetchedObjectives || []);
+        setOutcomes(fetchedOutcomes || []);
+      }
+    } catch (error) {
+      console.error('Error fetching project outcomes:', error);
+      toast.error('Failed to load project details');
+    } finally {
+      setOutcomesLoading(false);
+    }
+  };
+
+  // Fetch outcomes data when project ID changes or when switching to outcomes tab
+  useEffect(() => {
+    if (projectId && (activeTab === 'outcomes' || activeTab === 'overview')) {
+      fetchProjectOutcomes();
+    }
+  }, [projectId, activeTab]);
+
+  // Initialize form data when project loads - fallback to project data if direct fetch fails
+  useEffect(() => {
+    if (project) {
+      setTechStack(prev => prev.length > 0 ? prev : (project.projectDetails.techStack || []));
+      setObjectives(prev => prev.length > 0 ? prev : (project.projectDetails.objectives || []));
+      setOutcomes(prev => prev.length > 0 ? prev : (project.projectDetails.outcomes || []));
+    }
+  }, [project]);
+
+  // Handle adding a new technology
+  const handleAddTech = () => {
+    if (techInput.trim()) {
+      setTechStack([...techStack, techInput.trim()]);
+      setTechInput('');
+    }
+  };
+
+  // Handle removing a technology
+  const handleRemoveTech = (index) => {
+    setTechStack(techStack.filter((_, i) => i !== index));
+  };
+
+  // Handle adding a new objective
+  const handleAddObjective = () => {
+    if (objectiveInput.trim()) {
+      setObjectives([...objectives, objectiveInput.trim()]);
+      setObjectiveInput('');
+    }
+  };
+
+  // Handle removing an objective
+  const handleRemoveObjective = (index) => {
+    setObjectives(objectives.filter((_, i) => i !== index));
+  };
+
+  // Handle adding a new outcome
+  const handleAddOutcome = () => {
+    if (outcomeInput.trim()) {
+      setOutcomes([...outcomes, outcomeInput.trim()]);
+      setOutcomeInput('');
+    }
+  };
+
+  // Handle removing an outcome
+  const handleRemoveOutcome = (index) => {
+    setOutcomes(outcomes.filter((_, i) => i !== index));
+  };
+
+  // Handle saving tech stack changes
+  const handleSaveTechStack = async () => {
+    console.log("techStack", techStack);
+    try {
+      const response = await apiClient.put(`/student/project/outcomes/${projectId}`, {
+        techStack
+      }, {
+        withCredentials: true
+      });
+      
+      if (response.data.success) {
+        toast.success('Tech stack updated successfully');
+        setEditMode({...editMode, techStack: false});
+        // Refresh project data - using both methods
+        fetchProjectOutcomes();
+        if (user?.studentID) {
+          fetchArchivedProjects(user.studentID);
+        }
+      }
+    } catch (error) {
+      console.error('Error updating tech stack:', error);
+      toast.error('Failed to update tech stack');
+    }
+  };
+
+  // Handle saving objectives changes
+  const handleSaveObjectives = async () => {
+    try {
+      const response = await apiClient.put(`/student/project/outcomes/${projectId}`, {
+        objectives
+      }, {
+        withCredentials: true
+      });
+      
+      if (response.data.success) {
+        toast.success('Objectives updated successfully');
+        setEditMode({...editMode, objectives: false});
+        // Refresh project data - using both methods
+        fetchProjectOutcomes();
+        if (user?.studentID) {
+          fetchArchivedProjects(user.studentID);
+        }
+      }
+    } catch (error) {
+      console.error('Error updating objectives:', error);
+      toast.error('Failed to update objectives');
+    }
+  };
+
+  // Handle saving outcomes changes
+  const handleSaveOutcomes = async () => {
+    try {
+      const response = await apiClient.put(`/student/project/outcomes/${projectId}`, {
+        outcomes
+      }, {
+        withCredentials: true
+      });
+      
+      if (response.data.success) {
+        toast.success('Outcomes updated successfully');
+        setEditMode({...editMode, outcomes: false});
+        // Refresh project data - using both methods
+        fetchProjectOutcomes(); 
+        if (user?.studentID) {
+          fetchArchivedProjects(user.studentID);
+        }
+      }
+    } catch (error) {
+      console.error('Error updating outcomes:', error);
+      toast.error('Failed to update outcomes');
+    }
+  };
+
+  // Cancel edit mode and reset form values from project
+  const handleCancelEdit = (field) => {
+    if (field === 'techStack') {
+      setTechStack(project.projectDetails.techStack || []);
+    } else if (field === 'objectives') {
+      setObjectives(project.projectDetails.objectives || []);
+    } else if (field === 'outcomes') {
+      setOutcomes(project.projectDetails.outcomes || []);
+    }
+    setEditMode({...editMode, [field]: false});
+  };
+
   const TabButton = ({ tab, label }) => (
     <button
       onClick={() => setActiveTab(tab)}
@@ -44,6 +229,43 @@ const ArchivedProjectDetails = () => {
       {label}
     </button>
   );
+
+  // Add new function for deleting individual items
+  const handleDeleteItem = async (type, index) => {
+    if (!confirm(`Are you sure you want to delete this ${type === 'techStack' ? 'technology' : type === 'objectives' ? 'objective' : 'outcome'}?`)) {
+      return;
+    }
+    
+    setOutcomesLoading(true);
+    try {
+      const response = await apiClient.delete(`/student/project/outcomes/${projectId}/${type}/${index}`, {
+        withCredentials: true
+      });
+      
+      if (response.data.success) {
+        toast.success(`${type === 'techStack' ? 'Technology' : type === 'objectives' ? 'Objective' : 'Outcome'} deleted successfully`);
+        
+        // Update local state based on the response
+        if (type === 'techStack') {
+          setTechStack(response.data.data.techStack);
+        } else if (type === 'objectives') {
+          setObjectives(response.data.data.objectives);
+        } else if (type === 'outcomes') {
+          setOutcomes(response.data.data.outcomes);
+        }
+        
+        // Refresh all project data
+        if (user?.studentID) {
+          fetchArchivedProjects(user.studentID);
+        }
+      }
+    } catch (error) {
+      console.error(`Error deleting ${type} item:`, error);
+      toast.error(`Failed to delete ${type === 'techStack' ? 'technology' : type === 'objectives' ? 'objective' : 'outcome'}`);
+    } finally {
+      setOutcomesLoading(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -144,8 +366,6 @@ const ArchivedProjectDetails = () => {
                 <div>
                   <h3 className="text-lg font-semibold mb-4">Project Details</h3>
                   <div className="space-y-3">
-                    
-                
                     <div className="flex items-center text-gray-600">
                       <span className="w-32 text-sm font-medium">Started On:</span>
                       <span className="text-sm">{new Date(project.projectDetails.startDate).toLocaleDateString()}</span>
@@ -157,17 +377,99 @@ const ArchivedProjectDetails = () => {
                   </div>
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold mb-4">Technologies Used</h3>
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-semibold">Technologies Used</h3>
+                    <button 
+                      onClick={() => setEditMode({...editMode, techStack: !editMode.techStack})}
+                      className="p-1 text-gray-600 hover:text-[#9b1a31] rounded-full hover:bg-gray-100"
+                      disabled={outcomesLoading}
+                    >
+                      <FaPen size={14} />
+                    </button>
+                  </div>
+                  
+                  {outcomesLoading ? (
+                    <div className="flex justify-center items-center py-4">
+                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#9b1a31]"></div>
+                    </div>
+                  ) : (
+                    <>
+                      {editMode.techStack ? (
+                        <div className="space-y-3">
                   <div className="flex flex-wrap gap-2">
-                    {project.projectDetails.techStack.map((tech, index) => (
-                      <span
+                            {techStack.map((tech, index) => (
+                              <div 
                         key={index}
-                        className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm"
+                                className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm flex items-center group"
                       >
-                        {tech}
-                      </span>
+                                <span>{tech}</span>
+                                <button 
+                                  onClick={() => handleDeleteItem('techStack', index)}
+                                  className="ml-2 text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                                  title="Delete technology"
+                                >
+                                  <FaTrash size={10} />
+                                </button>
+                              </div>
                     ))}
                   </div>
+                          <div className="flex items-center">
+                            <input
+                              type="text"
+                              value={techInput}
+                              onChange={(e) => setTechInput(e.target.value)}
+                              placeholder="Add new technology"
+                              className="flex-1 p-2 border rounded-l focus:outline-none focus:ring-2 focus:ring-[#9b1a31]"
+                              onKeyPress={(e) => e.key === 'Enter' && handleAddTech()}
+                            />
+                            <button
+                              onClick={handleAddTech}
+                              className="p-2 bg-gray-100 text-gray-700 rounded-r hover:bg-gray-200"
+                            >
+                              <FaPlus size={14} />
+                            </button>
+                          </div>
+                          <div className="flex gap-2 mt-4">
+                            <button
+                              onClick={handleSaveTechStack}
+                              className="px-4 py-2 bg-[#9b1a31] text-white rounded-lg hover:bg-[#82001A] flex items-center gap-1"
+                            >
+                              <Save size={14} />
+                              Save
+                            </button>
+                            <button
+                              onClick={() => handleCancelEdit('techStack')}
+                              className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex flex-wrap gap-2">
+                          {techStack.length > 0 ? (
+                            techStack.map((tech, index) => (
+                              <div 
+                                key={index}
+                                className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm flex items-center group"
+                              >
+                                <span>{tech}</span>
+                                <button 
+                                  onClick={() => handleDeleteItem('techStack', index)}
+                                  className="ml-2 text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                                  title="Delete technology"
+                                >
+                                  <FaTrash size={10} />
+                                </button>
+                              </div>
+                            ))
+                          ) : (
+                            <span className="text-gray-500">No technologies specified.</span>
+                          )}
+                        </div>
+                      )}
+                    </>
+                  )}
                 </div>
               </div>
 
@@ -177,12 +479,93 @@ const ArchivedProjectDetails = () => {
               </div>
 
               <div>
-                <h3 className="text-lg font-semibold mb-4">Objectives</h3>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold">Objectives</h3>
+                  <button 
+                    onClick={() => setEditMode({...editMode, objectives: !editMode.objectives})}
+                    className="p-1 text-gray-600 hover:text-[#9b1a31] rounded-full hover:bg-gray-100"
+                    disabled={outcomesLoading}
+                  >
+                    <FaPen size={14} />
+                  </button>
+                </div>
+                
+                {outcomesLoading ? (
+                  <div className="flex justify-center items-center py-4">
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#9b1a31]"></div>
+                  </div>
+                ) : (
+                  <>
+                    {editMode.objectives ? (
+                      <div className="space-y-3">
+                        <ul className="list-disc list-inside space-y-2">
+                          {objectives.map((objective, index) => (
+                            <li key={index} className="text-gray-600 group flex items-start">
+                              <span className="flex-1">{objective}</span>
+                              <button 
+                                onClick={() => handleDeleteItem('objectives', index)}
+                                className="ml-2 text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity pt-1"
+                                title="Delete objective"
+                              >
+                                <FaTrash size={10} />
+                              </button>
+                            </li>
+                          ))}
+                        </ul>
+                        <div className="flex items-center">
+                          <input
+                            type="text"
+                            value={objectiveInput}
+                            onChange={(e) => setObjectiveInput(e.target.value)}
+                            placeholder="Add new objective"
+                            className="flex-1 p-2 border rounded-l focus:outline-none focus:ring-2 focus:ring-[#9b1a31]"
+                            onKeyPress={(e) => e.key === 'Enter' && handleAddObjective()}
+                          />
+                          <button
+                            onClick={handleAddObjective}
+                            className="p-2 bg-gray-100 text-gray-700 rounded-r hover:bg-gray-200"
+                          >
+                            <FaPlus size={14} />
+                          </button>
+                        </div>
+                        <div className="flex gap-2 mt-4">
+                          <button
+                            onClick={handleSaveObjectives}
+                            className="px-4 py-2 bg-[#9b1a31] text-white rounded-lg hover:bg-[#82001A] flex items-center gap-1"
+                          >
+                            <Save size={14} />
+                            Save
+                          </button>
+                          <button
+                            onClick={() => handleCancelEdit('objectives')}
+                            className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
                 <ul className="list-disc list-inside space-y-2">
-                  {project.projectDetails.objectives?.map((objective, index) => (
-                    <li key={index} className="text-gray-600">{objective}</li>
-                  )) || <li className="text-gray-600">No objectives specified.</li>}
+                        {objectives.length > 0 ? (
+                          objectives.map((objective, index) => (
+                            <li key={index} className="text-gray-600 group flex items-start">
+                              <span className="flex-1">{objective}</span>
+                              <button 
+                                onClick={() => handleDeleteItem('objectives', index)}
+                                className="ml-2 text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity pt-1"
+                                title="Delete objective"
+                              >
+                                <FaTrash size={10} />
+                              </button>
+                            </li>
+                          ))
+                        ) : (
+                          <li className="text-gray-600">No objectives specified.</li>
+                        )}
                 </ul>
+                    )}
+                  </>
+                )}
               </div>
             </div>
           )}
@@ -374,24 +757,113 @@ const ArchivedProjectDetails = () => {
 
           {activeTab === 'outcomes' && (
             <div>
-              <h3 className="text-lg font-semibold mb-6">Project Outcomes</h3>
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-lg font-semibold">Project Outcomes</h3>
+                <button 
+                  onClick={() => setEditMode({...editMode, outcomes: !editMode.outcomes})}
+                  className="p-1 text-gray-600 hover:text-[#9b1a31] rounded-full hover:bg-gray-100"
+                  disabled={outcomesLoading}
+                >
+                  <FaPen size={14} />
+                </button>
+              </div>
+              
+              {outcomesLoading ? (
+                <div className="flex justify-center items-center py-12">
+                  <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#9b1a31]"></div>
+                </div>
+              ) : (
+                <>
+                  {editMode.outcomes ? (
               <div className="space-y-4">
-                {project.projectDetails.outcomes?.map((outcome, index) => (
+                      {outcomes.map((outcome, index) => (
                   <div
                     key={index}
-                    className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg"
+                          className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg group"
                   >
                     <div className="w-6 h-6 flex items-center justify-center bg-green-500 text-white rounded-full text-sm">
                       ✓
+                          </div>
+                          <p className="text-gray-700 flex-1">{outcome}</p>
+                          <button 
+                            onClick={() => handleDeleteItem('outcomes', index)}
+                            className="text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                            title="Delete outcome"
+                          >
+                            <FaTrash size={14} />
+                          </button>
+                        </div>
+                      ))}
+
+                      {outcomes.length === 0 && (
+                        <div className="text-center text-gray-500">
+                          No outcomes added yet.
+                        </div>
+                      )}
+
+                      <div className="flex items-center mt-4">
+                        <input
+                          type="text"
+                          value={outcomeInput}
+                          onChange={(e) => setOutcomeInput(e.target.value)}
+                          placeholder="Add new outcome"
+                          className="flex-1 p-2 border rounded-l focus:outline-none focus:ring-2 focus:ring-[#9b1a31]"
+                          onKeyPress={(e) => e.key === 'Enter' && handleAddOutcome()}
+                        />
+                        <button
+                          onClick={handleAddOutcome}
+                          className="p-2 bg-gray-100 text-gray-700 rounded-r hover:bg-gray-200"
+                        >
+                          <FaPlus size={14} />
+                        </button>
+                      </div>
+
+                      <div className="flex gap-2 mt-4">
+                        <button
+                          onClick={handleSaveOutcomes}
+                          className="px-4 py-2 bg-[#9b1a31] text-white rounded-lg hover:bg-[#82001A] flex items-center gap-1"
+                        >
+                          <Save size={14} />
+                          Save
+                        </button>
+                        <button
+                          onClick={() => handleCancelEdit('outcomes')}
+                          className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
+                        >
+                          Cancel
+                        </button>
+                      </div>
                     </div>
-                    <p className="text-gray-700">{outcome}</p>
+                  ) : (
+                    <div className="space-y-4">
+                      {outcomes.length > 0 ? (
+                        outcomes.map((outcome, index) => (
+                          <div
+                            key={index}
+                            className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg group"
+                          >
+                            <div className="w-6 h-6 flex items-center justify-center bg-green-500 text-white rounded-full text-sm">
+                              ✓
+                            </div>
+                            <p className="text-gray-700 flex-1">{outcome}</p>
+                            <button 
+                              onClick={() => handleDeleteItem('outcomes', index)}
+                              className="text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                              title="Delete outcome"
+                            >
+                              <FaTrash size={14} />
+                            </button>
                   </div>
-                )) || (
+                        ))
+                      ) : (
                   <div className="text-center text-gray-500">
                     No outcomes specified for this project.
                   </div>
                 )}
               </div>
+                  )}
+                </>
+              )}
             </div>
           )}
         </div>

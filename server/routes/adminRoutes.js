@@ -7,7 +7,8 @@ import {
   listAllStudents,
   getStudentDetails,
   getInactiveStudents,
-  getDashboardStats
+  getDashboardStats,
+  bulkUpdateStudents
 } from "../controllers/adminController.js";
 
 import {
@@ -17,7 +18,8 @@ import {
   updateFaculty,
   softDeleteFaculty,
   restoreFaculty,
-  listDeletedFaculty
+  listDeletedFaculty,
+  bulkUpdateFaculty
 } from "../controllers/adminFacultyController.js";
 
 import { adminLogin } from "../controllers/authController.js";
@@ -35,6 +37,7 @@ adminRoutes.use(protectedRoutes);
 
 // Student management routes
 protectedRoutes.post('/add-students', addStudents);
+protectedRoutes.post('/bulk-update-students', bulkUpdateStudents);
 protectedRoutes.get('/students/deleted', getInactiveStudents);
 protectedRoutes.get('/students', listAllStudents);
 protectedRoutes.get('/students/:studentID', getStudentDetails);
@@ -44,6 +47,7 @@ protectedRoutes.post('/students/:studentID/restore', restoreStudent);
 
 // Faculty management routes
 protectedRoutes.post('/add-faculty', addFaculty);
+protectedRoutes.post('/bulk-update-faculty', bulkUpdateFaculty);
 protectedRoutes.get('/faculty', listAllFaculty);
 protectedRoutes.get('/faculty/deleted', listDeletedFaculty);
 protectedRoutes.get('/faculty/:facultyID', getFacultyDetails);
