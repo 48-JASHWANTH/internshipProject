@@ -39,7 +39,10 @@ const createAuthSlice = (set, get) => ({
             });
             return { 
                 success: false, 
-                error: error.response?.data?.message || error.message || 'Login failed' 
+                error: error.response?.data?.message || error.message || 'Login failed',
+                message: error.response?.data?.message,
+                attemptsRemaining: error.response?.data?.attemptsRemaining,
+                status: error.response?.status
             };
         }
     },

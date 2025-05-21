@@ -65,22 +65,60 @@ function Login() {
             navigate('/');
         }
       } else {
-        // Error toast with custom configuration
-        toast.error('Invalid username or password', {
-          position: "top-center",
-          autoClose: 4000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: "colored",
-          style: {
-            backgroundColor: '#f44336',
-            color: 'white',
-            fontWeight: 'bold'
-          }
-        });
+        // Check if account is locked
+        if (result.status === 403) {
+          toast.error(result.message || 'Account is locked due to multiple failed attempts', {
+            position: "top-center",
+            autoClose: 4000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "colored",
+            style: {
+              backgroundColor: '#f44336',
+              color: 'white',
+              fontWeight: 'bold'
+            }
+          });
+        } 
+        // For invalid credentials with attempts info
+        else if (result.attemptsRemaining !== undefined) {
+          toast.error(`Invalid username or password. ${result.attemptsRemaining} attempts remaining before account lockout.`, {
+            position: "top-center",
+            autoClose: 4000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "colored",
+            style: {
+              backgroundColor: '#f44336',
+              color: 'white',
+              fontWeight: 'bold'
+            }
+          });
+        } 
+        // Default error message
+        else {
+          toast.error('Invalid username or password', {
+            position: "top-center",
+            autoClose: 4000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "colored",
+            style: {
+              backgroundColor: '#f44336',
+              color: 'white',
+              fontWeight: 'bold'
+            }
+          });
+        }
       }
     } catch (error) {
       console.error("Login error:", error);
