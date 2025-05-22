@@ -28,37 +28,76 @@ const NotificationComponent = ({ inPage = false }) => {
     const taskId = taskIdMatch ? taskIdMatch[1] : null;
     
     const isStudent = user?.role === 'student';
-    const prefix = isStudent ? '/Student' : '/faculty';
+    const prefix = isStudent ? '/Student' : '/Faculty';
+    
+    // For faculty users, determine if they should go to Incharge or Guide routes
+    const getFacultyRole = (notification) => {
+      // Check if notification content indicates it's for a guide
+      const isGuideRelated = 
+        notification.fullBody.toLowerCase().includes('guide') || 
+        notification.title.toLowerCase().includes('guide') ||
+        notification.fullBody.toLowerCase().includes('guided') ||
+        notification.fullBody.toLowerCase().includes('mentoring');
+      
+      // Check if notification content indicates it's for an incharge
+      const isInchargeRelated = 
+        notification.fullBody.toLowerCase().includes('incharge') || 
+        notification.title.toLowerCase().includes('incharge') ||
+        notification.fullBody.toLowerCase().includes('leading') ||
+        notification.fullBody.toLowerCase().includes('project lead');
+      
+      // Default to Incharge if can't determine
+      return isGuideRelated ? 'Guide' : 'Incharge';
+    };
+    
+    // Get faculty role (Incharge or Guide)
+    const facultyRole = !isStudent ? getFacultyRole(notification) : '';
     
     // Handle task notifications as a special case regardless of type
     if (notification.title.toLowerCase().includes('task') || 
         notification.fullBody.toLowerCase().includes('task') || 
         notification.type === 'task') {
       if (teamId) {
-        return `${prefix}/${isStudent ? 'ActiveWorks' : 'ActiveProject'}/${teamId}?tab=tasks`;
+        return isStudent 
+          ? `${prefix}/ActiveWorks/${teamId}?tab=tasks`
+          : `${prefix}/ActiveWorks/${facultyRole}/${teamId}?tab=tasks`;
       }
-      return `${prefix}/${isStudent ? 'ActiveWorks' : 'AllTasks'}`;
+      return isStudent 
+        ? `${prefix}/ActiveWorks` 
+        : `${prefix}/ActiveWorks/${facultyRole}`;
     }
     
     switch (notification.type) {
       case 'project':
         if (teamId) {
-          return `${prefix}/${isStudent ? 'ActiveProjects' : 'ActiveProject'}/${teamId}`;
+          return isStudent 
+            ? `${prefix}/ActiveWorks/${teamId}`
+            : `${prefix}/ActiveWorks/${facultyRole}/${teamId}`;
         }
-        return `${prefix}/${isStudent ? 'ActiveProjects' : 'ActiveProject'}`;
+        return isStudent 
+          ? `${prefix}/ActiveWorks` 
+          : `${prefix}/ActiveWorks/${facultyRole}`;
         
       case 'review':
         if (teamId) {
-          return `${prefix}/${isStudent ? 'ActiveWorks' : 'ActiveProject'}/${teamId}?tab=reviews`;
+          return isStudent 
+            ? `${prefix}/ActiveWorks/${teamId}?tab=reviews`
+            : `${prefix}/ActiveWorks/${facultyRole}/${teamId}?tab=reviews`;
         }
-        return `${prefix}/${isStudent ? 'ActiveWorks' : 'AllReviews'}`;
+        return isStudent 
+          ? `${prefix}/ActiveWorks` 
+          : `${prefix}/ActiveWorks/${facultyRole}`;
         
       case 'task':
         // This is a fallback, but the special case above should handle most task notifications
         if (teamId) {
-          return `${prefix}/${isStudent ? 'ActiveWorks' : 'ActiveProject'}/${teamId}?tab=tasks`;
+          return isStudent 
+            ? `${prefix}/ActiveWorks/${teamId}?tab=tasks`
+            : `${prefix}/ActiveWorks/${facultyRole}/${teamId}?tab=tasks`;
         }
-        return `${prefix}/${isStudent ? 'ActiveWorks' : 'AllTasks'}`;
+        return isStudent 
+          ? `${prefix}/ActiveWorks` 
+          : `${prefix}/ActiveWorks/${facultyRole}`;
         
       case 'forum':
         if (projectId) {
@@ -67,10 +106,10 @@ const NotificationComponent = ({ inPage = false }) => {
         return `${prefix}/ProjectForum`;
         
       case 'activity':
-        return `${prefix}/${isStudent ? 'Dashboard' : 'Dashboard'}`;
+        return `${prefix}/Dashboard`;
         
       default:
-        return `${prefix}/${isStudent ? 'Dashboard' : 'Dashboard'}`;
+        return `${prefix}/Dashboard`;
     }
   };
 
@@ -314,8 +353,8 @@ const NotificationComponent = ({ inPage = false }) => {
     });
     
     // Fetch notifications from database when user changes
-    if (user) {
-      fetchNotifications();
+    if (user) {    
+      fetchNotifications(); 
       registerForPushNotifications();
       
       // Set up periodic refresh for notifications
